@@ -3,8 +3,10 @@ package com.pwvault.app.ui.unlock
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.pwvault.app.data.VaultFileManager
+import com.pwvault.app.security.AutoLockPreferences
 import com.pwvault.app.security.BiometricUnlockManager
 import com.pwvault.app.security.KeyDerivation
+import com.pwvault.app.security.LockoutPolicy
 import com.pwvault.app.security.PinManager
 import com.pwvault.app.security.VaultMetadataStore
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -44,12 +46,14 @@ sealed interface UnlockUiState {
     data class Locked(
         val error: UnlockError? = null,
         val busy: Boolean = false,
+        val lockedUntilMillis: Long? = null,
     ) : UnlockUiState
 
     data class PinEntry(
         val hasBiometric: Boolean,
         val error: UnlockError? = null,
         val busy: Boolean = false,
+        val lockedUntilMillis: Long? = null,
     ) : UnlockUiState
 
     data class BiometricEntry(
@@ -77,6 +81,8 @@ class UnlockViewModel
         private val vaultFileManager: VaultFileManager,
         private val pinManager: PinManager,
         private val biometricUnlockManager: BiometricUnlockManager,
+        private val lockoutPolicy: LockoutPolicy,
+        private val autoLockPreferences: AutoLockPreferences,
     ) : ViewModel() {
         private val _state = MutableStateFlow<UnlockUiState>(initialState())
         val state: StateFlow<UnlockUiState> = _state.asStateFlow()
@@ -87,13 +93,23 @@ class UnlockViewModel
          */
         private var vaultKey: ByteArray? = null
 
-        private fun initialState(): UnlockUiState =
-            when {
-                !vaultFileManager.hasVaultFile() -> UnlockUiState.Setup()
+        /** Set on [onAppBackgrounded], consumed on [onAppForegrounded]. Not persisted — see plan's Risks. */
+        private var backgroundedAtMillis: Long? = null
+
+        private fun initialState(): UnlockUiState {
+            if (!vaultFileManager.hasVaultFile()) return UnlockUiState.Setup()
+            return lockedState()
+        }
+
+        private fun lockedState(): UnlockUiState {
+            val lockedUntilMillis = lockoutPolicy.currentLockoutUntilMillis()
+            return when {
                 biometricUnlockManager.hasBiometric() -> UnlockUiState.BiometricEntry(hasPin = pinManager.hasPin())
-                pinManager.hasPin() -> UnlockUiState.PinEntry(hasBiometric = false)
-                else -> UnlockUiState.Locked()
+                pinManager.hasPin() ->
+                    UnlockUiState.PinEntry(hasBiometric = false, lockedUntilMillis = lockedUntilMillis)
+                else -> UnlockUiState.Locked(lockedUntilMillis = lockedUntilMillis)
             }
+        }
 
         fun createVault(
             password: CharArray,
@@ -128,6 +144,12 @@ class UnlockViewModel
         }
 
         fun unlock(password: CharArray) {
+            val lockedUntilMillis = lockoutPolicy.currentLockoutUntilMillis()
+            if (lockedUntilMillis != null) {
+                Arrays.fill(password, WIPE_CHAR)
+                _state.value = UnlockUiState.Locked(lockedUntilMillis = lockedUntilMillis)
+                return
+            }
             _state.value = UnlockUiState.Locked(busy = true)
             viewModelScope.launch {
                 val salt = metadataStore.getOrCreateSalt()
@@ -135,6 +157,7 @@ class UnlockViewModel
                 val success = vaultFileManager.openVault(key)
                 _state.value =
                     if (success) {
+                        lockoutPolicy.recordSuccess()
                         vaultKey = key
                         UnlockUiState.Unlocked(
                             hasPin = pinManager.hasPin(),
@@ -142,36 +165,70 @@ class UnlockViewModel
                         )
                     } else {
                         Arrays.fill(key, 0)
-                        UnlockUiState.Locked(error = UnlockError.WRONG_PASSWORD)
-                    }
-            }
-        }
-
-        fun unlockWithPin(pin: CharArray) {
-            _state.value =
-                UnlockUiState.PinEntry(hasBiometric = biometricUnlockManager.hasBiometric(), busy = true)
-            viewModelScope.launch {
-                val key = pinManager.verifyPin(pin)
-                _state.value =
-                    if (key != null && vaultFileManager.openVault(key)) {
-                        vaultKey = key
-                        UnlockUiState.Unlocked(hasPin = true, hasBiometric = biometricUnlockManager.hasBiometric())
-                    } else {
-                        key?.let { Arrays.fill(it, 0) }
-                        UnlockUiState.PinEntry(
-                            hasBiometric = biometricUnlockManager.hasBiometric(),
-                            error = UnlockError.WRONG_PIN,
+                        lockoutPolicy.recordFailure()
+                        UnlockUiState.Locked(
+                            error = UnlockError.WRONG_PASSWORD,
+                            lockedUntilMillis = lockoutPolicy.currentLockoutUntilMillis(),
                         )
                     }
             }
         }
 
+        fun unlockWithPin(pin: CharArray) {
+            val hasBiometric = biometricUnlockManager.hasBiometric()
+            val lockedUntilMillis = lockoutPolicy.currentLockoutUntilMillis()
+            if (lockedUntilMillis != null) {
+                Arrays.fill(pin, WIPE_CHAR)
+                _state.value =
+                    UnlockUiState.PinEntry(hasBiometric = hasBiometric, lockedUntilMillis = lockedUntilMillis)
+                return
+            }
+            _state.value = UnlockUiState.PinEntry(hasBiometric = hasBiometric, busy = true)
+            viewModelScope.launch {
+                val key = pinManager.verifyPin(pin)
+                _state.value =
+                    if (key != null && vaultFileManager.openVault(key)) {
+                        lockoutPolicy.recordSuccess()
+                        vaultKey = key
+                        UnlockUiState.Unlocked(hasPin = true, hasBiometric = hasBiometric)
+                    } else {
+                        key?.let { Arrays.fill(it, 0) }
+                        lockoutPolicy.recordFailure()
+                        UnlockUiState.PinEntry(
+                            hasBiometric = hasBiometric,
+                            error = UnlockError.WRONG_PIN,
+                            lockedUntilMillis = lockoutPolicy.currentLockoutUntilMillis(),
+                        )
+                    }
+            }
+        }
+
+        fun onAppBackgrounded() {
+            backgroundedAtMillis = System.currentTimeMillis()
+        }
+
+        fun onAppForegrounded() {
+            val backgroundedAt = backgroundedAtMillis ?: return
+            backgroundedAtMillis = null
+            val timeout = autoLockPreferences.getTimeout() ?: return
+            val elapsed = System.currentTimeMillis() - backgroundedAt
+            if (elapsed < timeout.inWholeMilliseconds) return
+            if (_state.value !is UnlockUiState.Unlocked) return
+            vaultKey?.let { Arrays.fill(it, 0) }
+            vaultKey = null
+            _state.value = lockedState()
+        }
+
         fun switchToMasterPassword() {
-            _state.value = UnlockUiState.Locked()
+            _state.value = UnlockUiState.Locked(lockedUntilMillis = lockoutPolicy.currentLockoutUntilMillis())
         }
 
         fun switchToPin() {
-            _state.value = UnlockUiState.PinEntry(hasBiometric = biometricUnlockManager.hasBiometric())
+            _state.value =
+                UnlockUiState.PinEntry(
+                    hasBiometric = biometricUnlockManager.hasBiometric(),
+                    lockedUntilMillis = lockoutPolicy.currentLockoutUntilMillis(),
+                )
         }
 
         fun switchToBiometric() {

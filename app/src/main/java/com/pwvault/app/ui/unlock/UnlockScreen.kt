@@ -33,9 +33,11 @@ import com.pwvault.app.ui.theme.PwVaultTheme
 fun UnlockScreen(
     error: UnlockError?,
     busy: Boolean,
+    lockedUntilMillis: Long? = null,
     onUnlock: (password: CharArray) -> Unit,
 ) {
     var password by remember { mutableStateOf("") }
+    val lockoutSecondsRemaining = rememberLockoutSecondsRemaining(lockedUntilMillis)
 
     Column(
         modifier = Modifier.fillMaxSize().padding(24.dp),
@@ -58,19 +60,13 @@ fun UnlockScreen(
             onValueChange = { password = it },
             label = stringResource(R.string.password_label),
         )
-        if (error != null) {
-            Text(
-                text = error.message(),
-                color = MaterialTheme.colorScheme.error,
-                modifier = Modifier.padding(top = 8.dp),
-            )
-        }
+        UnlockStatusMessage(error = error, lockoutSecondsRemaining = lockoutSecondsRemaining)
         Button(
             onClick = {
                 onUnlock(password.toCharArray())
                 password = ""
             },
-            enabled = !busy,
+            enabled = !busy && lockoutSecondsRemaining <= 0,
             modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
         ) {
             Text(stringResource(if (busy) R.string.unlock_button_busy else R.string.unlock_button))

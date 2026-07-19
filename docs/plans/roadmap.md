@@ -10,7 +10,7 @@
 | 1 | Master Password first-run setup + tạo Vault (SQLCipher) + unlock cơ bản | ✅ Done | [feature-01-master-password-unlock-plan.md](feature-01-master-password-unlock-plan.md) |
 | 2 | PIN unlock (fallback bắt buộc mọi thiết bị) | ✅ Done | [feature-02-pin-unlock-plan.md](feature-02-pin-unlock-plan.md) |
 | 3 | Sinh trắc học unlock (BiometricPrompt, tùy chọn) | ✅ Done | [feature-03-biometric-unlock-plan.md](feature-03-biometric-unlock-plan.md) |
-| 4 | Tự động khóa theo thời gian + giới hạn số lần nhập sai (lockout tăng dần) | ⏳ Pending | — |
+| 4 | Tự động khóa theo thời gian + giới hạn số lần nhập sai (lockout tăng dần) | ✅ Done | [feature-04-autolock-lockout-plan.md](feature-04-autolock-lockout-plan.md) |
 | 5 | Vault Item CRUD — loại Login (thêm/sửa/xóa/danh sách) | ⏳ Pending | — |
 | 6 | Tìm kiếm Vault Item | ⏳ Pending | — |
 | 7 | Quản lý Tag (CRUD + gắn nhiều tag cho 1 item) | ⏳ Pending | — |

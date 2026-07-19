@@ -46,4 +46,6 @@
     <string name="use_biometric_instead">Use fingerprint/face instead</string>
     <string name="error_biometric_failed">Fingerprint/face unlock failed</string>
     <string name="error_biometric_setup_failed">Couldn\'t set up fingerprint/face unlock, please try again</string>
+
+    <string name="lockout_message">Too many wrong attempts. Try again in %1$d seconds.</string>
 </resources>

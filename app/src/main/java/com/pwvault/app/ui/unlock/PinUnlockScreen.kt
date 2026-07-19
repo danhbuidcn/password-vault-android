@@ -30,13 +30,13 @@ import com.pwvault.app.R
 
 @Composable
 fun PinUnlockScreen(
-    error: UnlockError?,
-    busy: Boolean,
+    state: UnlockUiState.PinEntry,
     onUnlock: (pin: CharArray) -> Unit,
     onUseMasterPassword: () -> Unit,
     onUseBiometric: (() -> Unit)? = null,
 ) {
     var pin by remember { mutableStateOf("") }
+    val lockoutSecondsRemaining = rememberLockoutSecondsRemaining(state.lockedUntilMillis)
 
     Column(
         modifier = Modifier.fillMaxSize().padding(24.dp),
@@ -63,19 +63,13 @@ fun PinUnlockScreen(
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
             modifier = Modifier.fillMaxWidth(),
         )
-        if (error != null) {
-            Text(
-                text = error.message(),
-                color = MaterialTheme.colorScheme.error,
-                modifier = Modifier.padding(top = 8.dp),
-            )
-        }
+        UnlockStatusMessage(error = state.error, lockoutSecondsRemaining = lockoutSecondsRemaining)
         Button(
             onClick = {
                 onUnlock(pin.toCharArray())
                 pin = ""
             },
-            enabled = !busy,
+            enabled = !state.busy && lockoutSecondsRemaining <= 0,
             modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
         ) {
             Text(stringResource(R.string.pin_unlock_button))

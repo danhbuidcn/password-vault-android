@@ -2,10 +2,13 @@ package com.pwvault.app.di
 
 import android.content.Context
 import com.pwvault.app.data.VaultFileManager
+import com.pwvault.app.security.AutoLockPreferences
 import com.pwvault.app.security.BiometricCredentialStore
 import com.pwvault.app.security.BiometricKeystoreKeyProvider
 import com.pwvault.app.security.BiometricUnlockManager
 import com.pwvault.app.security.KeyDerivation
+import com.pwvault.app.security.LockoutPolicy
+import com.pwvault.app.security.LockoutStore
 import com.pwvault.app.security.PinCredentialStore
 import com.pwvault.app.security.PinKeystoreKeyProvider
 import com.pwvault.app.security.PinManager
@@ -70,4 +73,20 @@ object SecurityModule {
         keystoreKeyProvider: BiometricKeystoreKeyProvider,
         credentialStore: BiometricCredentialStore,
     ): BiometricUnlockManager = BiometricUnlockManager(keystoreKeyProvider, credentialStore)
+
+    @Provides
+    @Singleton
+    fun provideAutoLockPreferences(
+        @ApplicationContext context: Context,
+    ): AutoLockPreferences = AutoLockPreferences(context)
+
+    @Provides
+    @Singleton
+    fun provideLockoutStore(
+        @ApplicationContext context: Context,
+    ): LockoutStore = LockoutStore(context)
+
+    @Provides
+    @Singleton
+    fun provideLockoutPolicy(store: LockoutStore): LockoutPolicy = LockoutPolicy(store)
 }

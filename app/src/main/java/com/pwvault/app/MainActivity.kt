@@ -123,6 +123,16 @@ class MainActivity : FragmentActivity() {
                 }
             }
         }
+
+    override fun onStop() {
+        super.onStop()
+        unlockViewModel.onAppBackgrounded()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        unlockViewModel.onAppForegrounded()
+    }
 }
 
 @Composable
@@ -144,12 +154,12 @@ private fun PwVaultApp(
             UnlockScreen(
                 error = state.error,
                 busy = state.busy,
+                lockedUntilMillis = state.lockedUntilMillis,
                 onUnlock = unlockViewModel::unlock,
             )
         is UnlockUiState.PinEntry ->
             PinUnlockScreen(
-                error = state.error,
-                busy = state.busy,
+                state = state,
                 onUnlock = unlockViewModel::unlockWithPin,
                 onUseMasterPassword = unlockViewModel::switchToMasterPassword,
                 onUseBiometric = if (state.hasBiometric) unlockViewModel::switchToBiometric else null,

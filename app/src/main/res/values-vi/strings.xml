@@ -46,4 +46,6 @@
     <string name="use_biometric_instead">Dùng vân tay/khuôn mặt thay thế</string>
     <string name="error_biometric_failed">Mở khóa bằng vân tay/khuôn mặt thất bại</string>
     <string name="error_biometric_setup_failed">Không thiết lập được vân tay/khuôn mặt, thử lại</string>
+
+    <string name="lockout_message">Nhập sai quá nhiều lần. Thử lại sau %1$d giây.</string>
 </resources>
