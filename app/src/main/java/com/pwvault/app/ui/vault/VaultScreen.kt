@@ -16,6 +16,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Label
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -41,6 +43,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.pwvault.app.R
 import com.pwvault.app.domain.VaultItem
+import com.pwvault.app.domain.VaultItemType
 import com.pwvault.app.ui.unlock.PinSetupDialog
 import com.pwvault.app.ui.unlock.UnlockUiState
 import com.pwvault.app.ui.unlock.message
@@ -219,30 +222,40 @@ private fun VaultItemListScreen(
             } else {
                 LazyColumn(contentPadding = PaddingValues(16.dp)) {
                     items(vaultItems, key = { it.id }) { item ->
-                        Column(
+                        Row(
                             modifier =
                                 Modifier
                                     .fillMaxWidth()
                                     .clickable { onOpenItem(item) }
                                     .padding(vertical = 12.dp),
                         ) {
-                            Text(text = item.name, style = MaterialTheme.typography.bodyLarge)
-                            if (item.username.isNotEmpty()) {
-                                Text(
-                                    text = item.username,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                )
-                            }
-                            if (item.tags.isNotEmpty()) {
-                                Row(
-                                    modifier =
-                                        Modifier
-                                            .horizontalScroll(rememberScrollState())
-                                            .padding(top = 4.dp),
-                                ) {
-                                    item.tags.forEach { tag ->
-                                        TagChip(tag = tag, modifier = Modifier.padding(end = 8.dp))
+                            val isNote = item.type == VaultItemType.NOTE
+                            Icon(
+                                imageVector = if (isNote) Icons.Filled.Description else Icons.Filled.Person,
+                                contentDescription =
+                                    stringResource(if (isNote) R.string.item_type_note else R.string.item_type_login),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.padding(top = 2.dp, end = 12.dp),
+                            )
+                            Column {
+                                Text(text = item.name, style = MaterialTheme.typography.bodyLarge)
+                                if (item.username.isNotEmpty()) {
+                                    Text(
+                                        text = item.username,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                }
+                                if (item.tags.isNotEmpty()) {
+                                    Row(
+                                        modifier =
+                                            Modifier
+                                                .horizontalScroll(rememberScrollState())
+                                                .padding(top = 4.dp),
+                                    ) {
+                                        item.tags.forEach { tag ->
+                                            TagChip(tag = tag, modifier = Modifier.padding(end = 8.dp))
+                                        }
                                     }
                                 }
                             }

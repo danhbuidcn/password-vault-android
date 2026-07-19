@@ -29,16 +29,18 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.pwvault.app.R
+import com.pwvault.app.domain.VaultItemType
 import com.pwvault.app.security.PasswordGenerator
 import com.pwvault.app.ui.unlock.PasswordField
 
 @Composable
 fun VaultItemFormScreen(
     state: VaultUiState.ItemForm,
-    onSave: (name: String, username: String, password: String, url: String, note: String) -> Unit,
+    onSave: (VaultItemFormInput) -> Unit,
     onCancel: () -> Unit,
     onToggleTag: (Long) -> Unit,
 ) {
+    var type by remember { mutableStateOf(state.initial?.type ?: VaultItemType.LOGIN) }
     var name by remember { mutableStateOf(state.initial?.name.orEmpty()) }
     var username by remember { mutableStateOf(state.initial?.username.orEmpty()) }
     var password by remember { mutableStateOf(state.initial?.password.orEmpty()) }
@@ -66,6 +68,21 @@ fun VaultItemFormScreen(
                 ),
             style = MaterialTheme.typography.headlineSmall,
         )
+        if (state.editingId == null) {
+            Row(modifier = Modifier.padding(top = 12.dp)) {
+                FilterChip(
+                    selected = type == VaultItemType.LOGIN,
+                    onClick = { type = VaultItemType.LOGIN },
+                    label = { Text(stringResource(R.string.item_type_login)) },
+                    modifier = Modifier.padding(end = 8.dp),
+                )
+                FilterChip(
+                    selected = type == VaultItemType.NOTE,
+                    onClick = { type = VaultItemType.NOTE },
+                    label = { Text(stringResource(R.string.item_type_note)) },
+                )
+            }
+        }
         OutlinedTextField(
             value = name,
             onValueChange = { name = it },
@@ -81,34 +98,42 @@ fun VaultItemFormScreen(
                 modifier = Modifier.padding(top = 4.dp),
             )
         }
-        OutlinedTextField(
-            value = username,
-            onValueChange = { username = it },
-            label = { Text(stringResource(R.string.item_username_label)) },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
-        )
-        PasswordField(
-            value = password,
-            onValueChange = { password = it },
-            label = stringResource(R.string.password_label),
-            modifier = Modifier.padding(top = 8.dp),
-        )
-        TextButton(onClick = { password = PasswordGenerator.generate() }) {
-            Icon(Icons.Filled.Refresh, contentDescription = null, modifier = Modifier.padding(end = 4.dp))
-            Text(stringResource(R.string.generate_password_button))
+        if (type == VaultItemType.LOGIN) {
+            OutlinedTextField(
+                value = username,
+                onValueChange = { username = it },
+                label = { Text(stringResource(R.string.item_username_label)) },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+            )
+            PasswordField(
+                value = password,
+                onValueChange = { password = it },
+                label = stringResource(R.string.password_label),
+                modifier = Modifier.padding(top = 8.dp),
+            )
+            TextButton(onClick = { password = PasswordGenerator.generate() }) {
+                Icon(Icons.Filled.Refresh, contentDescription = null, modifier = Modifier.padding(end = 4.dp))
+                Text(stringResource(R.string.generate_password_button))
+            }
+            OutlinedTextField(
+                value = url,
+                onValueChange = { url = it },
+                label = { Text(stringResource(R.string.item_url_label)) },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+            )
         }
-        OutlinedTextField(
-            value = url,
-            onValueChange = { url = it },
-            label = { Text(stringResource(R.string.item_url_label)) },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
-        )
         OutlinedTextField(
             value = note,
             onValueChange = { note = it },
-            label = { Text(stringResource(R.string.item_note_label)) },
+            label = {
+                Text(
+                    stringResource(
+                        if (type == VaultItemType.NOTE) R.string.item_content_label else R.string.item_note_label,
+                    ),
+                )
+            },
             minLines = 4,
             modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
         )
@@ -131,7 +156,7 @@ fun VaultItemFormScreen(
             }
         }
         Button(
-            onClick = { onSave(name, username, password, url, note) },
+            onClick = { onSave(VaultItemFormInput(type, name, username, password, url, note)) },
             enabled = !state.busy,
             modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
         ) {

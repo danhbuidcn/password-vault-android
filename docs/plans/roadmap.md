@@ -16,7 +16,7 @@
 | 6 | Tìm kiếm Vault Item | ✅ Done | [feature-06-search-plan.md](feature-06-search-plan.md) |
 | 7 | Quản lý Tag (CRUD + gắn nhiều tag cho 1 item) | ✅ Done | [feature-07-tag-plan.md](feature-07-tag-plan.md) |
 | 8 | Custom Field (trường tùy biến free-form theo từng item) | ⏳ Pending | — |
-| 9 | Vault Item loại Note | ⏳ Pending | — |
+| 9 | Vault Item loại Note | ✅ Done | [feature-09-note-plan.md](feature-09-note-plan.md) |
 | 10 | Sinh mật khẩu ngẫu nhiên + lưu template tái dùng | ⏳ Pending | — |
 | 11 | Import CSV/Excel (map cột, cảnh báo trùng lặp) | ⏳ Pending | — |
 | 12 | Export — mã hóa `.pwvbackup` + plaintext CSV/Excel (cảnh báo 2 bước, nén có mật khẩu) | ⏳ Pending | — |

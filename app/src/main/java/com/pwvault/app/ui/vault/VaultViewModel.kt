@@ -6,6 +6,7 @@ import com.pwvault.app.data.TagRepository
 import com.pwvault.app.data.VaultItemRepository
 import com.pwvault.app.domain.Tag
 import com.pwvault.app.domain.VaultItem
+import com.pwvault.app.domain.VaultItemType
 import com.pwvault.app.security.ClipboardClearer
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
@@ -16,6 +17,15 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 enum class VaultFormError { NAME_REQUIRED }
+
+data class VaultItemFormInput(
+    val type: VaultItemType,
+    val name: String,
+    val username: String,
+    val password: String,
+    val url: String,
+    val note: String,
+)
 
 sealed interface VaultUiState {
     data class ItemList(
@@ -151,15 +161,9 @@ class VaultViewModel
             _state.value = current.copy(copyEventId = current.copyEventId + 1)
         }
 
-        fun save(
-            name: String,
-            username: String,
-            password: String,
-            url: String,
-            note: String,
-        ) {
+        fun save(input: VaultItemFormInput) {
             val form = _state.value as? VaultUiState.ItemForm ?: return
-            if (name.isBlank()) {
+            if (input.name.isBlank()) {
                 _state.value = form.copy(error = VaultFormError.NAME_REQUIRED)
                 return
             }
@@ -169,26 +173,32 @@ class VaultViewModel
                 val existing = form.initial
                 val itemId =
                     if (existing != null) {
+                        // Type is fixed once an item is created — always keep existing.type here,
+                        // never trust the passed-in type, even though the picker is hidden while editing.
                         repository.updateItem(
                             existing.copy(
-                                name = name,
-                                username = username,
-                                password = password,
-                                url = url,
-                                note = note,
+                                name = input.name,
+                                username = input.username,
+                                password = input.password,
+                                url = input.url,
+                                note = input.note,
                                 updatedAt = now,
                             ),
                         )
                         existing.id
                     } else {
+                        // A Note item never carries login fields, even if the user typed into them
+                        // before switching the type picker to Note.
+                        val isNote = input.type == VaultItemType.NOTE
                         repository.addItem(
                             VaultItem(
                                 id = 0,
-                                name = name,
-                                username = username,
-                                password = password,
-                                url = url,
-                                note = note,
+                                type = input.type,
+                                name = input.name,
+                                username = if (isNote) "" else input.username,
+                                password = if (isNote) "" else input.password,
+                                url = if (isNote) "" else input.url,
+                                note = input.note,
                                 createdAt = now,
                                 updatedAt = now,
                             ),
