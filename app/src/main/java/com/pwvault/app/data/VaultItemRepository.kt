@@ -9,13 +9,18 @@ class VaultItemRepository(
 ) {
     private val dao get() = vaultFileManager.database().vaultItemDao()
 
-    fun observeItems(): Flow<List<VaultItem>> = dao.observeAll().map { list -> list.map { it.toDomain() } }
+    fun observeItems(): Flow<List<VaultItem>> = dao.observeAllWithTags().map { list -> list.map { it.toDomain() } }
 
-    suspend fun getItem(id: Long): VaultItem? = dao.getById(id)?.toDomain()
+    suspend fun getItem(id: Long): VaultItem? = dao.getByIdWithTags(id)?.toDomain()
 
     suspend fun addItem(item: VaultItem): Long = dao.insert(item.toEntity())
 
     suspend fun updateItem(item: VaultItem) = dao.update(item.toEntity())
 
     suspend fun deleteItem(item: VaultItem) = dao.delete(item.toEntity())
+
+    suspend fun setItemTags(
+        itemId: Long,
+        tagIds: Set<Long>,
+    ) = dao.setTagsForItem(itemId, tagIds.toList())
 }

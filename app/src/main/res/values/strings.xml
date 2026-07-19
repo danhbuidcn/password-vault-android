@@ -70,4 +70,17 @@
     <string name="vault_delete_confirm_message">\"%1$s\" will be permanently deleted.</string>
     <string name="copy_password_cd">Copy password</string>
     <string name="vault_password_copied_message">Password copied — clears in 30s</string>
+
+    <string name="manage_tags_cd">Manage tags</string>
+    <string name="tags_label">Tags</string>
+    <string name="tag_manager_title">Manage tags</string>
+    <string name="add_tag_placeholder">New tag name</string>
+    <string name="add_tag_button">Add</string>
+    <string name="rename_tag_cd">Rename tag</string>
+    <string name="rename_tag_title">Rename tag</string>
+    <string name="delete_tag_cd">Delete tag</string>
+    <string name="delete_tag_confirm_title">Delete this tag?</string>
+    <string name="delete_tag_confirm_message">\"%1$s\" will be removed from any item using it.</string>
+    <string name="error_tag_name_required">Tag name is required</string>
+    <string name="error_tag_name_duplicate">A tag with this name already exists</string>
 </resources>

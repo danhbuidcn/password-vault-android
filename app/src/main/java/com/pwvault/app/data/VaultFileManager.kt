@@ -2,12 +2,17 @@ package com.pwvault.app.data
 
 import android.content.Context
 import androidx.room.Room
+import androidx.room.RoomDatabase
+import androidx.sqlite.db.SupportSQLiteDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import net.zetetic.database.sqlcipher.SupportOpenHelperFactory
 import java.io.File
 
 private const val VAULT_FILE_NAME = "vault.db"
+
+/** Suggested tags seeded once when a vault is first created — see `glossary.md` (Tag). */
+private val DEFAULT_TAG_NAMES = listOf("Personal", "Bank", "Social Media")
 
 /**
  * Opens the encrypted Vault file through Room's SupportOpenHelperFactory (SQLCipher-backed), using the
@@ -47,7 +52,19 @@ class VaultFileManager(
                 Room
                     .databaseBuilder(context, VaultDatabase::class.java, vaultFile.absolutePath)
                     .openHelperFactory(SupportOpenHelperFactory(key))
-                    .build()
+                    // Schema is still evolving across features (7/8/9 each add tables/columns) and the
+                    // app hasn't been released yet — no real user data to preserve across a bump.
+                    .fallbackToDestructiveMigration(dropAllTables = true)
+                    .addCallback(
+                        object : RoomDatabase.Callback() {
+                            override fun onCreate(db: SupportSQLiteDatabase) {
+                                super.onCreate(db)
+                                DEFAULT_TAG_NAMES.forEach { name ->
+                                    db.execSQL("INSERT INTO tags (name) VALUES (?)", arrayOf(name))
+                                }
+                            }
+                        },
+                    ).build()
             runCatching {
                 // Room opens the connection lazily — force it now so a wrong key fails here.
                 db.vaultItemDao().count()

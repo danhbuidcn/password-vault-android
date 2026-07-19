@@ -1,5 +1,6 @@
 package com.pwvault.app.di
 
+import com.pwvault.app.data.TagRepository
 import com.pwvault.app.data.VaultFileManager
 import com.pwvault.app.data.VaultItemRepository
 import dagger.Module
@@ -15,4 +16,8 @@ object DataModule {
     @Singleton
     fun provideVaultItemRepository(vaultFileManager: VaultFileManager): VaultItemRepository =
         VaultItemRepository(vaultFileManager)
+
+    @Provides
+    @Singleton
+    fun provideTagRepository(vaultFileManager: VaultFileManager): TagRepository = TagRepository(vaultFileManager)
 }

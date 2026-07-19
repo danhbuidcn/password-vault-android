@@ -14,7 +14,7 @@
 | 5 | Vault Item CRUD — loại Login (thêm/sửa/xóa/danh sách) | ✅ Done | [feature-05-vault-item-crud-plan.md](feature-05-vault-item-crud-plan.md) |
 | 5b | UX polish: không xóa field khi lỗi, tự ẩn lỗi khi gõ lại, auto-focus (SetupScreen/UnlockScreen/PinUnlockScreen/PinSetupDialog) | ⏳ Pending | — |
 | 6 | Tìm kiếm Vault Item | ✅ Done | [feature-06-search-plan.md](feature-06-search-plan.md) |
-| 7 | Quản lý Tag (CRUD + gắn nhiều tag cho 1 item) | ⏳ Pending | — |
+| 7 | Quản lý Tag (CRUD + gắn nhiều tag cho 1 item) | ✅ Done | [feature-07-tag-plan.md](feature-07-tag-plan.md) |
 | 8 | Custom Field (trường tùy biến free-form theo từng item) | ⏳ Pending | — |
 | 9 | Vault Item loại Note | ⏳ Pending | — |
 | 10 | Sinh mật khẩu ngẫu nhiên + lưu template tái dùng | ⏳ Pending | — |
@@ -23,6 +23,7 @@
 | 13 | Auto-backup nền (ghi mỗi khi đổi Vault Item, atomic, rotate 5 bản) + nhắc export thủ công định kỳ (WorkManager) | ⏳ Pending | — |
 | 14 | Cảnh báo mật khẩu yếu/trùng lặp | ⏳ Pending | — |
 | 15 | Màn hình Settings (tham số bảo mật, theme, phương thức unlock) | ⏳ Pending | — |
+| 16 | UI/UX redesign (visual: Unlock/List/Detail theo ảnh tham khảo + UX: góp ý tương tác gộp dần, vd password generator 8 ký tự) | ⏳ Pending | [feature-16-ui-ux-redesign-plan.md](feature-16-ui-ux-redesign-plan.md) |
 
 ## Ghi chú phụ thuộc
 
@@ -33,6 +34,7 @@
 - 12 → 13: rotate backup cần cơ chế export `.pwvbackup` đã có trước.
 - Toàn bộ: 14 cần dữ liệu Vault Item thật (từ 5) để so sánh trùng lặp/độ yếu.
 - 5b không nằm trong chain phụ thuộc 6-15 — làm ngay sau khi Feature 5 xong (guard/review/verify/commit) là được, không cần chờ các mục sau. Vault Item form của Feature 5 (note dạng text area, nút gợi ý mật khẩu, auto-focus, tự ẩn lỗi tên) đã làm trực tiếp trong Feature 5, không tính vào 5b.
+- 16 không phải phụ thuộc kỹ thuật — là quyết định thứ tự làm việc của người dùng (2026-07-19): chỉ triển khai sau khi tất cả 1-15 đã xong, để tránh redesign UI rồi lại phải sửa lại khi các tính năng sau (Tag, Custom Field, Note, Settings...) thêm field/màn hình mới.
 
 ## Quy ước triển khai từng mục
 

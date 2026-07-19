@@ -1,6 +1,8 @@
 package com.pwvault.app.ui.vault
 
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -9,6 +11,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -34,6 +37,7 @@ fun VaultItemFormScreen(
     state: VaultUiState.ItemForm,
     onSave: (name: String, username: String, password: String, url: String, note: String) -> Unit,
     onCancel: () -> Unit,
+    onToggleTag: (Long) -> Unit,
 ) {
     var name by remember { mutableStateOf(state.initial?.name.orEmpty()) }
     var username by remember { mutableStateOf(state.initial?.username.orEmpty()) }
@@ -108,6 +112,24 @@ fun VaultItemFormScreen(
             minLines = 4,
             modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
         )
+        if (state.availableTags.isNotEmpty()) {
+            Text(
+                text = stringResource(R.string.tags_label),
+                style = MaterialTheme.typography.labelLarge,
+                modifier = Modifier.padding(top = 16.dp),
+            )
+            Row(modifier = Modifier.horizontalScroll(rememberScrollState()).padding(top = 8.dp)) {
+                state.availableTags.forEach { tag ->
+                    FilterChip(
+                        selected = tag.id in state.selectedTagIds,
+                        onClick = { onToggleTag(tag.id) },
+                        label = { Text(tag.name) },
+                        leadingIcon = { TagColorDot(tag.id) },
+                        modifier = Modifier.padding(end = 8.dp),
+                    )
+                }
+            }
+        }
         Button(
             onClick = { onSave(name, username, password, url, note) },
             enabled = !state.busy,

@@ -1,5 +1,6 @@
 package com.pwvault.app.ui.vault
 
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -95,6 +96,14 @@ fun VaultItemDetailScreen(
                 style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.padding(top = 16.dp),
             )
+        }
+
+        if (state.item.tags.isNotEmpty()) {
+            Row(modifier = Modifier.horizontalScroll(rememberScrollState()).padding(top = 16.dp)) {
+                state.item.tags.forEach { tag ->
+                    TagChip(tag = tag, modifier = Modifier.padding(end = 8.dp))
+                }
+            }
         }
 
         Button(onClick = onEdit, modifier = Modifier.fillMaxWidth().padding(top = 24.dp)) {

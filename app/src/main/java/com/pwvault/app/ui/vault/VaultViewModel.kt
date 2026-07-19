@@ -2,7 +2,9 @@ package com.pwvault.app.ui.vault
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.pwvault.app.data.TagRepository
 import com.pwvault.app.data.VaultItemRepository
+import com.pwvault.app.domain.Tag
 import com.pwvault.app.domain.VaultItem
 import com.pwvault.app.security.ClipboardClearer
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -30,6 +32,8 @@ sealed interface VaultUiState {
     data class ItemForm(
         val editingId: Long? = null,
         val initial: VaultItem? = null,
+        val availableTags: List<Tag> = emptyList(),
+        val selectedTagIds: Set<Long> = emptySet(),
         val error: VaultFormError? = null,
         val busy: Boolean = false,
     ) : VaultUiState
@@ -44,14 +48,17 @@ class VaultViewModel
     @Inject
     constructor(
         private val repository: VaultItemRepository,
+        private val tagRepository: TagRepository,
         private val clipboardClearer: ClipboardClearer,
     ) : ViewModel() {
         private val _state = MutableStateFlow<VaultUiState>(VaultUiState.ItemList())
         val state: StateFlow<VaultUiState> = _state.asStateFlow()
 
         private var latestItems: List<VaultItem> = emptyList()
+        private var availableTags: List<Tag> = emptyList()
         private var searchQuery: String = ""
         private var observeJob: Job? = null
+        private var tagsObserveJob: Job? = null
 
         /**
          * Starts (re)observing the vault — call once per unlock session (e.g. from a
@@ -69,6 +76,11 @@ class VaultViewModel
                             _state.value = currentListState()
                         }
                     }
+                }
+            tagsObserveJob?.cancel()
+            tagsObserveJob =
+                viewModelScope.launch {
+                    tagRepository.observeTags().collect { tags -> availableTags = tags }
                 }
         }
 
@@ -91,11 +103,24 @@ class VaultViewModel
         }
 
         fun openAddForm() {
-            _state.value = VaultUiState.ItemForm()
+            _state.value = VaultUiState.ItemForm(availableTags = availableTags)
         }
 
         fun openEditForm(item: VaultItem) {
-            _state.value = VaultUiState.ItemForm(editingId = item.id, initial = item)
+            _state.value =
+                VaultUiState.ItemForm(
+                    editingId = item.id,
+                    initial = item,
+                    availableTags = availableTags,
+                    selectedTagIds = item.tags.map { it.id }.toSet(),
+                )
+        }
+
+        fun toggleTagSelected(tagId: Long) {
+            val form = _state.value as? VaultUiState.ItemForm ?: return
+            val selected =
+                if (tagId in form.selectedTagIds) form.selectedTagIds - tagId else form.selectedTagIds + tagId
+            _state.value = form.copy(selectedTagIds = selected)
         }
 
         fun openDetail(item: VaultItem) {
@@ -142,31 +167,34 @@ class VaultViewModel
             viewModelScope.launch {
                 val now = System.currentTimeMillis()
                 val existing = form.initial
-                if (existing != null) {
-                    repository.updateItem(
-                        existing.copy(
-                            name = name,
-                            username = username,
-                            password = password,
-                            url = url,
-                            note = note,
-                            updatedAt = now,
-                        ),
-                    )
-                } else {
-                    repository.addItem(
-                        VaultItem(
-                            id = 0,
-                            name = name,
-                            username = username,
-                            password = password,
-                            url = url,
-                            note = note,
-                            createdAt = now,
-                            updatedAt = now,
-                        ),
-                    )
-                }
+                val itemId =
+                    if (existing != null) {
+                        repository.updateItem(
+                            existing.copy(
+                                name = name,
+                                username = username,
+                                password = password,
+                                url = url,
+                                note = note,
+                                updatedAt = now,
+                            ),
+                        )
+                        existing.id
+                    } else {
+                        repository.addItem(
+                            VaultItem(
+                                id = 0,
+                                name = name,
+                                username = username,
+                                password = password,
+                                url = url,
+                                note = note,
+                                createdAt = now,
+                                updatedAt = now,
+                            ),
+                        )
+                    }
+                repository.setItemTags(itemId, form.selectedTagIds)
                 backToList()
             }
         }

@@ -19,6 +19,7 @@ import com.pwvault.app.ui.unlock.SetupScreen
 import com.pwvault.app.ui.unlock.UnlockScreen
 import com.pwvault.app.ui.unlock.UnlockUiState
 import com.pwvault.app.ui.unlock.UnlockViewModel
+import com.pwvault.app.ui.vault.TagViewModel
 import com.pwvault.app.ui.vault.VaultScreen
 import com.pwvault.app.ui.vault.VaultViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -30,6 +31,7 @@ private enum class BiometricOperation { UNLOCK, SETUP }
 class MainActivity : FragmentActivity() {
     private val unlockViewModel: UnlockViewModel by viewModels()
     private val vaultViewModel: VaultViewModel by viewModels()
+    private val tagViewModel: TagViewModel by viewModels()
     private lateinit var biometricPrompt: BiometricPrompt
     private lateinit var unlockPromptInfo: BiometricPrompt.PromptInfo
     private lateinit var setupPromptInfo: BiometricPrompt.PromptInfo
@@ -53,6 +55,7 @@ class MainActivity : FragmentActivity() {
                 PwVaultApp(
                     unlockViewModel = unlockViewModel,
                     vaultViewModel = vaultViewModel,
+                    tagViewModel = tagViewModel,
                     canSetupBiometric = canSetupBiometric,
                     onAuthenticateBiometricUnlock = ::triggerBiometricUnlock,
                     onSetupBiometric = ::triggerBiometricSetup,
@@ -142,6 +145,7 @@ class MainActivity : FragmentActivity() {
 private fun PwVaultApp(
     unlockViewModel: UnlockViewModel,
     vaultViewModel: VaultViewModel,
+    tagViewModel: TagViewModel,
     canSetupBiometric: Boolean,
     onAuthenticateBiometricUnlock: () -> Unit,
     onSetupBiometric: () -> Unit,
@@ -183,6 +187,7 @@ private fun PwVaultApp(
                 onSetupPin = unlockViewModel::setupPin,
                 onSetupBiometric = onSetupBiometric,
                 viewModel = vaultViewModel,
+                tagViewModel = tagViewModel,
             )
     }
 }
