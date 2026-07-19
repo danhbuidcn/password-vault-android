@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">PWVault</string>
+
+    <string name="setup_title">Thiết lập mật khẩu cho app</string>
+    <string name="setup_subtitle">Bạn sẽ dùng mật khẩu này để mở khóa PWVault mỗi lần.</string>
+    <string name="password_label">Mật khẩu</string>
+    <string name="confirm_password_label">Xác nhận mật khẩu</string>
+    <string name="setup_button">Tạo</string>
+    <string name="setup_button_busy">Đang tạo…</string>
+    <string name="error_password_mismatch">Mật khẩu xác nhận không khớp</string>
+    <string name="error_password_too_short">Mật khẩu cần tối thiểu %1$d ký tự</string>
+    <string name="error_create_failed">Không tạo được Vault, thử lại</string>
+
+    <string name="unlock_title">Nhập mật khẩu</string>
+    <string name="unlock_button">Mở khóa</string>
+    <string name="unlock_button_busy">Đang mở…</string>
+    <string name="error_wrong_password">Sai mật khẩu</string>
+
+    <string name="vault_placeholder">Vault đã mở khóa — danh sách item sắp có</string>
+
+    <string name="password_show_cd">Hiện mật khẩu</string>
+    <string name="password_hide_cd">Ẩn mật khẩu</string>
+</resources>

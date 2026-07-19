@@ -113,6 +113,7 @@
 ## Related Documents
 
 - [architecture.md](architecture.md) — Kotlin + Jetpack Compose + Room/SQLCipher, minSdk 26 (chốt 2026-07-19).
+- [flow.md](flow.md) — cơ chế hoạt động: vòng đời app, luồng mở khóa/khóa, luồng dữ liệu.
 - [glossary.md](glossary.md)
 - [manifest.md](manifest.md) — stack + load map cho `/code-plan`, `/code-guard`.
 - [functional-spec.md](functional-spec.md) — tài liệu nguồn.

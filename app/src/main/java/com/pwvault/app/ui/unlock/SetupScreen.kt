@@ -27,15 +27,16 @@ import com.pwvault.app.ui.theme.PwVaultTheme
 
 /**
  * Compose's TextField state is String-based (no CharArray input API) — the password briefly
- * exists as an immutable String here before being copied into a CharArray for [onUnlock].
+ * exists as an immutable String here before being copied into CharArrays for [onCreateVault].
  */
 @Composable
-fun UnlockScreen(
+fun SetupScreen(
     error: UnlockError?,
     busy: Boolean,
-    onUnlock: (password: CharArray) -> Unit,
+    onCreateVault: (password: CharArray, confirm: CharArray) -> Unit,
 ) {
     var password by remember { mutableStateOf("") }
+    var confirm by remember { mutableStateOf("") }
 
     Column(
         modifier = Modifier.fillMaxSize().padding(24.dp),
@@ -49,14 +50,26 @@ fun UnlockScreen(
             modifier = Modifier.size(48.dp),
         )
         Text(
-            text = stringResource(R.string.unlock_title),
+            text = stringResource(R.string.setup_title),
             style = MaterialTheme.typography.headlineSmall,
-            modifier = Modifier.padding(top = 16.dp, bottom = 24.dp),
+            modifier = Modifier.padding(top = 16.dp),
+        )
+        Text(
+            text = stringResource(R.string.setup_subtitle),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(top = 4.dp, bottom = 24.dp),
         )
         PasswordField(
             value = password,
             onValueChange = { password = it },
             label = stringResource(R.string.password_label),
+        )
+        PasswordField(
+            value = confirm,
+            onValueChange = { confirm = it },
+            label = stringResource(R.string.confirm_password_label),
+            modifier = Modifier.padding(top = 8.dp),
         )
         if (error != null) {
             Text(
@@ -67,21 +80,22 @@ fun UnlockScreen(
         }
         Button(
             onClick = {
-                onUnlock(password.toCharArray())
+                onCreateVault(password.toCharArray(), confirm.toCharArray())
                 password = ""
+                confirm = ""
             },
             enabled = !busy,
             modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
         ) {
-            Text(stringResource(if (busy) R.string.unlock_button_busy else R.string.unlock_button))
+            Text(stringResource(if (busy) R.string.setup_button_busy else R.string.setup_button))
         }
     }
 }
 
 @Preview(showBackground = true)
 @Composable
-private fun UnlockScreenPreview() {
+private fun SetupScreenPreview() {
     PwVaultTheme {
-        UnlockScreen(error = null, busy = false, onUnlock = {})
+        SetupScreen(error = null, busy = false, onCreateVault = { _, _ -> })
     }
 }

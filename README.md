@@ -94,6 +94,7 @@ Xem [docs/architecture.md](docs/architecture.md#project-structure).
 - [docs/overview.md](docs/overview.md) — tổng quan nghiệp vụ
 - [docs/functional-spec.md](docs/functional-spec.md) — spec nguồn
 - [docs/architecture.md](docs/architecture.md) — kiến trúc & quyết định kỹ thuật
+- [docs/flow.md](docs/flow.md) — cơ chế hoạt động: vòng đời app, luồng mở khóa/khóa, luồng dữ liệu (CRUD, backup, import)
 - [docs/glossary.md](docs/glossary.md) — thuật ngữ
 - [docs/manifest.md](docs/manifest.md) — stack + rule load map cho `/code-plan`, `/code-guard`
 - [docs/plans/](docs/plans/) — implementation plan theo từng task

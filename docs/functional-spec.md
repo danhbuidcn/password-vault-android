@@ -24,8 +24,8 @@ App Android quản lý mật khẩu offline, lưu file mã hóa cục bộ, khô
 - Mở khóa nhanh tùy chọn: vân tay/khuôn mặt **hoặc** mã PIN số.
 - PIN số là fallback bắt buộc phải có cho mọi thiết bị (kể cả không có cảm biến sinh trắc học).
 - Sinh trắc học/PIN chỉ mở khóa UI, khóa mã hóa thật vẫn dựa trên Master Password (lưu trong Android Keystore, không lưu plaintext).
-- Tự động khóa sau X phút không thao tác.
-- Giới hạn số lần nhập sai (chống brute-force), khóa tạm thời tăng dần thời gian chờ.
+- Tự động khóa sau 1 phút không thao tác (mặc định) ✅, cho phép cấu hình 30 giây/1 phút/5 phút/15 phút/Không bao giờ.
+- Giới hạn 5 lần nhập sai ✅ (chống brute-force), sau đó khóa tạm thời tăng dần: 30 giây, nhân đôi mỗi lần sai tiếp theo, tối đa 30 phút ✅.
 
 ## 5. Quản lý mật khẩu
 - Thêm / sửa / xóa mục mật khẩu.
@@ -33,7 +33,7 @@ App Android quản lý mật khẩu offline, lưu file mã hóa cục bộ, khô
 - Tìm kiếm theo tên/username.
 - Phân nhóm/thẻ (tag) để sắp xếp.
 - Sinh mật khẩu ngẫu nhiên (độ dài, ký tự tùy chỉnh).
-- Copy nhanh password vào clipboard, tự xóa clipboard sau X giây.
+- Copy nhanh password vào clipboard, tự xóa clipboard sau 30 giây ✅.
 - Ẩn/hiện password khi xem.
 
 ## 6. Import
@@ -48,12 +48,12 @@ App Android quản lý mật khẩu offline, lưu file mã hóa cục bộ, khô
 - Export CSV/Excel plaintext là tùy chọn **phụ**, không phải mặc định:
   - Yêu cầu xác nhận cảnh báo 2 bước trước khi xuất.
   - File CSV/Excel plaintext bắt buộc được nén kèm mật khẩu (zip + password) trước khi ghi ra bộ nhớ ngoài.
-  - File tạm lưu ở thư mục riêng, tự động xóa sau X phút hoặc khi thoát app.
+  - File tạm lưu ở thư mục riêng, tự động xóa sau 5 phút ✅ hoặc khi thoát app.
 - Yêu cầu xác thực lại (Master Password) trước mọi thao tác export.
 - Backup định kỳ (tự động nhắc, không tự động gửi đi đâu):
-  - App nhắc người dùng backup nếu quá N ngày chưa export bản mới.
+  - App nhắc người dùng backup nếu quá 30 ngày ✅ chưa export bản mới.
   - Người dùng chọn nơi lưu qua Storage Access Framework (SD card, USB OTG, bộ nhớ ngoài) — không mặc định lưu cloud.
-  - Giữ tối đa K bản backup gần nhất (rotate), tránh ghi đè mất bản cũ.
+  - Giữ tối đa K bản backup gần nhất (rotate), tránh ghi đè mất bản cũ. ❓ (chưa có giá trị K, cần bạn chốt)
 - Import lại từ `.pwvbackup` để khôi phục/chuyển máy: chỉ cần Master Password, không cần map cột như CSV.
 
 ## 8. Bảo mật bổ sung

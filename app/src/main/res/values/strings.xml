@@ -1,4 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">PWVault</string>
+
+    <string name="setup_title">Set an app password</string>
+    <string name="setup_subtitle">You\'ll use this password to unlock PWVault every time.</string>
+    <string name="password_label">Password</string>
+    <string name="confirm_password_label">Confirm password</string>
+    <string name="setup_button">Create</string>
+    <string name="setup_button_busy">Creating…</string>
+    <string name="error_password_mismatch">Passwords don\'t match</string>
+    <string name="error_password_too_short">Password must be at least %1$d characters</string>
+    <string name="error_create_failed">Couldn\'t create the vault, please try again</string>
+
+    <string name="unlock_title">Enter your password</string>
+    <string name="unlock_button">Unlock</string>
+    <string name="unlock_button_busy">Unlocking…</string>
+    <string name="error_wrong_password">Wrong password</string>
+
+    <string name="vault_placeholder">Vault unlocked — item list coming soon</string>
+
+    <string name="password_show_cd">Show password</string>
+    <string name="password_hide_cd">Hide password</string>
 </resources>

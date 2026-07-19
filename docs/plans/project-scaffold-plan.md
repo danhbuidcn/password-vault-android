@@ -70,6 +70,10 @@
 
 ---
 
+## Status
+
+✅ (2026-07-19) Hoàn tất và verify thật: build xanh (`ktlintCheck detekt lint assembleDebug`), cài + chạy thành công trên thiết bị thật (Samsung SM-A556E qua USB) — thấy đúng màn hình placeholder Unlock. `/code-guard` + `/code-review` đã chạy, 2 finding đã sửa (`.gitignore` thiếu `app/build/`, dependency `navigation-compose`/`hilt-navigation-compose` thừa). File cài đặt: `dist/pwvault-android-0.1.0-20260719-debug.apk`.
+
 ## Risks
 
 - Máy Ubuntu hiện **chưa có JDK/Android SDK/adb/scrcpy** — bước 1–2 tốn thời gian tải (vài trăm MB–GB), có thể phát sinh lỗi cài đặt tùy Ubuntu 26.04.
