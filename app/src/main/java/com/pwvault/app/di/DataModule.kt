@@ -1,5 +1,6 @@
 package com.pwvault.app.di
 
+import com.pwvault.app.data.PasswordTemplateRepository
 import com.pwvault.app.data.TagRepository
 import com.pwvault.app.data.VaultFileManager
 import com.pwvault.app.data.VaultItemRepository
@@ -20,4 +21,9 @@ object DataModule {
     @Provides
     @Singleton
     fun provideTagRepository(vaultFileManager: VaultFileManager): TagRepository = TagRepository(vaultFileManager)
+
+    @Provides
+    @Singleton
+    fun providePasswordTemplateRepository(vaultFileManager: VaultFileManager): PasswordTemplateRepository =
+        PasswordTemplateRepository(vaultFileManager)
 }

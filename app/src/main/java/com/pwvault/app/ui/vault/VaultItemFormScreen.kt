@@ -34,7 +34,6 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.pwvault.app.R
-import com.pwvault.app.security.PasswordGenerator
 import com.pwvault.app.ui.unlock.PasswordField
 
 private class CustomFieldRow(
@@ -48,6 +47,7 @@ private class CustomFieldRow(
 @Composable
 fun VaultItemFormScreen(
     state: VaultUiState.ItemForm,
+    passwordTemplateViewModel: PasswordTemplateViewModel,
     onSave: (VaultItemFormInput) -> Unit,
     onCancel: () -> Unit,
     onToggleTag: (Long) -> Unit,
@@ -63,6 +63,7 @@ fun VaultItemFormScreen(
                 state.initial?.customFields?.forEach { add(CustomFieldRow(it.label, it.value)) }
             }
         }
+    var showGeneratorDialog by remember { mutableStateOf(false) }
 
     // Only NAME_REQUIRED can be shown here, and it's derivable straight from the current text —
     // so the message disappears the moment the user types a name, no ViewModel round-trip needed.
@@ -113,7 +114,7 @@ fun VaultItemFormScreen(
             label = stringResource(R.string.password_label),
             modifier = Modifier.padding(top = 8.dp),
         )
-        TextButton(onClick = { password = PasswordGenerator.generate() }) {
+        TextButton(onClick = { showGeneratorDialog = true }) {
             Icon(Icons.Filled.Refresh, contentDescription = null, modifier = Modifier.padding(end = 4.dp))
             Text(stringResource(R.string.generate_password_button))
         }
@@ -200,5 +201,16 @@ fun VaultItemFormScreen(
         TextButton(onClick = onCancel, modifier = Modifier.fillMaxWidth()) {
             Text(stringResource(R.string.vault_cancel_button))
         }
+    }
+
+    if (showGeneratorDialog) {
+        PasswordGeneratorDialog(
+            viewModel = passwordTemplateViewModel,
+            onUsePassword = {
+                password = it
+                showGeneratorDialog = false
+            },
+            onDismiss = { showGeneratorDialog = false },
+        )
     }
 }

@@ -91,4 +91,20 @@
     <string name="remove_custom_field_cd">Remove field</string>
     <string name="custom_field_show_value_cd">Show value</string>
     <string name="custom_field_hide_value_cd">Hide value</string>
+
+    <string name="password_generator_title">Password generator</string>
+    <string name="password_generator_length_label">Length: %1$d</string>
+    <string name="password_generator_use_upper">Uppercase (A-Z)</string>
+    <string name="password_generator_use_lower">Lowercase (a-z)</string>
+    <string name="password_generator_use_digits">Digits (0-9)</string>
+    <string name="password_generator_use_special">Special characters</string>
+    <string name="password_generator_regenerate_button">Regenerate</string>
+    <string name="password_generator_use_button">Use this password</string>
+    <string name="password_template_name_placeholder">Template name</string>
+    <string name="password_template_save_button">Save as template</string>
+    <string name="password_templates_label">Saved templates</string>
+    <string name="delete_password_template_cd">Delete template</string>
+    <string name="error_password_generator_no_class_selected">Select at least one character type</string>
+    <string name="error_password_template_name_required">Template name is required</string>
+    <string name="error_password_template_name_duplicate">A template with this name already exists</string>
 </resources>

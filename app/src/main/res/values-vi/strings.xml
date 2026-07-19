@@ -91,4 +91,20 @@
     <string name="remove_custom_field_cd">Xóa trường</string>
     <string name="custom_field_show_value_cd">Hiện giá trị</string>
     <string name="custom_field_hide_value_cd">Ẩn giá trị</string>
+
+    <string name="password_generator_title">Tạo mật khẩu</string>
+    <string name="password_generator_length_label">Độ dài: %1$d</string>
+    <string name="password_generator_use_upper">Chữ hoa (A-Z)</string>
+    <string name="password_generator_use_lower">Chữ thường (a-z)</string>
+    <string name="password_generator_use_digits">Số (0-9)</string>
+    <string name="password_generator_use_special">Ký tự đặc biệt</string>
+    <string name="password_generator_regenerate_button">Tạo lại</string>
+    <string name="password_generator_use_button">Dùng mật khẩu này</string>
+    <string name="password_template_name_placeholder">Tên template</string>
+    <string name="password_template_save_button">Lưu thành template</string>
+    <string name="password_templates_label">Template đã lưu</string>
+    <string name="delete_password_template_cd">Xóa template</string>
+    <string name="error_password_generator_no_class_selected">Chọn ít nhất 1 loại ký tự</string>
+    <string name="error_password_template_name_required">Cần nhập tên template</string>
+    <string name="error_password_template_name_duplicate">Đã có template trùng tên này</string>
 </resources>

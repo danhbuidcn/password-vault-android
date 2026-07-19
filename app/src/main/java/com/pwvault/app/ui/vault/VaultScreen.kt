@@ -53,6 +53,7 @@ fun VaultScreen(
     onSetupBiometric: () -> Unit,
     viewModel: VaultViewModel,
     tagViewModel: TagViewModel,
+    passwordTemplateViewModel: PasswordTemplateViewModel,
 ) {
     var showPinDialog by remember { mutableStateOf(false) }
     var showTagManager by remember { mutableStateOf(false) }
@@ -100,6 +101,7 @@ fun VaultScreen(
         is VaultUiState.ItemForm ->
             VaultItemFormScreen(
                 state = vaultState,
+                passwordTemplateViewModel = passwordTemplateViewModel,
                 onSave = viewModel::save,
                 onCancel = viewModel::backToList,
                 onToggleTag = viewModel::toggleTagSelected,

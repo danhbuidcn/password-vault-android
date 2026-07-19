@@ -19,6 +19,7 @@ import com.pwvault.app.ui.unlock.SetupScreen
 import com.pwvault.app.ui.unlock.UnlockScreen
 import com.pwvault.app.ui.unlock.UnlockUiState
 import com.pwvault.app.ui.unlock.UnlockViewModel
+import com.pwvault.app.ui.vault.PasswordTemplateViewModel
 import com.pwvault.app.ui.vault.TagViewModel
 import com.pwvault.app.ui.vault.VaultScreen
 import com.pwvault.app.ui.vault.VaultViewModel
@@ -32,6 +33,7 @@ class MainActivity : FragmentActivity() {
     private val unlockViewModel: UnlockViewModel by viewModels()
     private val vaultViewModel: VaultViewModel by viewModels()
     private val tagViewModel: TagViewModel by viewModels()
+    private val passwordTemplateViewModel: PasswordTemplateViewModel by viewModels()
     private lateinit var biometricPrompt: BiometricPrompt
     private lateinit var unlockPromptInfo: BiometricPrompt.PromptInfo
     private lateinit var setupPromptInfo: BiometricPrompt.PromptInfo
@@ -56,6 +58,7 @@ class MainActivity : FragmentActivity() {
                     unlockViewModel = unlockViewModel,
                     vaultViewModel = vaultViewModel,
                     tagViewModel = tagViewModel,
+                    passwordTemplateViewModel = passwordTemplateViewModel,
                     canSetupBiometric = canSetupBiometric,
                     onAuthenticateBiometricUnlock = ::triggerBiometricUnlock,
                     onSetupBiometric = ::triggerBiometricSetup,
@@ -146,6 +149,7 @@ private fun PwVaultApp(
     unlockViewModel: UnlockViewModel,
     vaultViewModel: VaultViewModel,
     tagViewModel: TagViewModel,
+    passwordTemplateViewModel: PasswordTemplateViewModel,
     canSetupBiometric: Boolean,
     onAuthenticateBiometricUnlock: () -> Unit,
     onSetupBiometric: () -> Unit,
@@ -188,6 +192,7 @@ private fun PwVaultApp(
                 onSetupBiometric = onSetupBiometric,
                 viewModel = vaultViewModel,
                 tagViewModel = tagViewModel,
+                passwordTemplateViewModel = passwordTemplateViewModel,
             )
     }
 }
