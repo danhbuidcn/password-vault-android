@@ -3,6 +3,9 @@ package com.pwvault.app.di
 import android.content.Context
 import com.pwvault.app.data.VaultFileManager
 import com.pwvault.app.security.KeyDerivation
+import com.pwvault.app.security.PinCredentialStore
+import com.pwvault.app.security.PinKeystoreKeyProvider
+import com.pwvault.app.security.PinManager
 import com.pwvault.app.security.VaultMetadataStore
 import dagger.Module
 import dagger.Provides
@@ -29,4 +32,22 @@ object SecurityModule {
     fun provideVaultFileManager(
         @ApplicationContext context: Context,
     ): VaultFileManager = VaultFileManager(context)
+
+    @Provides
+    @Singleton
+    fun providePinKeystoreKeyProvider(): PinKeystoreKeyProvider = PinKeystoreKeyProvider()
+
+    @Provides
+    @Singleton
+    fun providePinCredentialStore(
+        @ApplicationContext context: Context,
+    ): PinCredentialStore = PinCredentialStore(context)
+
+    @Provides
+    @Singleton
+    fun providePinManager(
+        keyDerivation: KeyDerivation,
+        keystoreKeyProvider: PinKeystoreKeyProvider,
+        credentialStore: PinCredentialStore,
+    ): PinManager = PinManager(keyDerivation, keystoreKeyProvider, credentialStore)
 }

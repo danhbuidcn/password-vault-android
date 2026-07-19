@@ -8,6 +8,7 @@ import androidx.activity.viewModels
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import com.pwvault.app.ui.theme.PwVaultTheme
+import com.pwvault.app.ui.unlock.PinUnlockScreen
 import com.pwvault.app.ui.unlock.SetupScreen
 import com.pwvault.app.ui.unlock.UnlockScreen
 import com.pwvault.app.ui.unlock.UnlockUiState
@@ -40,7 +41,20 @@ class MainActivity : ComponentActivity() {
                             busy = state.busy,
                             onUnlock = unlockViewModel::unlock,
                         )
-                    is UnlockUiState.Unlocked -> VaultScreen()
+                    is UnlockUiState.PinEntry ->
+                        PinUnlockScreen(
+                            error = state.error,
+                            busy = state.busy,
+                            onUnlock = unlockViewModel::unlockWithPin,
+                            onUseMasterPassword = unlockViewModel::switchToMasterPassword,
+                        )
+                    is UnlockUiState.Unlocked ->
+                        VaultScreen(
+                            hasPin = state.hasPin,
+                            pinSetupError = state.pinSetupError,
+                            pinSetupBusy = state.pinSetupBusy,
+                            onSetupPin = unlockViewModel::setupPin,
+                        )
                 }
             }
         }

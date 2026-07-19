@@ -10,6 +10,8 @@ style:
     active: false # revisit once real business logic (crypto params, timeouts) lands
   UnusedPrivateMember:
     ignoreAnnotated: ["Preview"] # @Preview composables are invoked by tooling, not app code
+  ReturnCount:
+    max: 5 # guard-clause validation (setup/verify flows) reads better than nested single-return
 
 comments:
   UndocumentedPublicClass:

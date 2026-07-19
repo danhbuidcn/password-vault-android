@@ -18,7 +18,23 @@
     <string name="error_wrong_password">Wrong password</string>
 
     <string name="vault_placeholder">Vault unlocked — item list coming soon</string>
+    <string name="setup_pin_button">Set up PIN unlock</string>
 
     <string name="password_show_cd">Show password</string>
     <string name="password_hide_cd">Hide password</string>
+
+    <string name="pin_setup_title">Set a PIN</string>
+    <string name="pin_setup_subtitle">Use this PIN for quick unlock instead of typing your full password every time.</string>
+    <string name="pin_label">PIN</string>
+    <string name="confirm_pin_label">Confirm PIN</string>
+    <string name="pin_setup_save">Save</string>
+    <string name="pin_setup_cancel">Cancel</string>
+    <string name="error_pin_mismatch">PINs don\'t match</string>
+    <string name="error_pin_too_short">PIN must be at least %1$d digits</string>
+    <string name="error_pin_not_numeric">PIN can only contain digits</string>
+
+    <string name="pin_unlock_title">Enter your PIN</string>
+    <string name="pin_unlock_button">Unlock</string>
+    <string name="use_master_password_instead">Use password instead</string>
+    <string name="error_wrong_pin">Wrong PIN</string>
 </resources>

@@ -11,4 +11,8 @@ fun UnlockError.message(): String =
         UnlockError.PASSWORD_TOO_SHORT -> stringResource(R.string.error_password_too_short, MIN_PASSWORD_LENGTH)
         UnlockError.CREATE_FAILED -> stringResource(R.string.error_create_failed)
         UnlockError.WRONG_PASSWORD -> stringResource(R.string.error_wrong_password)
+        UnlockError.PIN_MISMATCH -> stringResource(R.string.error_pin_mismatch)
+        UnlockError.PIN_TOO_SHORT -> stringResource(R.string.error_pin_too_short, MIN_PIN_LENGTH)
+        UnlockError.PIN_NOT_NUMERIC -> stringResource(R.string.error_pin_not_numeric)
+        UnlockError.WRONG_PIN -> stringResource(R.string.error_wrong_pin)
     }

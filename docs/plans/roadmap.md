@@ -8,7 +8,7 @@
 |---|---|---|---|
 | 0 | Project scaffold (Gradle/Compose/Room+SQLCipher/Hilt/ktlint/detekt) | ✅ Done | [project-scaffold-plan.md](project-scaffold-plan.md) |
 | 1 | Master Password first-run setup + tạo Vault (SQLCipher) + unlock cơ bản | ✅ Done | [feature-01-master-password-unlock-plan.md](feature-01-master-password-unlock-plan.md) |
-| 2 | PIN unlock (fallback bắt buộc mọi thiết bị) | ⏳ Pending | — |
+| 2 | PIN unlock (fallback bắt buộc mọi thiết bị) | ✅ Done | [feature-02-pin-unlock-plan.md](feature-02-pin-unlock-plan.md) |
 | 3 | Sinh trắc học unlock (BiometricPrompt, tùy chọn) | ⏳ Pending | — |
 | 4 | Tự động khóa theo thời gian + giới hạn số lần nhập sai (lockout tăng dần) | ⏳ Pending | — |
 | 5 | Vault Item CRUD — loại Login (thêm/sửa/xóa/danh sách) | ⏳ Pending | — |
@@ -19,7 +19,7 @@
 | 10 | Sinh mật khẩu ngẫu nhiên + lưu template tái dùng | ⏳ Pending | — |
 | 11 | Import CSV/Excel (map cột, cảnh báo trùng lặp) | ⏳ Pending | — |
 | 12 | Export — mã hóa `.pwvbackup` + plaintext CSV/Excel (cảnh báo 2 bước, nén có mật khẩu) | ⏳ Pending | — |
-| 13 | Nhắc backup định kỳ + rotate giữ K bản gần nhất (WorkManager) | ⏳ Pending | — |
+| 13 | Auto-backup nền (ghi mỗi khi đổi Vault Item, atomic, rotate 5 bản) + nhắc export thủ công định kỳ (WorkManager) | ⏳ Pending | — |
 | 14 | Cảnh báo mật khẩu yếu/trùng lặp | ⏳ Pending | — |
 | 15 | Màn hình Settings (tham số bảo mật, theme, phương thức unlock) | ⏳ Pending | — |
 

@@ -18,7 +18,23 @@
     <string name="error_wrong_password">Sai mật khẩu</string>
 
     <string name="vault_placeholder">Vault đã mở khóa — danh sách item sắp có</string>
+    <string name="setup_pin_button">Thiết lập mở khóa bằng PIN</string>
 
     <string name="password_show_cd">Hiện mật khẩu</string>
     <string name="password_hide_cd">Ẩn mật khẩu</string>
+
+    <string name="pin_setup_title">Đặt mã PIN</string>
+    <string name="pin_setup_subtitle">Dùng mã PIN này để mở khóa nhanh, khỏi phải gõ đầy đủ mật khẩu mỗi lần.</string>
+    <string name="pin_label">Mã PIN</string>
+    <string name="confirm_pin_label">Xác nhận mã PIN</string>
+    <string name="pin_setup_save">Lưu</string>
+    <string name="pin_setup_cancel">Hủy</string>
+    <string name="error_pin_mismatch">Mã PIN xác nhận không khớp</string>
+    <string name="error_pin_too_short">Mã PIN cần tối thiểu %1$d số</string>
+    <string name="error_pin_not_numeric">Mã PIN chỉ được chứa chữ số</string>
+
+    <string name="pin_unlock_title">Nhập mã PIN</string>
+    <string name="pin_unlock_button">Mở khóa</string>
+    <string name="use_master_password_instead">Dùng mật khẩu thay thế</string>
+    <string name="error_wrong_pin">Sai mã PIN</string>
 </resources>
