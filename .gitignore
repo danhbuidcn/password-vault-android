@@ -1,0 +1,20 @@
+*.iml
+.gradle/
+/local.properties
+/.idea/
+.DS_Store
+build/
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+*.hprof
+
+# Keystores / signing (never commit real signing material)
+*.jks
+*.keystore
+!debug.keystore
+
+# Build output APKs (published separately, not committed)
+*.apk
+*.aab
