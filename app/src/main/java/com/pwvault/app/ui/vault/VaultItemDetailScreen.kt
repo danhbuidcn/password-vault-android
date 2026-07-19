@@ -23,11 +23,13 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.pwvault.app.R
+import com.pwvault.app.domain.CustomField
 
 @Composable
 fun VaultItemDetailScreen(
@@ -98,6 +100,10 @@ fun VaultItemDetailScreen(
             )
         }
 
+        if (state.item.customFields.isNotEmpty()) {
+            CustomFieldsSection(customFields = state.item.customFields)
+        }
+
         if (state.item.tags.isNotEmpty()) {
             Row(modifier = Modifier.horizontalScroll(rememberScrollState()).padding(top = 16.dp)) {
                 state.item.tags.forEach { tag ->
@@ -117,5 +123,37 @@ fun VaultItemDetailScreen(
         }
 
         SnackbarHost(hostState = snackbarHostState)
+    }
+}
+
+@Composable
+private fun CustomFieldsSection(customFields: List<CustomField>) {
+    val visibleFieldIds = remember { mutableStateMapOf<Long, Boolean>() }
+    Column(modifier = Modifier.padding(top = 16.dp)) {
+        customFields.forEach { field ->
+            val visible = visibleFieldIds[field.id] == true
+            Row(modifier = Modifier.fillMaxWidth().padding(top = 8.dp)) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(text = field.label, style = MaterialTheme.typography.labelLarge)
+                    Text(
+                        text = if (visible) field.value else "•".repeat(field.value.length),
+                        style = MaterialTheme.typography.bodyLarge,
+                    )
+                }
+                IconButton(onClick = { visibleFieldIds[field.id] = !visible }) {
+                    Icon(
+                        imageVector = if (visible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
+                        contentDescription =
+                            stringResource(
+                                if (visible) {
+                                    R.string.custom_field_hide_value_cd
+                                } else {
+                                    R.string.custom_field_show_value_cd
+                                },
+                            ),
+                    )
+                }
+            }
+        }
     }
 }

@@ -3,16 +3,20 @@ package com.pwvault.app.ui.vault
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -20,6 +24,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -32,10 +37,18 @@ import com.pwvault.app.R
 import com.pwvault.app.security.PasswordGenerator
 import com.pwvault.app.ui.unlock.PasswordField
 
+private class CustomFieldRow(
+    label: String = "",
+    value: String = "",
+) {
+    var label by mutableStateOf(label)
+    var value by mutableStateOf(value)
+}
+
 @Composable
 fun VaultItemFormScreen(
     state: VaultUiState.ItemForm,
-    onSave: (name: String, username: String, password: String, url: String, note: String) -> Unit,
+    onSave: (VaultItemFormInput) -> Unit,
     onCancel: () -> Unit,
     onToggleTag: (Long) -> Unit,
 ) {
@@ -44,6 +57,12 @@ fun VaultItemFormScreen(
     var password by remember { mutableStateOf(state.initial?.password.orEmpty()) }
     var url by remember { mutableStateOf(state.initial?.url.orEmpty()) }
     var note by remember { mutableStateOf(state.initial?.note.orEmpty()) }
+    val customFieldRows =
+        remember {
+            mutableStateListOf<CustomFieldRow>().apply {
+                state.initial?.customFields?.forEach { add(CustomFieldRow(it.label, it.value)) }
+            }
+        }
 
     // Only NAME_REQUIRED can be shown here, and it's derivable straight from the current text —
     // so the message disappears the moment the user types a name, no ViewModel round-trip needed.
@@ -130,8 +149,49 @@ fun VaultItemFormScreen(
                 }
             }
         }
+        Text(
+            text = stringResource(R.string.custom_fields_label),
+            style = MaterialTheme.typography.labelLarge,
+            modifier = Modifier.padding(top = 16.dp),
+        )
+        customFieldRows.forEachIndexed { index, row ->
+            Row(modifier = Modifier.fillMaxWidth().padding(top = 8.dp)) {
+                OutlinedTextField(
+                    value = row.label,
+                    onValueChange = { row.label = it },
+                    label = { Text(stringResource(R.string.custom_field_label_hint)) },
+                    singleLine = true,
+                    modifier = Modifier.weight(1f),
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                OutlinedTextField(
+                    value = row.value,
+                    onValueChange = { row.value = it },
+                    label = { Text(stringResource(R.string.custom_field_value_hint)) },
+                    singleLine = true,
+                    modifier = Modifier.weight(1f),
+                )
+                IconButton(onClick = { customFieldRows.removeAt(index) }) {
+                    Icon(Icons.Filled.Close, contentDescription = stringResource(R.string.remove_custom_field_cd))
+                }
+            }
+        }
+        TextButton(onClick = { customFieldRows.add(CustomFieldRow()) }) {
+            Text(stringResource(R.string.add_custom_field_button))
+        }
         Button(
-            onClick = { onSave(name, username, password, url, note) },
+            onClick = {
+                onSave(
+                    VaultItemFormInput(
+                        name = name,
+                        username = username,
+                        password = password,
+                        url = url,
+                        note = note,
+                        customFields = customFieldRows.map { it.label to it.value },
+                    ),
+                )
+            },
             enabled = !state.busy,
             modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
         ) {

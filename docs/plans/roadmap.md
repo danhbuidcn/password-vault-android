@@ -15,7 +15,7 @@
 | 5b | UX polish: không xóa field khi lỗi, tự ẩn lỗi khi gõ lại, auto-focus (SetupScreen/UnlockScreen/PinUnlockScreen/PinSetupDialog) | ⏳ Pending | — |
 | 6 | Tìm kiếm Vault Item | ✅ Done | [feature-06-search-plan.md](feature-06-search-plan.md) |
 | 7 | Quản lý Tag (CRUD + gắn nhiều tag cho 1 item) | ✅ Done | [feature-07-tag-plan.md](feature-07-tag-plan.md) |
-| 8 | Custom Field (trường tùy biến free-form theo từng item) | ⏳ Pending | — |
+| 8 | Custom Field (trường tùy biến free-form theo từng item) | ✅ Done | [feature-08-custom-field-plan.md](feature-08-custom-field-plan.md) |
 | 9 | Vault Item loại Note | ⏳ Pending | — |
 | 10 | Sinh mật khẩu ngẫu nhiên + lưu template tái dùng | ⏳ Pending | — |
 | 11 | Import CSV/Excel (map cột, cảnh báo trùng lặp) | ⏳ Pending | — |

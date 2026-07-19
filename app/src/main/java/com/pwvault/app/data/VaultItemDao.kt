@@ -12,11 +12,11 @@ import kotlinx.coroutines.flow.Flow
 interface VaultItemDao {
     @Transaction
     @Query("SELECT * FROM vault_items ORDER BY name COLLATE NOCASE ASC")
-    fun observeAllWithTags(): Flow<List<VaultItemWithTags>>
+    fun observeAllWithDetails(): Flow<List<VaultItemWithDetails>>
 
     @Transaction
     @Query("SELECT * FROM vault_items WHERE id = :id")
-    suspend fun getByIdWithTags(id: Long): VaultItemWithTags?
+    suspend fun getByIdWithDetails(id: Long): VaultItemWithDetails?
 
     /** Cheap one-shot query used to force Room to open the connection immediately (see [VaultFileManager]). */
     @Query("SELECT count(*) FROM vault_items")
@@ -44,5 +44,20 @@ interface VaultItemDao {
     ) {
         clearTags(itemId)
         insertTagCrossRefs(tagIds.map { VaultItemTagCrossRef(vaultItemId = itemId, tagId = it) })
+    }
+
+    @Query("DELETE FROM custom_fields WHERE vaultItemId = :itemId")
+    suspend fun clearCustomFields(itemId: Long)
+
+    @Insert
+    suspend fun insertCustomFields(fields: List<CustomFieldEntity>)
+
+    @Transaction
+    suspend fun setCustomFieldsForItem(
+        itemId: Long,
+        fields: List<CustomFieldEntity>,
+    ) {
+        clearCustomFields(itemId)
+        insertCustomFields(fields)
     }
 }

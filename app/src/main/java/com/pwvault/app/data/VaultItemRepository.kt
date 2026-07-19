@@ -1,5 +1,6 @@
 package com.pwvault.app.data
 
+import com.pwvault.app.domain.CustomField
 import com.pwvault.app.domain.VaultItem
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -9,9 +10,9 @@ class VaultItemRepository(
 ) {
     private val dao get() = vaultFileManager.database().vaultItemDao()
 
-    fun observeItems(): Flow<List<VaultItem>> = dao.observeAllWithTags().map { list -> list.map { it.toDomain() } }
+    fun observeItems(): Flow<List<VaultItem>> = dao.observeAllWithDetails().map { list -> list.map { it.toDomain() } }
 
-    suspend fun getItem(id: Long): VaultItem? = dao.getByIdWithTags(id)?.toDomain()
+    suspend fun getItem(id: Long): VaultItem? = dao.getByIdWithDetails(id)?.toDomain()
 
     suspend fun addItem(item: VaultItem): Long = dao.insert(item.toEntity())
 
@@ -23,4 +24,12 @@ class VaultItemRepository(
         itemId: Long,
         tagIds: Set<Long>,
     ) = dao.setTagsForItem(itemId, tagIds.toList())
+
+    suspend fun setCustomFields(
+        itemId: Long,
+        customFields: List<CustomField>,
+    ) = dao.setCustomFieldsForItem(
+        itemId,
+        customFields.map { CustomFieldEntity(vaultItemId = itemId, label = it.label, value = it.value) },
+    )
 }

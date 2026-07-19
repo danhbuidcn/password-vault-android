@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.pwvault.app.data.TagRepository
 import com.pwvault.app.data.VaultItemRepository
+import com.pwvault.app.domain.CustomField
 import com.pwvault.app.domain.Tag
 import com.pwvault.app.domain.VaultItem
 import com.pwvault.app.security.ClipboardClearer
@@ -16,6 +17,15 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 enum class VaultFormError { NAME_REQUIRED }
+
+data class VaultItemFormInput(
+    val name: String,
+    val username: String,
+    val password: String,
+    val url: String,
+    val note: String,
+    val customFields: List<Pair<String, String>>,
+)
 
 sealed interface VaultUiState {
     data class ItemList(
@@ -151,15 +161,9 @@ class VaultViewModel
             _state.value = current.copy(copyEventId = current.copyEventId + 1)
         }
 
-        fun save(
-            name: String,
-            username: String,
-            password: String,
-            url: String,
-            note: String,
-        ) {
+        fun save(input: VaultItemFormInput) {
             val form = _state.value as? VaultUiState.ItemForm ?: return
-            if (name.isBlank()) {
+            if (input.name.isBlank()) {
                 _state.value = form.copy(error = VaultFormError.NAME_REQUIRED)
                 return
             }
@@ -171,11 +175,11 @@ class VaultViewModel
                     if (existing != null) {
                         repository.updateItem(
                             existing.copy(
-                                name = name,
-                                username = username,
-                                password = password,
-                                url = url,
-                                note = note,
+                                name = input.name,
+                                username = input.username,
+                                password = input.password,
+                                url = input.url,
+                                note = input.note,
                                 updatedAt = now,
                             ),
                         )
@@ -184,17 +188,23 @@ class VaultViewModel
                         repository.addItem(
                             VaultItem(
                                 id = 0,
-                                name = name,
-                                username = username,
-                                password = password,
-                                url = url,
-                                note = note,
+                                name = input.name,
+                                username = input.username,
+                                password = input.password,
+                                url = input.url,
+                                note = input.note,
                                 createdAt = now,
                                 updatedAt = now,
                             ),
                         )
                     }
                 repository.setItemTags(itemId, form.selectedTagIds)
+                repository.setCustomFields(
+                    itemId,
+                    input.customFields
+                        .filter { it.first.isNotBlank() || it.second.isNotBlank() }
+                        .map { CustomField(label = it.first, value = it.second) },
+                )
                 backToList()
             }
         }

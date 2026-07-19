@@ -18,6 +18,10 @@ complexity:
     thresholdInClasses: 20 # UnlockViewModel owns one StateFlow across 3 unlock methods (password/PIN/biometric);
     # splitting it up would fragment that single source of truth for no real benefit
     thresholdInObjects: 15 # SecurityModule is 1 flat Hilt @Provides list; splitting it adds indirection, not clarity
+    thresholdInInterfaces: 15 # VaultItemDao owns VaultItem CRUD plus per-item Tag and Custom Field cross-ref
+    # queries (clear+insert+set atomically via @Transaction) — both only make sense from the owning
+    # VaultItem's perspective, so splitting them into separate DAOs would fragment one atomic-transaction
+    # interface for marginal benefit.
   LongParameterList:
     constructorThreshold: 8 # UnlockViewModel's constructor is all Hilt-injected singletons, one per
     # security concern (KDF, PIN, biometric, lockout, auto-lock) — grouping them into a synthetic
