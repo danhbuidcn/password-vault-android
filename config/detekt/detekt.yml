@@ -13,6 +13,11 @@ style:
   ReturnCount:
     max: 5 # guard-clause validation (setup/verify flows) reads better than nested single-return
 
+complexity:
+  TooManyFunctions:
+    thresholdInClasses: 20 # UnlockViewModel owns one StateFlow across 3 unlock methods (password/PIN/biometric);
+    # splitting it up would fragment that single source of truth for no real benefit
+
 comments:
   UndocumentedPublicClass:
     active: false

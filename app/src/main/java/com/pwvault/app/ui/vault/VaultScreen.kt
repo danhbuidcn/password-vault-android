@@ -18,25 +18,26 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.pwvault.app.R
 import com.pwvault.app.ui.unlock.PinSetupDialog
-import com.pwvault.app.ui.unlock.UnlockError
+import com.pwvault.app.ui.unlock.UnlockUiState
+import com.pwvault.app.ui.unlock.message
 
 /**
  * Placeholder — real Vault Item list/CRUD lands in Feature 5 (docs/plans/roadmap.md).
- * The "set up PIN" entry point below is temporary; Feature 15 moves it into Settings.
+ * The "set up PIN"/"set up biometric" entry points below are temporary; Feature 15 moves them into Settings.
  */
 @Composable
 fun VaultScreen(
-    hasPin: Boolean,
-    pinSetupError: UnlockError?,
-    pinSetupBusy: Boolean,
+    state: UnlockUiState.Unlocked,
+    canSetupBiometric: Boolean,
     onSetupPin: (pin: CharArray, confirm: CharArray) -> Unit,
+    onSetupBiometric: () -> Unit,
 ) {
     var showPinDialog by remember { mutableStateOf(false) }
 
     // Close the dialog only once setup actually succeeds, so validation errors stay visible
     // instead of the dialog closing itself away on every confirm tap.
-    LaunchedEffect(hasPin) {
-        if (hasPin) showPinDialog = false
+    LaunchedEffect(state.hasPin) {
+        if (state.hasPin) showPinDialog = false
     }
 
     Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
@@ -46,9 +47,20 @@ fun VaultScreen(
             verticalArrangement = Arrangement.Center,
         ) {
             Text(text = stringResource(R.string.vault_placeholder))
-            if (!hasPin) {
+            if (!state.hasPin) {
                 Button(onClick = { showPinDialog = true }) {
                     Text(stringResource(R.string.setup_pin_button))
+                }
+            }
+            if (!state.hasBiometric && canSetupBiometric) {
+                Button(onClick = onSetupBiometric, enabled = !state.biometricSetupBusy) {
+                    Text(stringResource(R.string.setup_biometric_button))
+                }
+                if (state.biometricSetupError != null) {
+                    Text(
+                        text = state.biometricSetupError.message(),
+                        color = MaterialTheme.colorScheme.error,
+                    )
                 }
             }
         }
@@ -56,12 +68,9 @@ fun VaultScreen(
 
     if (showPinDialog) {
         PinSetupDialog(
-            error = pinSetupError,
-            busy = pinSetupBusy,
-            onConfirm = { pin, confirm ->
-                onSetupPin(pin, confirm)
-                showPinDialog = false
-            },
+            error = state.pinSetupError,
+            busy = state.pinSetupBusy,
+            onConfirm = { pin, confirm -> onSetupPin(pin, confirm) },
             onDismiss = { showPinDialog = false },
         )
     }

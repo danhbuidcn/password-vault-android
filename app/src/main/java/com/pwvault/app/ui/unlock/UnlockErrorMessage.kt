@@ -15,4 +15,6 @@ fun UnlockError.message(): String =
         UnlockError.PIN_TOO_SHORT -> stringResource(R.string.error_pin_too_short, MIN_PIN_LENGTH)
         UnlockError.PIN_NOT_NUMERIC -> stringResource(R.string.error_pin_not_numeric)
         UnlockError.WRONG_PIN -> stringResource(R.string.error_wrong_pin)
+        UnlockError.BIOMETRIC_FAILED -> stringResource(R.string.error_biometric_failed)
+        UnlockError.BIOMETRIC_SETUP_FAILED -> stringResource(R.string.error_biometric_setup_failed)
     }

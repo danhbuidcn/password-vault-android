@@ -34,6 +34,7 @@ fun PinUnlockScreen(
     busy: Boolean,
     onUnlock: (pin: CharArray) -> Unit,
     onUseMasterPassword: () -> Unit,
+    onUseBiometric: (() -> Unit)? = null,
 ) {
     var pin by remember { mutableStateOf("") }
 
@@ -81,6 +82,11 @@ fun PinUnlockScreen(
         }
         TextButton(onClick = onUseMasterPassword, modifier = Modifier.padding(top = 8.dp)) {
             Text(stringResource(R.string.use_master_password_instead))
+        }
+        if (onUseBiometric != null) {
+            TextButton(onClick = onUseBiometric) {
+                Text(stringResource(R.string.use_biometric_instead))
+            }
         }
     }
 }

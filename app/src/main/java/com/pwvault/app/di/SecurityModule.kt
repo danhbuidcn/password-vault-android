@@ -2,6 +2,9 @@ package com.pwvault.app.di
 
 import android.content.Context
 import com.pwvault.app.data.VaultFileManager
+import com.pwvault.app.security.BiometricCredentialStore
+import com.pwvault.app.security.BiometricKeystoreKeyProvider
+import com.pwvault.app.security.BiometricUnlockManager
 import com.pwvault.app.security.KeyDerivation
 import com.pwvault.app.security.PinCredentialStore
 import com.pwvault.app.security.PinKeystoreKeyProvider
@@ -50,4 +53,21 @@ object SecurityModule {
         keystoreKeyProvider: PinKeystoreKeyProvider,
         credentialStore: PinCredentialStore,
     ): PinManager = PinManager(keyDerivation, keystoreKeyProvider, credentialStore)
+
+    @Provides
+    @Singleton
+    fun provideBiometricKeystoreKeyProvider(): BiometricKeystoreKeyProvider = BiometricKeystoreKeyProvider()
+
+    @Provides
+    @Singleton
+    fun provideBiometricCredentialStore(
+        @ApplicationContext context: Context,
+    ): BiometricCredentialStore = BiometricCredentialStore(context)
+
+    @Provides
+    @Singleton
+    fun provideBiometricUnlockManager(
+        keystoreKeyProvider: BiometricKeystoreKeyProvider,
+        credentialStore: BiometricCredentialStore,
+    ): BiometricUnlockManager = BiometricUnlockManager(keystoreKeyProvider, credentialStore)
 }

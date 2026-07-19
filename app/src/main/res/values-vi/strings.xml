@@ -36,5 +36,14 @@
     <string name="pin_unlock_title">Nhập mã PIN</string>
     <string name="pin_unlock_button">Mở khóa</string>
     <string name="use_master_password_instead">Dùng mật khẩu thay thế</string>
+    <string name="use_pin_instead">Dùng mã PIN thay thế</string>
     <string name="error_wrong_pin">Sai mã PIN</string>
+
+    <string name="setup_biometric_button">Thiết lập mở khóa bằng vân tay/khuôn mặt</string>
+    <string name="biometric_prompt_title">Mở khóa PWVault</string>
+    <string name="biometric_unlock_title">Mở khóa bằng vân tay hoặc khuôn mặt</string>
+    <string name="biometric_unlock_retry_button">Thử lại</string>
+    <string name="use_biometric_instead">Dùng vân tay/khuôn mặt thay thế</string>
+    <string name="error_biometric_failed">Mở khóa bằng vân tay/khuôn mặt thất bại</string>
+    <string name="error_biometric_setup_failed">Không thiết lập được vân tay/khuôn mặt, thử lại</string>
 </resources>
