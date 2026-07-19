@@ -11,7 +11,7 @@ import androidx.room.RoomDatabase
         CustomFieldEntity::class,
         PasswordTemplateEntity::class,
     ],
-    version = 4,
+    version = 5,
 )
 abstract class VaultDatabase : RoomDatabase() {
     abstract fun vaultItemDao(): VaultItemDao

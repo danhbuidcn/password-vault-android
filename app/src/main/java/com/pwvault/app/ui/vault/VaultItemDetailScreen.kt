@@ -10,6 +10,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
@@ -25,11 +27,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.pwvault.app.R
 import com.pwvault.app.domain.CustomField
+import com.pwvault.app.domain.VaultItemType
 
 @Composable
 fun VaultItemDetailScreen(
@@ -47,6 +51,10 @@ fun VaultItemDetailScreen(
         if (state.copyEventId > 0) snackbarHostState.showSnackbar(copiedMessage)
     }
 
+    val isNote = state.item.type == VaultItemType.NOTE
+    val typeIcon = if (isNote) Icons.Filled.Description else Icons.Filled.Person
+    val typeLabelRes = if (isNote) R.string.item_type_note else R.string.item_type_login
+
     Column(
         modifier =
             Modifier
@@ -54,42 +62,57 @@ fun VaultItemDetailScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(24.dp),
     ) {
-        Text(text = state.item.name, style = MaterialTheme.typography.headlineSmall)
-
-        if (state.item.username.isNotEmpty()) {
-            Text(
-                text = state.item.username,
-                style = MaterialTheme.typography.bodyLarge,
-                modifier = Modifier.padding(top = 16.dp),
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(
+                imageVector = typeIcon,
+                contentDescription = stringResource(typeLabelRes),
+                modifier = Modifier.padding(end = 8.dp),
             )
+            Text(text = state.item.name, style = MaterialTheme.typography.headlineSmall)
         }
 
-        Row(modifier = Modifier.fillMaxWidth().padding(top = 8.dp)) {
-            Text(
-                text = if (state.passwordVisible) state.item.password else "•".repeat(state.item.password.length),
-                style = MaterialTheme.typography.bodyLarge,
-                modifier = Modifier.padding(top = 12.dp),
-            )
-            IconButton(onClick = onTogglePasswordVisible) {
-                Icon(
-                    imageVector = if (state.passwordVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
-                    contentDescription =
-                        stringResource(
-                            if (state.passwordVisible) R.string.password_hide_cd else R.string.password_show_cd,
-                        ),
+        if (state.item.type == VaultItemType.LOGIN) {
+            if (state.item.username.isNotEmpty()) {
+                Text(
+                    text = state.item.username,
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.padding(top = 16.dp),
                 )
             }
-            IconButton(onClick = onCopyPassword) {
-                Icon(Icons.Filled.ContentCopy, contentDescription = stringResource(R.string.copy_password_cd))
-            }
-        }
 
-        if (state.item.url.isNotEmpty()) {
-            Text(
-                text = state.item.url,
-                style = MaterialTheme.typography.bodyLarge,
-                modifier = Modifier.padding(top = 8.dp),
-            )
+            Row(modifier = Modifier.fillMaxWidth().padding(top = 8.dp)) {
+                Text(
+                    text =
+                        if (state.passwordVisible) {
+                            state.item.password
+                        } else {
+                            "•".repeat(state.item.password.length)
+                        },
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.padding(top = 12.dp),
+                )
+                IconButton(onClick = onTogglePasswordVisible) {
+                    Icon(
+                        imageVector =
+                            if (state.passwordVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
+                        contentDescription =
+                            stringResource(
+                                if (state.passwordVisible) R.string.password_hide_cd else R.string.password_show_cd,
+                            ),
+                    )
+                }
+                IconButton(onClick = onCopyPassword) {
+                    Icon(Icons.Filled.ContentCopy, contentDescription = stringResource(R.string.copy_password_cd))
+                }
+            }
+
+            if (state.item.url.isNotEmpty()) {
+                Text(
+                    text = state.item.url,
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.padding(top = 8.dp),
+                )
+            }
         }
 
         if (state.item.note.isNotEmpty()) {

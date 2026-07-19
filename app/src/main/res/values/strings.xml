@@ -59,6 +59,9 @@
     <string name="item_username_label">Username</string>
     <string name="item_url_label">URL</string>
     <string name="item_note_label">Note</string>
+    <string name="item_content_label">Content</string>
+    <string name="item_type_login">Login</string>
+    <string name="item_type_note">Note</string>
     <string name="error_item_name_required">Name is required</string>
     <string name="generate_password_button">Generate password</string>
     <string name="vault_save_button">Save</string>
