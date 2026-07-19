@@ -17,4 +17,10 @@ object SecurityPolicy {
     const val MAX_ATTEMPTS_BEFORE_LOCKOUT = 5
     val INITIAL_LOCKOUT_DURATION: Duration = 30.seconds
     val MAX_LOCKOUT_DURATION: Duration = 30.minutes
+
+    /** How long a copied password stays on the clipboard before it's overwritten. */
+    val CLIPBOARD_CLEAR_DELAY: Duration = 30.seconds
+
+    /** Length of a suggested password from [com.pwvault.app.security.PasswordGenerator]. */
+    const val GENERATED_PASSWORD_LENGTH = 20
 }

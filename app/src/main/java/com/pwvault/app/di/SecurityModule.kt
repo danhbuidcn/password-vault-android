@@ -6,6 +6,7 @@ import com.pwvault.app.security.AutoLockPreferences
 import com.pwvault.app.security.BiometricCredentialStore
 import com.pwvault.app.security.BiometricKeystoreKeyProvider
 import com.pwvault.app.security.BiometricUnlockManager
+import com.pwvault.app.security.ClipboardClearer
 import com.pwvault.app.security.KeyDerivation
 import com.pwvault.app.security.LockoutPolicy
 import com.pwvault.app.security.LockoutStore
@@ -89,4 +90,10 @@ object SecurityModule {
     @Provides
     @Singleton
     fun provideLockoutPolicy(store: LockoutStore): LockoutPolicy = LockoutPolicy(store)
+
+    @Provides
+    @Singleton
+    fun provideClipboardClearer(
+        @ApplicationContext context: Context,
+    ): ClipboardClearer = ClipboardClearer(context)
 }

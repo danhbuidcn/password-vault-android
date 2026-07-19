@@ -216,6 +216,7 @@ class UnlockViewModel
             if (_state.value !is UnlockUiState.Unlocked) return
             vaultKey?.let { Arrays.fill(it, 0) }
             vaultKey = null
+            vaultFileManager.close()
             _state.value = lockedState()
         }
 

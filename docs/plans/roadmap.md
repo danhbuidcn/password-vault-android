@@ -11,7 +11,8 @@
 | 2 | PIN unlock (fallback bắt buộc mọi thiết bị) | ✅ Done | [feature-02-pin-unlock-plan.md](feature-02-pin-unlock-plan.md) |
 | 3 | Sinh trắc học unlock (BiometricPrompt, tùy chọn) | ✅ Done | [feature-03-biometric-unlock-plan.md](feature-03-biometric-unlock-plan.md) |
 | 4 | Tự động khóa theo thời gian + giới hạn số lần nhập sai (lockout tăng dần) | ✅ Done | [feature-04-autolock-lockout-plan.md](feature-04-autolock-lockout-plan.md) |
-| 5 | Vault Item CRUD — loại Login (thêm/sửa/xóa/danh sách) | ⏳ Pending | — |
+| 5 | Vault Item CRUD — loại Login (thêm/sửa/xóa/danh sách) | ✅ Done | [feature-05-vault-item-crud-plan.md](feature-05-vault-item-crud-plan.md) |
+| 5b | UX polish: không xóa field khi lỗi, tự ẩn lỗi khi gõ lại, auto-focus (SetupScreen/UnlockScreen/PinUnlockScreen/PinSetupDialog) | ⏳ Pending | — |
 | 6 | Tìm kiếm Vault Item | ⏳ Pending | — |
 | 7 | Quản lý Tag (CRUD + gắn nhiều tag cho 1 item) | ⏳ Pending | — |
 | 8 | Custom Field (trường tùy biến free-form theo từng item) | ⏳ Pending | — |
@@ -31,6 +32,7 @@
 - 5 → 10, 11, 12: cần entity + repository Vault Item trước khi generator lưu được, import/export đọc/ghi được.
 - 12 → 13: rotate backup cần cơ chế export `.pwvbackup` đã có trước.
 - Toàn bộ: 14 cần dữ liệu Vault Item thật (từ 5) để so sánh trùng lặp/độ yếu.
+- 5b không nằm trong chain phụ thuộc 6-15 — làm ngay sau khi Feature 5 xong (guard/review/verify/commit) là được, không cần chờ các mục sau. Vault Item form của Feature 5 (note dạng text area, nút gợi ý mật khẩu, auto-focus, tự ẩn lỗi tên) đã làm trực tiếp trong Feature 5, không tính vào 5b.
 
 ## Quy ước triển khai từng mục
 

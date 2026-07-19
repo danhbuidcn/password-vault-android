@@ -17,7 +17,6 @@
     <string name="unlock_button_busy">Đang mở…</string>
     <string name="error_wrong_password">Sai mật khẩu</string>
 
-    <string name="vault_placeholder">Vault đã mở khóa — danh sách item sắp có</string>
     <string name="setup_pin_button">Thiết lập mở khóa bằng PIN</string>
 
     <string name="password_show_cd">Hiện mật khẩu</string>
@@ -48,4 +47,24 @@
     <string name="error_biometric_setup_failed">Không thiết lập được vân tay/khuôn mặt, thử lại</string>
 
     <string name="lockout_message">Nhập sai quá nhiều lần. Thử lại sau %1$d giây.</string>
+
+    <string name="vault_empty_state">Chưa có mục nào — bấm + để thêm</string>
+    <string name="vault_add_item_cd">Thêm mục</string>
+    <string name="vault_add_item_title">Thêm mục</string>
+    <string name="vault_edit_item_title">Sửa mục</string>
+    <string name="item_name_label">Tên</string>
+    <string name="item_username_label">Tên đăng nhập</string>
+    <string name="item_url_label">URL</string>
+    <string name="item_note_label">Ghi chú</string>
+    <string name="error_item_name_required">Cần nhập tên</string>
+    <string name="generate_password_button">Tạo mật khẩu ngẫu nhiên</string>
+    <string name="vault_save_button">Lưu</string>
+    <string name="vault_cancel_button">Hủy</string>
+    <string name="vault_edit_button">Sửa</string>
+    <string name="vault_delete_button">Xóa</string>
+    <string name="vault_back_button">Quay lại</string>
+    <string name="vault_delete_confirm_title">Xóa mục này?</string>
+    <string name="vault_delete_confirm_message">\"%1$s\" sẽ bị xóa vĩnh viễn.</string>
+    <string name="copy_password_cd">Copy password</string>
+    <string name="vault_password_copied_message">Đã copy password — tự xóa sau 30s</string>
 </resources>

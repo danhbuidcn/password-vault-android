@@ -13,6 +13,9 @@ ij_kotlin_allow_trailing_comma = true
 ij_kotlin_allow_trailing_comma_on_call_site = true
 # @Composable functions returning Unit are PascalCase by convention (see kit/context/lang/kotlin.md).
 ktlint_function_naming_ignore_when_annotated_with = Composable
+# Keep ktlint's line-wrapping decisions aligned with detekt's MaxLineLength (default 120) — without
+# this they disagree on whether a wrapped signature should be collapsed back to one line.
+max_line_length = 120
 
 [*.{yml,yaml,json}]
 indent_size = 2

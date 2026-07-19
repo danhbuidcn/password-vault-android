@@ -22,6 +22,11 @@ complexity:
     constructorThreshold: 8 # UnlockViewModel's constructor is all Hilt-injected singletons, one per
     # security concern (KDF, PIN, biometric, lockout, auto-lock) — grouping them into a synthetic
     # wrapper class would fight Hilt's per-dependency injection convention for no real benefit
+    ignoreAnnotated: ["Composable"] # Compose screens take one callback param per user action by convention;
+    # bundling them into a synthetic actions object would add indirection, not clarity
+  LongMethod:
+    ignoreAnnotated: ["Composable"] # Compose UI trees (list/form/detail screens) are declaratively longer
+    # than typical logic functions — that's the normal shape of a Compose screen, not a smell
 
 comments:
   UndocumentedPublicClass:
