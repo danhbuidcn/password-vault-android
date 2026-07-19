@@ -11,11 +11,15 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -63,12 +67,14 @@ fun VaultScreen(
         is VaultUiState.ItemList ->
             VaultItemListScreen(
                 vaultItems = vaultState.items,
+                searchQuery = vaultState.searchQuery,
                 unlockedState = state,
                 canSetupBiometric = canSetupBiometric,
                 onSetupPin = { showPinDialog = true },
                 onSetupBiometric = onSetupBiometric,
                 onAddItem = viewModel::openAddForm,
                 onOpenItem = viewModel::openDetail,
+                onSearchQueryChange = viewModel::updateSearchQuery,
             )
         is VaultUiState.ItemDetail ->
             VaultItemDetailScreen(
@@ -116,12 +122,14 @@ fun VaultScreen(
 @Composable
 private fun VaultItemListScreen(
     vaultItems: List<VaultItem>,
+    searchQuery: String,
     unlockedState: UnlockUiState.Unlocked,
     canSetupBiometric: Boolean,
     onSetupPin: () -> Unit,
     onSetupBiometric: () -> Unit,
     onAddItem: () -> Unit,
     onOpenItem: (VaultItem) -> Unit,
+    onSearchQueryChange: (String) -> Unit,
 ) {
     Scaffold(
         floatingActionButton = {
@@ -150,6 +158,22 @@ private fun VaultItemListScreen(
                 }
             }
 
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = onSearchQueryChange,
+                label = { Text(stringResource(R.string.search_placeholder)) },
+                singleLine = true,
+                leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
+                trailingIcon = {
+                    if (searchQuery.isNotEmpty()) {
+                        IconButton(onClick = { onSearchQueryChange("") }) {
+                            Icon(Icons.Filled.Clear, contentDescription = stringResource(R.string.search_clear_cd))
+                        }
+                    }
+                },
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+            )
+
             if (vaultItems.isEmpty()) {
                 Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
                     Column(
@@ -157,7 +181,16 @@ private fun VaultItemListScreen(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center,
                     ) {
-                        Text(text = stringResource(R.string.vault_empty_state))
+                        Text(
+                            text =
+                                stringResource(
+                                    if (searchQuery.isNotBlank()) {
+                                        R.string.vault_no_results_state
+                                    } else {
+                                        R.string.vault_empty_state
+                                    },
+                                ),
+                        )
                     }
                 }
             } else {

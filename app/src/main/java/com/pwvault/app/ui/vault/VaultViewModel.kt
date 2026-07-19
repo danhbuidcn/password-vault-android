@@ -18,6 +18,7 @@ enum class VaultFormError { NAME_REQUIRED }
 sealed interface VaultUiState {
     data class ItemList(
         val items: List<VaultItem> = emptyList(),
+        val searchQuery: String = "",
     ) : VaultUiState
 
     data class ItemDetail(
@@ -49,6 +50,7 @@ class VaultViewModel
         val state: StateFlow<VaultUiState> = _state.asStateFlow()
 
         private var latestItems: List<VaultItem> = emptyList()
+        private var searchQuery: String = ""
         private var observeJob: Job? = null
 
         /**
@@ -64,10 +66,28 @@ class VaultViewModel
                     repository.observeItems().collect { items ->
                         latestItems = items
                         if (_state.value is VaultUiState.ItemList) {
-                            _state.value = VaultUiState.ItemList(items)
+                            _state.value = currentListState()
                         }
                     }
                 }
+        }
+
+        fun updateSearchQuery(query: String) {
+            searchQuery = query
+            _state.value = currentListState()
+        }
+
+        private fun currentListState(): VaultUiState.ItemList {
+            val filtered =
+                if (searchQuery.isBlank()) {
+                    latestItems
+                } else {
+                    latestItems.filter {
+                        it.name.contains(searchQuery, ignoreCase = true) ||
+                            it.username.contains(searchQuery, ignoreCase = true)
+                    }
+                }
+            return VaultUiState.ItemList(items = filtered, searchQuery = searchQuery)
         }
 
         fun openAddForm() {
@@ -92,7 +112,7 @@ class VaultViewModel
         }
 
         fun backToList() {
-            _state.value = VaultUiState.ItemList(latestItems)
+            _state.value = currentListState()
         }
 
         fun togglePasswordVisible() {

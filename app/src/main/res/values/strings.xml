@@ -49,6 +49,9 @@
     <string name="lockout_message">Too many wrong attempts. Try again in %1$d seconds.</string>
 
     <string name="vault_empty_state">No items yet — tap + to add one</string>
+    <string name="vault_no_results_state">No items match your search</string>
+    <string name="search_placeholder">Search by name or username</string>
+    <string name="search_clear_cd">Clear search</string>
     <string name="vault_add_item_cd">Add item</string>
     <string name="vault_add_item_title">Add item</string>
     <string name="vault_edit_item_title">Edit item</string>

@@ -49,6 +49,9 @@
     <string name="lockout_message">Nhập sai quá nhiều lần. Thử lại sau %1$d giây.</string>
 
     <string name="vault_empty_state">Chưa có mục nào — bấm + để thêm</string>
+    <string name="vault_no_results_state">Không có mục nào khớp tìm kiếm</string>
+    <string name="search_placeholder">Tìm theo tên hoặc tên đăng nhập</string>
+    <string name="search_clear_cd">Xóa tìm kiếm</string>
     <string name="vault_add_item_cd">Thêm mục</string>
     <string name="vault_add_item_title">Thêm mục</string>
     <string name="vault_edit_item_title">Sửa mục</string>
