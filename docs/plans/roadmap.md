@@ -19,7 +19,7 @@
 | 9 | Vault Item loại Note | ✅ Done | [feature-09-note-plan.md](feature-09-note-plan.md) |
 | 10 | Sinh mật khẩu ngẫu nhiên + lưu template tái dùng | ✅ Done | [feature-10-password-generator-plan.md](feature-10-password-generator-plan.md) |
 | 11 | Import CSV/Excel (map cột, cảnh báo trùng lặp) | ⏳ Pending | — |
-| 12 | Export — mã hóa `.pwvbackup` + plaintext CSV/Excel (cảnh báo 2 bước, nén có mật khẩu) | ⏳ Pending | — |
+| 12 | Export — mã hóa `.pwvbackup` + plaintext CSV (cảnh báo 2 bước, nén có mật khẩu) | ✅ Done | [feature-12-export-plan.md](feature-12-export-plan.md) |
 | 13 | Auto-backup nền (ghi mỗi khi đổi Vault Item, atomic, rotate 5 bản) + nhắc export thủ công định kỳ (WorkManager) | ⏳ Pending | — |
 | 14 | Cảnh báo mật khẩu yếu/trùng lặp | ✅ Done | [feature-14-weak-duplicate-warning-plan.md](feature-14-weak-duplicate-warning-plan.md) |
 | 15 | Màn hình Settings (tham số bảo mật, theme, phương thức unlock) | ⏳ Pending | — |
@@ -35,6 +35,7 @@
 - Toàn bộ: 14 cần dữ liệu Vault Item thật (từ 5) để so sánh trùng lặp/độ yếu.
 - 5b không nằm trong chain phụ thuộc 6-15 — làm ngay sau khi Feature 5 xong (guard/review/verify/commit) là được, không cần chờ các mục sau. Vault Item form của Feature 5 (note dạng text area, nút gợi ý mật khẩu, auto-focus, tự ẩn lỗi tên) đã làm trực tiếp trong Feature 5, không tính vào 5b.
 - 16 không phải phụ thuộc kỹ thuật — là quyết định thứ tự làm việc của người dùng (2026-07-19): chỉ triển khai sau khi tất cả 1-15 đã xong, để tránh redesign UI rồi lại phải sửa lại khi các tính năng sau (Tag, Custom Field, Note, Settings...) thêm field/màn hình mới.
+- **Chưa có mục nào sở hữu rõ ràng (phát sinh khi làm Feature 12):** (a) Export ra Excel `.xlsx` — Feature 12 chỉ làm CSV, xlsx cần thư viện đọc+ghi dùng chung với Feature 11 (Import), nên đợi Feature 11 chọn thư viện trước; (b) Restore/khôi phục Vault từ file `.pwvbackup` đã export — cần màn hình mới ở luồng trước-khi-unlock (Setup/first-run), khác luồng CRUD của Feature 12. Cả 2 cần được gán vào 1 feature cụ thể (có thể Feature 15 - Settings, hoặc mục mới) trước khi coi roadmap là đầy đủ.
 
 ## Quy ước triển khai từng mục
 

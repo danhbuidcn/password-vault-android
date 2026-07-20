@@ -203,6 +203,24 @@ class UnlockViewModel
             }
         }
 
+        /**
+         * Re-verifies [password] against the currently unlocked session's key, without reopening the
+         * Vault database — used to re-authenticate before a sensitive action (e.g. export) while
+         * already `Unlocked`. Always wipes [password].
+         */
+        suspend fun verifyMasterPassword(password: CharArray): Boolean {
+            val currentKey = vaultKey
+            if (currentKey == null) {
+                Arrays.fill(password, WIPE_CHAR)
+                return false
+            }
+            val salt = metadataStore.getOrCreateSalt()
+            val candidateKey = keyDerivation.derive(password, salt)
+            val matches = candidateKey.contentEquals(currentKey)
+            Arrays.fill(candidateKey, 0)
+            return matches
+        }
+
         fun onAppBackgrounded() {
             backgroundedAtMillis = System.currentTimeMillis()
         }

@@ -17,6 +17,7 @@ import androidx.compose.material.icons.automirrored.filled.Label
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.IosShare
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.WarningAmber
@@ -45,6 +46,10 @@ import androidx.compose.ui.unit.dp
 import com.pwvault.app.R
 import com.pwvault.app.domain.VaultItem
 import com.pwvault.app.domain.VaultItemType
+import com.pwvault.app.ui.export.ExportScreen
+import com.pwvault.app.ui.export.ExportTarget
+import com.pwvault.app.ui.export.ExportUiState
+import com.pwvault.app.ui.export.ExportViewModel
 import com.pwvault.app.ui.unlock.PinSetupDialog
 import com.pwvault.app.ui.unlock.UnlockUiState
 import com.pwvault.app.ui.unlock.message
@@ -58,6 +63,9 @@ fun VaultScreen(
     viewModel: VaultViewModel,
     tagViewModel: TagViewModel,
     passwordTemplateViewModel: PasswordTemplateViewModel,
+    exportViewModel: ExportViewModel,
+    onVerifyMasterPassword: suspend (CharArray) -> Boolean,
+    onPickExportDestination: (ExportTarget, String) -> Unit,
 ) {
     var showPinDialog by remember { mutableStateOf(false) }
     var showTagManager by remember { mutableStateOf(false) }
@@ -79,6 +87,24 @@ fun VaultScreen(
         return
     }
 
+    val exportState = exportViewModel.state.collectAsState().value
+    if (exportState != ExportUiState.Closed) {
+        ExportScreen(
+            state = exportState,
+            onChooseTarget = exportViewModel::chooseTarget,
+            onSubmitMasterPassword = { password ->
+                exportViewModel.submitMasterPassword(password, onVerifyMasterPassword)
+            },
+            onToggleAck1 = exportViewModel::toggleAck1,
+            onToggleAck2 = exportViewModel::toggleAck2,
+            onContinueFromWarning = exportViewModel::continueFromWarning,
+            onSubmitZipPassword = exportViewModel::submitZipPassword,
+            onPickDestination = onPickExportDestination,
+            onClose = exportViewModel::close,
+        )
+        return
+    }
+
     when (val vaultState = viewModel.state.collectAsState().value) {
         is VaultUiState.ItemList ->
             VaultItemListScreen(
@@ -93,6 +119,7 @@ fun VaultScreen(
                 onOpenItem = viewModel::openDetail,
                 onSearchQueryChange = viewModel::updateSearchQuery,
                 onManageTags = { showTagManager = true },
+                onExport = exportViewModel::open,
             )
         is VaultUiState.ItemDetail ->
             VaultItemDetailScreen(
@@ -152,6 +179,7 @@ private fun VaultItemListScreen(
     onOpenItem: (VaultItem) -> Unit,
     onSearchQueryChange: (String) -> Unit,
     onManageTags: () -> Unit,
+    onExport: () -> Unit,
 ) {
     Scaffold(
         floatingActionButton = {
@@ -196,13 +224,23 @@ private fun VaultItemListScreen(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
             )
 
-            TextButton(onClick = onManageTags, modifier = Modifier.padding(horizontal = 8.dp)) {
-                Icon(
-                    Icons.AutoMirrored.Filled.Label,
-                    contentDescription = null,
-                    modifier = Modifier.padding(end = 4.dp),
-                )
-                Text(stringResource(R.string.manage_tags_cd))
+            Row {
+                TextButton(onClick = onManageTags, modifier = Modifier.padding(horizontal = 8.dp)) {
+                    Icon(
+                        Icons.AutoMirrored.Filled.Label,
+                        contentDescription = null,
+                        modifier = Modifier.padding(end = 4.dp),
+                    )
+                    Text(stringResource(R.string.manage_tags_cd))
+                }
+                TextButton(onClick = onExport, modifier = Modifier.padding(horizontal = 8.dp)) {
+                    Icon(
+                        Icons.Filled.IosShare,
+                        contentDescription = null,
+                        modifier = Modifier.padding(end = 4.dp),
+                    )
+                    Text(stringResource(R.string.export_cd))
+                }
             }
 
             if (vaultItems.isEmpty()) {

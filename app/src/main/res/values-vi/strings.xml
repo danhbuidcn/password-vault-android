@@ -111,6 +111,24 @@
     <string name="error_password_template_name_required">Cần nhập tên template</string>
     <string name="error_password_template_name_duplicate">Đã có template trùng tên này</string>
 
+    <string name="export_cd">Export</string>
+    <string name="export_title">Export Vault</string>
+    <string name="export_backup_option">Bản sao lưu mã hóa (.pwvbackup)</string>
+    <string name="export_backup_option_hint">Khuyên dùng — để backup hoặc chuyển sang máy mới.</string>
+    <string name="export_csv_option">CSV dạng chữ thường (plaintext)</string>
+    <string name="export_csv_option_hint">Nén zip có mật khẩu. Ai có mật khẩu zip đều đọc được nội dung.</string>
+    <string name="export_reauth_title">Nhập lại mật khẩu để tiếp tục</string>
+    <string name="export_confirm_button">Tiếp tục</string>
+    <string name="export_csv_warning_title">Trước khi export dạng plaintext</string>
+    <string name="export_csv_warning_ack1">Tôi hiểu file này KHÔNG được app mã hóa — chỉ mật khẩu zip bảo vệ nó.</string>
+    <string name="export_csv_warning_ack2">Tôi sẽ tự xóa file này khi không còn cần dùng nữa.</string>
+    <string name="export_zip_password_title">Đặt mật khẩu cho file export này</string>
+    <string name="export_zip_password_label">Mật khẩu nén</string>
+    <string name="export_preparing">Đang chuẩn bị…</string>
+    <string name="export_writing">Đang export…</string>
+    <string name="export_done">Export hoàn tất.</string>
+    <string name="export_failed">Export thất bại, thử lại.</string>
+
     <string name="password_warning_cd">Password yếu hoặc bị dùng lại</string>
     <string name="warning_weak_password">Password yếu</string>
     <string name="warning_duplicate_password">Đang dùng chung với mục khác</string>
