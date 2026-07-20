@@ -8,6 +8,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import net.zetetic.database.sqlcipher.SupportOpenHelperFactory
 import java.io.File
+import java.io.OutputStream
 
 private const val VAULT_FILE_NAME = "vault.db"
 
@@ -45,6 +46,18 @@ class VaultFileManager(
         database?.close()
         database = null
     }
+
+    /**
+     * Streams a consistent snapshot of the encrypted Vault file to [output] (e.g. a SAF `Uri` the
+     * user picked for a `.pwvbackup` export). Checkpoints WAL first so any data only sitting in the
+     * `-wal` sidecar file is merged into `vault.db` before the copy — otherwise a recently saved
+     * item could be silently missing from the exported backup.
+     */
+    suspend fun copyVaultFileTo(output: OutputStream) =
+        withContext(Dispatchers.IO) {
+            database().query("PRAGMA wal_checkpoint(FULL)", null).use { it.moveToFirst() }
+            vaultFile.inputStream().use { input -> input.copyTo(output) }
+        }
 
     private suspend fun openAndValidate(key: ByteArray): Boolean =
         withContext(Dispatchers.IO) {

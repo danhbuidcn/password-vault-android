@@ -68,6 +68,7 @@ dependencies {
     ksp(libs.room.compiler)
     implementation(libs.sqlcipher.android)
     implementation(libs.argon2kt)
+    implementation(libs.zip4j)
 
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)

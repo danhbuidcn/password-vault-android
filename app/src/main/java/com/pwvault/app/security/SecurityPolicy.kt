@@ -23,4 +23,7 @@ object SecurityPolicy {
 
     /** Length of a suggested password from [com.pwvault.app.security.PasswordGenerator]. */
     const val GENERATED_PASSWORD_LENGTH = 20
+
+    /** How long a plaintext CSV export temp file survives in [android.content.Context.getCacheDir] before deletion. */
+    val EXPORT_TEMP_FILE_CLEANUP_DELAY: Duration = 5.minutes
 }

@@ -107,4 +107,22 @@
     <string name="error_password_generator_no_class_selected">Select at least one character type</string>
     <string name="error_password_template_name_required">Template name is required</string>
     <string name="error_password_template_name_duplicate">A template with this name already exists</string>
+
+    <string name="export_cd">Export</string>
+    <string name="export_title">Export Vault</string>
+    <string name="export_backup_option">Encrypted backup (.pwvbackup)</string>
+    <string name="export_backup_option_hint">Recommended — for backup or moving to a new device.</string>
+    <string name="export_csv_option">Plaintext CSV</string>
+    <string name="export_csv_option_hint">Password-protected zip. Anyone with the zip password can read it.</string>
+    <string name="export_reauth_title">Re-enter your password to continue</string>
+    <string name="export_confirm_button">Continue</string>
+    <string name="export_csv_warning_title">Before you export plaintext</string>
+    <string name="export_csv_warning_ack1">I understand this file is NOT encrypted by the app — only the zip password protects it.</string>
+    <string name="export_csv_warning_ack2">I will delete this file myself once I no longer need it.</string>
+    <string name="export_zip_password_title">Set a password for this export</string>
+    <string name="export_zip_password_label">Zip password</string>
+    <string name="export_preparing">Preparing…</string>
+    <string name="export_writing">Exporting…</string>
+    <string name="export_done">Export complete.</string>
+    <string name="export_failed">Export failed, please try again.</string>
 </resources>
