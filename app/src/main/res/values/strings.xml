@@ -163,4 +163,21 @@
     <string name="export_reminder_channel_name">Backup reminders</string>
     <string name="export_reminder_notification_title">Time to back up your Vault</string>
     <string name="export_reminder_notification_text">It\'s been a while since your last export — consider making a fresh one.</string>
+
+    <string name="settings_cd">Settings</string>
+    <string name="settings_title">Settings</string>
+    <string name="settings_unlock_method_section">Unlock method</string>
+    <string name="settings_security_section">Security</string>
+    <string name="settings_appearance_section">Appearance</string>
+    <string name="settings_data_section">Data</string>
+    <string name="pin_enabled_label">PIN unlock is on</string>
+    <string name="biometric_enabled_label">Fingerprint/face unlock is on</string>
+    <string name="auto_lock_30s">30 seconds</string>
+    <string name="auto_lock_1m">1 minute</string>
+    <string name="auto_lock_5m">5 minutes</string>
+    <string name="auto_lock_15m">15 minutes</string>
+    <string name="auto_lock_never">Never</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
+    <string name="theme_system">System</string>
 </resources>

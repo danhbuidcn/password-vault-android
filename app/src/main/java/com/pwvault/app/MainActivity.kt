@@ -13,6 +13,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -22,8 +23,10 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.lifecycleScope
 import com.pwvault.app.security.BackupPreferences
+import com.pwvault.app.security.ThemeMode
 import com.pwvault.app.ui.export.ExportTarget
 import com.pwvault.app.ui.export.ExportViewModel
+import com.pwvault.app.ui.settings.SettingsViewModel
 import com.pwvault.app.ui.theme.PwVaultTheme
 import com.pwvault.app.ui.unlock.BiometricUnlockScreen
 import com.pwvault.app.ui.unlock.PinUnlockScreen
@@ -63,6 +66,7 @@ class MainActivity : FragmentActivity() {
     private val passwordTemplateViewModel: PasswordTemplateViewModel by viewModels()
     private val exportViewModel: ExportViewModel by viewModels()
     private val importViewModel: ImportViewModel by viewModels()
+    private val settingsViewModel: SettingsViewModel by viewModels()
     private lateinit var biometricPrompt: BiometricPrompt
     private lateinit var unlockPromptInfo: BiometricPrompt.PromptInfo
     private lateinit var setupPromptInfo: BiometricPrompt.PromptInfo
@@ -110,7 +114,17 @@ class MainActivity : FragmentActivity() {
                 BiometricManager.BIOMETRIC_SUCCESS
 
         setContent {
-            PwVaultTheme {
+            val themeMode =
+                settingsViewModel.state
+                    .collectAsState()
+                    .value.themeMode
+            val darkTheme =
+                when (themeMode) {
+                    ThemeMode.LIGHT -> false
+                    ThemeMode.DARK -> true
+                    ThemeMode.SYSTEM -> isSystemInDarkTheme()
+                }
+            PwVaultTheme(darkTheme = darkTheme) {
                 PwVaultApp(
                     unlockViewModel = unlockViewModel,
                     vaultViewModel = vaultViewModel,
@@ -118,6 +132,7 @@ class MainActivity : FragmentActivity() {
                     passwordTemplateViewModel = passwordTemplateViewModel,
                     exportViewModel = exportViewModel,
                     importViewModel = importViewModel,
+                    settingsViewModel = settingsViewModel,
                     canSetupBiometric = canSetupBiometric,
                     onAuthenticateBiometricUnlock = ::triggerBiometricUnlock,
                     onSetupBiometric = ::triggerBiometricSetup,
@@ -254,6 +269,7 @@ private fun PwVaultApp(
     passwordTemplateViewModel: PasswordTemplateViewModel,
     exportViewModel: ExportViewModel,
     importViewModel: ImportViewModel,
+    settingsViewModel: SettingsViewModel,
     canSetupBiometric: Boolean,
     onAuthenticateBiometricUnlock: () -> Unit,
     onSetupBiometric: () -> Unit,
@@ -303,6 +319,7 @@ private fun PwVaultApp(
                 passwordTemplateViewModel = passwordTemplateViewModel,
                 exportViewModel = exportViewModel,
                 importViewModel = importViewModel,
+                settingsViewModel = settingsViewModel,
                 onVerifyMasterPassword = unlockViewModel::verifyMasterPassword,
                 onPickExportDestination = onPickExportDestination,
                 onPickImportSource = onPickImportSource,

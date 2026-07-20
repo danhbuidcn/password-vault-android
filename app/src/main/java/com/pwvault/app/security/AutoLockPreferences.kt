@@ -10,7 +10,7 @@ private const val KEY_TIMEOUT_MILLIS = "timeout_millis"
 /** `-1` sentinel means "Never" (see [SecurityPolicy.AUTO_LOCK_TIMEOUT_OPTIONS]). */
 private const val NEVER_SENTINEL = -1L
 
-/** Persists the user's chosen auto-lock timeout. Feature 15 (Settings) will read/write this. */
+/** Persists the user's chosen auto-lock timeout — read/written from `SettingsScreen`. */
 class AutoLockPreferences(
     context: Context,
 ) {

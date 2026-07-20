@@ -13,6 +13,7 @@ import com.pwvault.app.security.LockoutStore
 import com.pwvault.app.security.PinCredentialStore
 import com.pwvault.app.security.PinKeystoreKeyProvider
 import com.pwvault.app.security.PinManager
+import com.pwvault.app.security.ThemePreferences
 import com.pwvault.app.security.VaultMetadataStore
 import dagger.Module
 import dagger.Provides
@@ -96,4 +97,10 @@ object SecurityModule {
     fun provideClipboardClearer(
         @ApplicationContext context: Context,
     ): ClipboardClearer = ClipboardClearer(context)
+
+    @Provides
+    @Singleton
+    fun provideThemePreferences(
+        @ApplicationContext context: Context,
+    ): ThemePreferences = ThemePreferences(context)
 }
