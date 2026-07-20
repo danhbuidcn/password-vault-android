@@ -204,7 +204,7 @@ private fun VaultActionButtons(
     hasAutoBackupFolder: Boolean,
     onPickAutoBackupFolder: () -> Unit,
 ) {
-    Row {
+    Row(modifier = Modifier.horizontalScroll(rememberScrollState())) {
         TextButton(onClick = onManageTags, modifier = Modifier.padding(horizontal = 8.dp)) {
             Icon(
                 Icons.AutoMirrored.Filled.Label,
