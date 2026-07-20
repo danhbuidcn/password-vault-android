@@ -17,6 +17,7 @@ import androidx.compose.material.icons.automirrored.filled.Label
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.material.icons.filled.IosShare
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
@@ -64,8 +65,10 @@ fun VaultScreen(
     tagViewModel: TagViewModel,
     passwordTemplateViewModel: PasswordTemplateViewModel,
     exportViewModel: ExportViewModel,
+    importViewModel: ImportViewModel,
     onVerifyMasterPassword: suspend (CharArray) -> Boolean,
     onPickExportDestination: (ExportTarget, String) -> Unit,
+    onPickImportSource: () -> Unit,
 ) {
     var showPinDialog by remember { mutableStateOf(false) }
     var showTagManager by remember { mutableStateOf(false) }
@@ -105,6 +108,27 @@ fun VaultScreen(
         return
     }
 
+    val importState = importViewModel.state.collectAsState().value
+    if (importState != ImportUiState.Closed) {
+        ImportScreen(
+            state = importState,
+            onToggleHeaderRow = importViewModel::toggleHeaderRow,
+            onNameColumnChange = importViewModel::updateNameColumn,
+            onUsernameColumnChange = importViewModel::updateUsernameColumn,
+            onPasswordColumnChange = importViewModel::updatePasswordColumn,
+            onUrlColumnChange = importViewModel::updateUrlColumn,
+            onNoteColumnChange = importViewModel::updateNoteColumn,
+            onContinueMapping = importViewModel::confirmMapping,
+            onConfirmImport = importViewModel::confirmImport,
+            onRetry = {
+                importViewModel.close()
+                onPickImportSource()
+            },
+            onClose = importViewModel::close,
+        )
+        return
+    }
+
     when (val vaultState = viewModel.state.collectAsState().value) {
         is VaultUiState.ItemList ->
             VaultItemListScreen(
@@ -120,6 +144,7 @@ fun VaultScreen(
                 onSearchQueryChange = viewModel::updateSearchQuery,
                 onManageTags = { showTagManager = true },
                 onExport = exportViewModel::open,
+                onImport = onPickImportSource,
             )
         is VaultUiState.ItemDetail ->
             VaultItemDetailScreen(
@@ -180,6 +205,7 @@ private fun VaultItemListScreen(
     onSearchQueryChange: (String) -> Unit,
     onManageTags: () -> Unit,
     onExport: () -> Unit,
+    onImport: () -> Unit,
 ) {
     Scaffold(
         floatingActionButton = {
@@ -240,6 +266,14 @@ private fun VaultItemListScreen(
                         modifier = Modifier.padding(end = 4.dp),
                     )
                     Text(stringResource(R.string.export_cd))
+                }
+                TextButton(onClick = onImport, modifier = Modifier.padding(horizontal = 8.dp)) {
+                    Icon(
+                        Icons.Filled.FileDownload,
+                        contentDescription = null,
+                        modifier = Modifier.padding(end = 4.dp),
+                    )
+                    Text(stringResource(R.string.import_cd))
                 }
             }
 

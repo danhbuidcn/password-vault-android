@@ -24,6 +24,7 @@ import com.pwvault.app.ui.unlock.SetupScreen
 import com.pwvault.app.ui.unlock.UnlockScreen
 import com.pwvault.app.ui.unlock.UnlockUiState
 import com.pwvault.app.ui.unlock.UnlockViewModel
+import com.pwvault.app.ui.vault.ImportViewModel
 import com.pwvault.app.ui.vault.PasswordTemplateViewModel
 import com.pwvault.app.ui.vault.TagViewModel
 import com.pwvault.app.ui.vault.VaultScreen
@@ -33,6 +34,13 @@ import kotlinx.coroutines.launch
 
 private const val EXPORT_DESTINATION_MIME_TYPE = "application/octet-stream"
 private const val STATE_PENDING_EXPORT_TARGET = "pendingExportTarget"
+private val IMPORT_SOURCE_MIME_TYPES =
+    arrayOf(
+        "text/csv",
+        "text/comma-separated-values",
+        "text/plain",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    )
 
 private enum class BiometricOperation { UNLOCK, SETUP }
 
@@ -43,10 +51,12 @@ class MainActivity : FragmentActivity() {
     private val tagViewModel: TagViewModel by viewModels()
     private val passwordTemplateViewModel: PasswordTemplateViewModel by viewModels()
     private val exportViewModel: ExportViewModel by viewModels()
+    private val importViewModel: ImportViewModel by viewModels()
     private lateinit var biometricPrompt: BiometricPrompt
     private lateinit var unlockPromptInfo: BiometricPrompt.PromptInfo
     private lateinit var setupPromptInfo: BiometricPrompt.PromptInfo
     private lateinit var exportDestinationLauncher: ActivityResultLauncher<String>
+    private lateinit var importSourceLauncher: ActivityResultLauncher<Array<String>>
     private var pendingBiometricOperation = BiometricOperation.UNLOCK
     private var pendingExportTarget: ExportTarget? = null
 
@@ -70,6 +80,10 @@ class MainActivity : FragmentActivity() {
             registerForActivityResult(ActivityResultContracts.CreateDocument(EXPORT_DESTINATION_MIME_TYPE)) { uri ->
                 onExportDestinationPicked(uri)
             }
+        importSourceLauncher =
+            registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+                importViewModel.onFilePicked(uri)
+            }
         val canSetupBiometric =
             BiometricManager.from(this).canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_STRONG) ==
                 BiometricManager.BIOMETRIC_SUCCESS
@@ -82,10 +96,12 @@ class MainActivity : FragmentActivity() {
                     tagViewModel = tagViewModel,
                     passwordTemplateViewModel = passwordTemplateViewModel,
                     exportViewModel = exportViewModel,
+                    importViewModel = importViewModel,
                     canSetupBiometric = canSetupBiometric,
                     onAuthenticateBiometricUnlock = ::triggerBiometricUnlock,
                     onSetupBiometric = ::triggerBiometricSetup,
                     onPickExportDestination = ::triggerExportDestinationPicker,
+                    onPickImportSource = { importSourceLauncher.launch(IMPORT_SOURCE_MIME_TYPES) },
                 )
             }
         }
@@ -194,10 +210,12 @@ private fun PwVaultApp(
     tagViewModel: TagViewModel,
     passwordTemplateViewModel: PasswordTemplateViewModel,
     exportViewModel: ExportViewModel,
+    importViewModel: ImportViewModel,
     canSetupBiometric: Boolean,
     onAuthenticateBiometricUnlock: () -> Unit,
     onSetupBiometric: () -> Unit,
     onPickExportDestination: (ExportTarget, String) -> Unit,
+    onPickImportSource: () -> Unit,
 ) {
     when (val state = unlockViewModel.state.collectAsState().value) {
         is UnlockUiState.Loading -> Unit
@@ -239,8 +257,10 @@ private fun PwVaultApp(
                 tagViewModel = tagViewModel,
                 passwordTemplateViewModel = passwordTemplateViewModel,
                 exportViewModel = exportViewModel,
+                importViewModel = importViewModel,
                 onVerifyMasterPassword = unlockViewModel::verifyMasterPassword,
                 onPickExportDestination = onPickExportDestination,
+                onPickImportSource = onPickImportSource,
             )
     }
 }

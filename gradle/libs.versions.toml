@@ -18,6 +18,7 @@ ktlintGradle = "14.2.0"
 detekt = "1.23.8"
 junit = "4.13.2"
 zip4j = "2.11.5"
+fastexcelReader = "0.19.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -41,6 +42,7 @@ hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref
 hilt-compiler = { group = "com.google.dagger", name = "hilt-compiler", version.ref = "hilt" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 zip4j = { group = "net.lingala.zip4j", name = "zip4j", version.ref = "zip4j" }
+fastexcel-reader = { group = "org.dhatim", name = "fastexcel-reader", version.ref = "fastexcelReader" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
