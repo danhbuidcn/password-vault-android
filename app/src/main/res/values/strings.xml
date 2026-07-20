@@ -157,4 +157,10 @@
     <string name="import_done_summary">Added %1$d item(s).</string>
     <string name="import_done_delete_reminder">If the source file contains plaintext passwords, remember to delete it yourself.</string>
     <string name="import_close_button">Close</string>
+
+    <string name="auto_backup_off_cd">Auto-backup: not set up</string>
+    <string name="auto_backup_on_cd">Auto-backup: on</string>
+    <string name="export_reminder_channel_name">Backup reminders</string>
+    <string name="export_reminder_notification_title">Time to back up your Vault</string>
+    <string name="export_reminder_notification_text">It\'s been a while since your last export — consider making a fresh one.</string>
 </resources>

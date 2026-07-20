@@ -18,6 +18,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.FileDownload
+import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.IosShare
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
@@ -69,6 +70,8 @@ fun VaultScreen(
     onVerifyMasterPassword: suspend (CharArray) -> Boolean,
     onPickExportDestination: (ExportTarget, String) -> Unit,
     onPickImportSource: () -> Unit,
+    hasAutoBackupFolder: Boolean,
+    onPickAutoBackupFolder: () -> Unit,
 ) {
     var showPinDialog by remember { mutableStateOf(false) }
     var showTagManager by remember { mutableStateOf(false) }
@@ -145,6 +148,8 @@ fun VaultScreen(
                 onManageTags = { showTagManager = true },
                 onExport = exportViewModel::open,
                 onImport = onPickImportSource,
+                hasAutoBackupFolder = hasAutoBackupFolder,
+                onPickAutoBackupFolder = onPickAutoBackupFolder,
             )
         is VaultUiState.ItemDetail ->
             VaultItemDetailScreen(
@@ -192,6 +197,50 @@ fun VaultScreen(
 }
 
 @Composable
+private fun VaultActionButtons(
+    onManageTags: () -> Unit,
+    onExport: () -> Unit,
+    onImport: () -> Unit,
+    hasAutoBackupFolder: Boolean,
+    onPickAutoBackupFolder: () -> Unit,
+) {
+    Row {
+        TextButton(onClick = onManageTags, modifier = Modifier.padding(horizontal = 8.dp)) {
+            Icon(
+                Icons.AutoMirrored.Filled.Label,
+                contentDescription = null,
+                modifier = Modifier.padding(end = 4.dp),
+            )
+            Text(stringResource(R.string.manage_tags_cd))
+        }
+        TextButton(onClick = onExport, modifier = Modifier.padding(horizontal = 8.dp)) {
+            Icon(
+                Icons.Filled.IosShare,
+                contentDescription = null,
+                modifier = Modifier.padding(end = 4.dp),
+            )
+            Text(stringResource(R.string.export_cd))
+        }
+        TextButton(onClick = onImport, modifier = Modifier.padding(horizontal = 8.dp)) {
+            Icon(
+                Icons.Filled.FileDownload,
+                contentDescription = null,
+                modifier = Modifier.padding(end = 4.dp),
+            )
+            Text(stringResource(R.string.import_cd))
+        }
+        TextButton(onClick = onPickAutoBackupFolder, modifier = Modifier.padding(horizontal = 8.dp)) {
+            Icon(
+                Icons.Filled.FolderOpen,
+                contentDescription = null,
+                modifier = Modifier.padding(end = 4.dp),
+            )
+            Text(stringResource(if (hasAutoBackupFolder) R.string.auto_backup_on_cd else R.string.auto_backup_off_cd))
+        }
+    }
+}
+
+@Composable
 private fun VaultItemListScreen(
     vaultItems: List<VaultItem>,
     warnings: Map<Long, VaultItemWarning>,
@@ -206,6 +255,8 @@ private fun VaultItemListScreen(
     onManageTags: () -> Unit,
     onExport: () -> Unit,
     onImport: () -> Unit,
+    hasAutoBackupFolder: Boolean,
+    onPickAutoBackupFolder: () -> Unit,
 ) {
     Scaffold(
         floatingActionButton = {
@@ -250,32 +301,13 @@ private fun VaultItemListScreen(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
             )
 
-            Row {
-                TextButton(onClick = onManageTags, modifier = Modifier.padding(horizontal = 8.dp)) {
-                    Icon(
-                        Icons.AutoMirrored.Filled.Label,
-                        contentDescription = null,
-                        modifier = Modifier.padding(end = 4.dp),
-                    )
-                    Text(stringResource(R.string.manage_tags_cd))
-                }
-                TextButton(onClick = onExport, modifier = Modifier.padding(horizontal = 8.dp)) {
-                    Icon(
-                        Icons.Filled.IosShare,
-                        contentDescription = null,
-                        modifier = Modifier.padding(end = 4.dp),
-                    )
-                    Text(stringResource(R.string.export_cd))
-                }
-                TextButton(onClick = onImport, modifier = Modifier.padding(horizontal = 8.dp)) {
-                    Icon(
-                        Icons.Filled.FileDownload,
-                        contentDescription = null,
-                        modifier = Modifier.padding(end = 4.dp),
-                    )
-                    Text(stringResource(R.string.import_cd))
-                }
-            }
+            VaultActionButtons(
+                onManageTags = onManageTags,
+                onExport = onExport,
+                onImport = onImport,
+                hasAutoBackupFolder = hasAutoBackupFolder,
+                onPickAutoBackupFolder = onPickAutoBackupFolder,
+            )
 
             if (vaultItems.isEmpty()) {
                 Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {

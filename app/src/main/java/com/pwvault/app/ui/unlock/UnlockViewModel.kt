@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.pwvault.app.data.VaultFileManager
 import com.pwvault.app.security.AutoLockPreferences
+import com.pwvault.app.security.BackupPreferences
 import com.pwvault.app.security.BiometricUnlockManager
 import com.pwvault.app.security.KeyDerivation
 import com.pwvault.app.security.LockoutPolicy
@@ -83,6 +84,7 @@ class UnlockViewModel
         private val biometricUnlockManager: BiometricUnlockManager,
         private val lockoutPolicy: LockoutPolicy,
         private val autoLockPreferences: AutoLockPreferences,
+        private val backupPreferences: BackupPreferences,
     ) : ViewModel() {
         private val _state = MutableStateFlow<UnlockUiState>(initialState())
         val state: StateFlow<UnlockUiState> = _state.asStateFlow()
@@ -135,6 +137,7 @@ class UnlockViewModel
                 _state.value =
                     if (success) {
                         vaultKey = key
+                        backupPreferences.seedReminderClockAtVaultCreation()
                         UnlockUiState.Unlocked(hasPin = false, hasBiometric = false)
                     } else {
                         Arrays.fill(key, 0)

@@ -32,4 +32,10 @@ object SecurityPolicy {
 
     /** Below this many distinct character classes (upper/lower/digit/special), a password is flagged weak. */
     const val WEAK_PASSWORD_MIN_CHAR_CLASSES = 3
+
+    /** Max `pwvault-auto-*.pwvbackup` files kept in the user-picked auto-backup folder. */
+    const val AUTO_BACKUP_MAX_FILES = 5
+
+    /** Remind the user to export manually if this many days pass with no manual export — see `ExportReminderWorker`. */
+    const val EXPORT_REMINDER_INTERVAL_DAYS = 30
 }
