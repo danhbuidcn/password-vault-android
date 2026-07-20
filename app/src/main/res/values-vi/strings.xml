@@ -133,6 +133,31 @@
     <string name="warning_weak_password">Password yếu</string>
     <string name="warning_duplicate_password">Đang dùng chung với mục khác</string>
 
+    <string name="import_cd">Import</string>
+    <string name="import_title">Import mục vào Vault</string>
+    <string name="import_reading">Đang đọc file…</string>
+    <string name="import_failed">Không đọc được file này — kiểm tra định dạng rồi thử lại.</string>
+    <string name="import_retry_button">Chọn file khác</string>
+    <string name="import_header_row_toggle">Dòng đầu là tiêu đề</string>
+    <string name="import_column_label">Cột %1$d</string>
+    <string name="import_column_none">Không dùng</string>
+    <string name="import_map_name_label">Tên</string>
+    <string name="import_map_username_label">Tên đăng nhập</string>
+    <string name="import_map_password_label">Password</string>
+    <string name="import_map_url_label">URL</string>
+    <string name="import_map_note_label">Ghi chú</string>
+    <string name="error_import_name_column_required">Chọn cột chứa tên mục</string>
+    <string name="import_continue_button">Tiếp tục</string>
+    <string name="import_preview_title">Sẵn sàng import</string>
+    <string name="import_preview_summary">%1$d mục sẽ được thêm.</string>
+    <string name="import_preview_duplicates">%1$d mục có vẻ đã có sẵn — vẫn sẽ được import.</string>
+    <string name="import_preview_skipped">%1$d dòng bị bỏ qua (không có tên).</string>
+    <string name="import_confirm_button">Import</string>
+    <string name="import_done_title">Import hoàn tất</string>
+    <string name="import_done_summary">Đã thêm %1$d mục.</string>
+    <string name="import_done_delete_reminder">Nếu file nguồn chứa password dạng plaintext, nhớ tự xóa file này.</string>
+    <string name="import_close_button">Đóng</string>
+
     <string name="auto_backup_off_cd">Auto-backup: chưa thiết lập</string>
     <string name="auto_backup_on_cd">Auto-backup: đang bật</string>
     <string name="export_reminder_channel_name">Nhắc backup</string>

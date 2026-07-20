@@ -64,8 +64,10 @@ fun VaultScreen(
     passwordTemplateViewModel: PasswordTemplateViewModel,
     exportViewModel: ExportViewModel,
     settingsViewModel: SettingsViewModel,
+    importViewModel: ImportViewModel,
     onVerifyMasterPassword: suspend (CharArray) -> Boolean,
     onPickExportDestination: (ExportTarget, String) -> Unit,
+    onPickImportSource: () -> Unit,
     hasAutoBackupFolder: Boolean,
     onPickAutoBackupFolder: () -> Unit,
 ) {
@@ -86,6 +88,7 @@ fun VaultScreen(
     }
 
     val exportState = exportViewModel.state.collectAsState().value
+    val importState = importViewModel.state.collectAsState().value
 
     // A plain if/else chain (not early `return`s) so the trailing PinSetupDialog check below is
     // always reached regardless of which branch renders — PIN setup can now be triggered from
@@ -104,6 +107,10 @@ fun VaultScreen(
                 onExport = {
                     showSettings = false
                     exportViewModel.open()
+                },
+                onImport = {
+                    showSettings = false
+                    onPickImportSource()
                 },
                 hasAutoBackupFolder = hasAutoBackupFolder,
                 onPickAutoBackupFolder = onPickAutoBackupFolder,
@@ -124,6 +131,23 @@ fun VaultScreen(
                 onSubmitZipPassword = exportViewModel::submitZipPassword,
                 onPickDestination = onPickExportDestination,
                 onClose = exportViewModel::close,
+            )
+        importState != ImportUiState.Closed ->
+            ImportScreen(
+                state = importState,
+                onToggleHeaderRow = importViewModel::toggleHeaderRow,
+                onNameColumnChange = importViewModel::updateNameColumn,
+                onUsernameColumnChange = importViewModel::updateUsernameColumn,
+                onPasswordColumnChange = importViewModel::updatePasswordColumn,
+                onUrlColumnChange = importViewModel::updateUrlColumn,
+                onNoteColumnChange = importViewModel::updateNoteColumn,
+                onContinueMapping = importViewModel::confirmMapping,
+                onConfirmImport = importViewModel::confirmImport,
+                onRetry = {
+                    importViewModel.close()
+                    onPickImportSource()
+                },
+                onClose = importViewModel::close,
             )
         else ->
             when (val vaultState = viewModel.state.collectAsState().value) {

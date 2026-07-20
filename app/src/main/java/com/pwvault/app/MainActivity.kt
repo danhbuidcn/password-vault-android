@@ -34,6 +34,7 @@ import com.pwvault.app.ui.unlock.SetupScreen
 import com.pwvault.app.ui.unlock.UnlockScreen
 import com.pwvault.app.ui.unlock.UnlockUiState
 import com.pwvault.app.ui.unlock.UnlockViewModel
+import com.pwvault.app.ui.vault.ImportViewModel
 import com.pwvault.app.ui.vault.PasswordTemplateViewModel
 import com.pwvault.app.ui.vault.TagViewModel
 import com.pwvault.app.ui.vault.VaultScreen
@@ -44,6 +45,13 @@ import javax.inject.Inject
 
 private const val EXPORT_DESTINATION_MIME_TYPE = "application/octet-stream"
 private const val STATE_PENDING_EXPORT_TARGET = "pendingExportTarget"
+private val IMPORT_SOURCE_MIME_TYPES =
+    arrayOf(
+        "text/csv",
+        "text/comma-separated-values",
+        "text/plain",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    )
 
 private enum class BiometricOperation { UNLOCK, SETUP }
 
@@ -58,10 +66,12 @@ class MainActivity : FragmentActivity() {
     private val passwordTemplateViewModel: PasswordTemplateViewModel by viewModels()
     private val exportViewModel: ExportViewModel by viewModels()
     private val settingsViewModel: SettingsViewModel by viewModels()
+    private val importViewModel: ImportViewModel by viewModels()
     private lateinit var biometricPrompt: BiometricPrompt
     private lateinit var unlockPromptInfo: BiometricPrompt.PromptInfo
     private lateinit var setupPromptInfo: BiometricPrompt.PromptInfo
     private lateinit var exportDestinationLauncher: ActivityResultLauncher<String>
+    private lateinit var importSourceLauncher: ActivityResultLauncher<Array<String>>
     private lateinit var autoBackupFolderLauncher: ActivityResultLauncher<Uri?>
     private lateinit var notificationPermissionLauncher: ActivityResultLauncher<String>
     private var pendingBiometricOperation = BiometricOperation.UNLOCK
@@ -87,6 +97,10 @@ class MainActivity : FragmentActivity() {
         exportDestinationLauncher =
             registerForActivityResult(ActivityResultContracts.CreateDocument(EXPORT_DESTINATION_MIME_TYPE)) { uri ->
                 onExportDestinationPicked(uri)
+            }
+        importSourceLauncher =
+            registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+                importViewModel.onFilePicked(uri)
             }
         autoBackupFolderLauncher =
             registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
@@ -118,10 +132,12 @@ class MainActivity : FragmentActivity() {
                     passwordTemplateViewModel = passwordTemplateViewModel,
                     exportViewModel = exportViewModel,
                     settingsViewModel = settingsViewModel,
+                    importViewModel = importViewModel,
                     canSetupBiometric = canSetupBiometric,
                     onAuthenticateBiometricUnlock = ::triggerBiometricUnlock,
                     onSetupBiometric = ::triggerBiometricSetup,
                     onPickExportDestination = ::triggerExportDestinationPicker,
+                    onPickImportSource = { importSourceLauncher.launch(IMPORT_SOURCE_MIME_TYPES) },
                     hasAutoBackupFolder = hasAutoBackupFolder,
                     onPickAutoBackupFolder = { autoBackupFolderLauncher.launch(null) },
                 )
@@ -253,10 +269,12 @@ private fun PwVaultApp(
     passwordTemplateViewModel: PasswordTemplateViewModel,
     exportViewModel: ExportViewModel,
     settingsViewModel: SettingsViewModel,
+    importViewModel: ImportViewModel,
     canSetupBiometric: Boolean,
     onAuthenticateBiometricUnlock: () -> Unit,
     onSetupBiometric: () -> Unit,
     onPickExportDestination: (ExportTarget, String) -> Unit,
+    onPickImportSource: () -> Unit,
     hasAutoBackupFolder: Boolean,
     onPickAutoBackupFolder: () -> Unit,
 ) {
@@ -301,8 +319,10 @@ private fun PwVaultApp(
                 passwordTemplateViewModel = passwordTemplateViewModel,
                 exportViewModel = exportViewModel,
                 settingsViewModel = settingsViewModel,
+                importViewModel = importViewModel,
                 onVerifyMasterPassword = unlockViewModel::verifyMasterPassword,
                 onPickExportDestination = onPickExportDestination,
+                onPickImportSource = onPickImportSource,
                 hasAutoBackupFolder = hasAutoBackupFolder,
                 onPickAutoBackupFolder = onPickAutoBackupFolder,
             )

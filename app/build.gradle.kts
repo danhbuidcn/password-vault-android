@@ -74,6 +74,7 @@ dependencies {
     implementation(libs.sqlcipher.android)
     implementation(libs.argon2kt)
     implementation(libs.zip4j)
+    implementation(libs.fastexcel.reader)
 
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)

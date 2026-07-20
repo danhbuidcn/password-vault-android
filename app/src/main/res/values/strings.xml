@@ -133,6 +133,31 @@
     <string name="warning_weak_password">Weak password</string>
     <string name="warning_duplicate_password">Used by another item</string>
 
+    <string name="import_cd">Import</string>
+    <string name="import_title">Import Vault Items</string>
+    <string name="import_reading">Reading file…</string>
+    <string name="import_failed">Couldn\'t read that file — check the format and try again.</string>
+    <string name="import_retry_button">Choose another file</string>
+    <string name="import_header_row_toggle">First row is a header</string>
+    <string name="import_column_label">Column %1$d</string>
+    <string name="import_column_none">Not used</string>
+    <string name="import_map_name_label">Name</string>
+    <string name="import_map_username_label">Username</string>
+    <string name="import_map_password_label">Password</string>
+    <string name="import_map_url_label">URL</string>
+    <string name="import_map_note_label">Note</string>
+    <string name="error_import_name_column_required">Choose which column has the item name</string>
+    <string name="import_continue_button">Continue</string>
+    <string name="import_preview_title">Ready to import</string>
+    <string name="import_preview_summary">%1$d item(s) will be added.</string>
+    <string name="import_preview_duplicates">%1$d look like items you already have — they\'ll still be imported.</string>
+    <string name="import_preview_skipped">%1$d row(s) skipped (no name).</string>
+    <string name="import_confirm_button">Import</string>
+    <string name="import_done_title">Import complete</string>
+    <string name="import_done_summary">Added %1$d item(s).</string>
+    <string name="import_done_delete_reminder">If the source file contains plaintext passwords, remember to delete it yourself.</string>
+    <string name="import_close_button">Close</string>
+
     <string name="auto_backup_off_cd">Auto-backup: not set up</string>
     <string name="auto_backup_on_cd">Auto-backup: on</string>
     <string name="export_reminder_channel_name">Backup reminders</string>

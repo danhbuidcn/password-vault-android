@@ -18,7 +18,7 @@
 | 8 | Custom Field (trường tùy biến free-form theo từng item) | ✅ Done | [feature-08-custom-field-plan.md](feature-08-custom-field-plan.md) |
 | 9 | Vault Item loại Note | ✅ Done | [feature-09-note-plan.md](feature-09-note-plan.md) |
 | 10 | Sinh mật khẩu ngẫu nhiên + lưu template tái dùng | ✅ Done | [feature-10-password-generator-plan.md](feature-10-password-generator-plan.md) |
-| 11 | Import CSV/Excel (map cột, cảnh báo trùng lặp) | ⏳ Pending | — |
+| 11 | Import CSV/Excel (map cột, cảnh báo trùng lặp) | ✅ Done | [feature-11-import-plan.md](feature-11-import-plan.md) |
 | 12 | Export — mã hóa `.pwvbackup` + plaintext CSV (cảnh báo 2 bước, nén có mật khẩu) | ✅ Done | [feature-12-export-plan.md](feature-12-export-plan.md) |
 | 13 | Auto-backup nền (ghi mỗi khi đổi Vault Item, atomic, rotate 5 bản) + nhắc export thủ công định kỳ (WorkManager) | ✅ Done | [feature-13-autobackup-plan.md](feature-13-autobackup-plan.md) |
 | 14 | Cảnh báo mật khẩu yếu/trùng lặp | ✅ Done | [feature-14-weak-duplicate-warning-plan.md](feature-14-weak-duplicate-warning-plan.md) |

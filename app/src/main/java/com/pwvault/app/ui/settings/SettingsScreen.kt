@@ -10,6 +10,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Label
+import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.IosShare
 import androidx.compose.material3.Button
@@ -40,6 +41,7 @@ fun SettingsScreen(
     onSetupBiometric: () -> Unit,
     onManageTags: () -> Unit,
     onExport: () -> Unit,
+    onImport: () -> Unit,
     hasAutoBackupFolder: Boolean,
     onPickAutoBackupFolder: () -> Unit,
     viewModel: SettingsViewModel,
@@ -70,7 +72,7 @@ fun SettingsScreen(
         ThemeSection(selected = state.themeMode, onSelect = viewModel::setThemeMode)
 
         SettingsSectionTitle(R.string.settings_data_section)
-        DataSection(onManageTags, onExport, hasAutoBackupFolder, onPickAutoBackupFolder)
+        DataSection(onManageTags, onExport, onImport, hasAutoBackupFolder, onPickAutoBackupFolder)
 
         TextButton(onClick = onBack, modifier = Modifier.fillMaxWidth().padding(top = 24.dp)) {
             Text(stringResource(R.string.vault_back_button))
@@ -174,6 +176,7 @@ private fun ThemeSection(
 private fun DataSection(
     onManageTags: () -> Unit,
     onExport: () -> Unit,
+    onImport: () -> Unit,
     hasAutoBackupFolder: Boolean,
     onPickAutoBackupFolder: () -> Unit,
 ) {
@@ -184,6 +187,10 @@ private fun DataSection(
     TextButton(onClick = onExport) {
         Icon(Icons.Filled.IosShare, contentDescription = null, modifier = Modifier.padding(end = 4.dp))
         Text(stringResource(R.string.export_cd))
+    }
+    TextButton(onClick = onImport) {
+        Icon(Icons.Filled.FileDownload, contentDescription = null, modifier = Modifier.padding(end = 4.dp))
+        Text(stringResource(R.string.import_cd))
     }
     TextButton(onClick = onPickAutoBackupFolder) {
         Icon(Icons.Filled.FolderOpen, contentDescription = null, modifier = Modifier.padding(end = 4.dp))
