@@ -26,4 +26,10 @@ object SecurityPolicy {
 
     /** How long a plaintext CSV export temp file survives in [android.content.Context.getCacheDir] before deletion. */
     val EXPORT_TEMP_FILE_CLEANUP_DELAY: Duration = 5.minutes
+
+    /** Below this length, a Vault Item password is flagged weak — see [com.pwvault.app.security.PasswordStrength]. */
+    const val WEAK_PASSWORD_MIN_LENGTH = 8
+
+    /** Below this many distinct character classes (upper/lower/digit/special), a password is flagged weak. */
+    const val WEAK_PASSWORD_MIN_CHAR_CLASSES = 3
 }

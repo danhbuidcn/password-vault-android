@@ -59,6 +59,9 @@
     <string name="item_username_label">Tên đăng nhập</string>
     <string name="item_url_label">URL</string>
     <string name="item_note_label">Ghi chú</string>
+    <string name="item_content_label">Nội dung</string>
+    <string name="item_type_login">Login</string>
+    <string name="item_type_note">Ghi chú</string>
     <string name="error_item_name_required">Cần nhập tên</string>
     <string name="generate_password_button">Tạo mật khẩu ngẫu nhiên</string>
     <string name="vault_save_button">Lưu</string>
@@ -125,4 +128,8 @@
     <string name="export_writing">Đang export…</string>
     <string name="export_done">Export hoàn tất.</string>
     <string name="export_failed">Export thất bại, thử lại.</string>
+
+    <string name="password_warning_cd">Password yếu hoặc bị dùng lại</string>
+    <string name="warning_weak_password">Password yếu</string>
+    <string name="warning_duplicate_password">Đang dùng chung với mục khác</string>
 </resources>
