@@ -5,7 +5,7 @@
 - pwvault-android là ứng dụng Android quản lý mật khẩu cá nhân, hoạt động hoàn toàn offline.
 - Mật khẩu được lưu trong một file mã hóa (AES-256) ngay trên máy, chỉ app này đọc được.
 - Không có server hay đồng bộ cloud tự động; backup/chuyển máy thực hiện bằng cách xuất một file mã hóa riêng của app.
-- Dự án hiện đang ở giai đoạn viết tài liệu chức năng, chưa có code.
+- Dự án đang trong giai đoạn implement theo [roadmap.md](plans/roadmap.md): scaffold + Master Password setup/unlock (Feature 0, 1) đã xong, các tính năng còn lại (PIN, sinh trắc học, auto-lock/lockout, CRUD Vault Item, import/export, auto-backup...) đang chờ triển khai.
 
 ---
 
@@ -36,7 +36,7 @@
 - Tùy chỉnh giao diện & tổ chức dữ liệu: theme, tag/nhóm/icon tự đặt, cách sắp xếp/hiển thị danh sách.
 - Import mật khẩu từ file CSV/Excel.
 - Export: mỗi lần xuất, người dùng chọn 1 trong 2 hình thức — mã hóa (`.pwvbackup`, chỉ app đọc được, dùng cho backup/chuyển máy) hoặc không mã hóa (CSV/Excel, mở/xem bình thường bằng ứng dụng khác).
-- Nhắc backup định kỳ, giữ nhiều bản backup gần nhất (rotate).
+- Auto-backup tự động chạy nền mỗi khi thêm/sửa/xóa Vault Item (ghi `.pwvbackup` vào thư mục người dùng chọn qua SAF, không cần thao tác thủ công), giữ tối đa 5 bản gần nhất (rotate); ngoài ra vẫn nhắc export thủ công định kỳ.
 - Cảnh báo mật khẩu yếu/trùng lặp, chặn chụp màn hình.
 
 ---
@@ -55,7 +55,7 @@
 - PIN/sinh trắc học chỉ mở khóa giao diện, không thay thế khóa mã hóa thực sự (vẫn dựa trên Master Password, lưu qua Android Keystore).
 - Người dùng tự chọn kiểu export mỗi lần: mã hóa (`.pwvbackup`, chỉ app đọc được) hoặc không mã hóa (CSV/Excel, mở xem bình thường).
 - Export không mã hóa hiển thị cảnh báo trước khi xuất (dữ liệu ở dạng đọc được).
-- Mọi thao tác export đều yêu cầu xác thực lại bằng Master Password.
+- Mọi thao tác export **thủ công** đều yêu cầu xác thực lại bằng Master Password; Auto-backup chạy nền là ngoại lệ — dùng Vault Key đã có sẵn trong session, không hỏi lại.
 - Giới hạn số lần nhập sai Master Password/PIN, tăng dần thời gian khóa khi nhập sai.
 - Mọi tùy chỉnh bảo mật (thời gian tự khóa, tham số mã hóa...) đều có giá trị mặc định an toàn; không cho đặt dưới ngưỡng tối thiểu app quy định.
 - Trường tùy biến do người dùng tự thêm không có kiểu cố định (free-form), nhưng được mã hóa cùng cấp với các trường mặc định.
@@ -85,7 +85,7 @@
 
 - Cài đặt lần đầu → thiết lập Master Password → (tùy chọn) bật PIN/sinh trắc học.
 - Mở app → mở khóa (Master Password / PIN / sinh trắc học) → xem/thêm/sửa/xóa Vault Item (Login hoặc Note).
-- Backup định kỳ hoặc theo nhắc nhở → xuất file `.pwvbackup` ra bộ nhớ ngoài (SD/USB).
+- Auto-backup tự động ghi `.pwvbackup` vào thư mục đã chọn mỗi khi có thay đổi Vault Item (không cần thao tác); ngoài ra có thể backup định kỳ/theo nhắc nhở → xuất file `.pwvbackup` ra bộ nhớ ngoài (SD/USB).
 - Đổi máy → cài app trên máy mới → import file `.pwvbackup` bằng Master Password để khôi phục.
 - Cần chuyển/xem dữ liệu dạng bảng → import/export CSV/Excel (export loại này luôn ở dạng đọc được, có cảnh báo).
 

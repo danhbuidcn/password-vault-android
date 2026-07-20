@@ -4,7 +4,6 @@
 
 - Tài liệu mô tả **cơ chế hoạt động tổng thể** của pwvault-android: vòng đời app (state), luồng mở khóa/khóa, và luồng dữ liệu chính (CRUD, backup/restore, import).
 - Bổ sung cho [overview.md](overview.md#main-workflow) (tóm tắt ngắn) và [architecture.md](architecture.md#authentication) (chi tiết bảo mật) — xem 2 file đó để biết business rule/tech stack đầy đủ.
-- Đánh dấu rõ phần nào **đã code** và phần nào **còn là plan**, cập nhật lại khi có feature mới implement xong.
 
 ---
 
@@ -76,9 +75,27 @@ Chi tiết tham số Argon2id (`m=64MB, t=3, p=1`), vị trí lưu salt/file Vau
 
 ---
 
-## Luồng Backup / Restore
+## Luồng Auto-backup (tự động, chạy nền)
 
-> Trạng thái: **chưa code** — mô tả theo [functional-spec.md §7](functional-spec.md).
+> Trạng thái: **chưa code** (gộp vào Feature 13 theo [roadmap.md](plans/roadmap.md)) — mô tả theo [functional-spec.md §7.1](functional-spec.md).
+
+```mermaid
+stateDiagram-v2
+    Unlocked --> GhiFileTam: thêm/sửa/xóa Vault Item thành công
+    GhiFileTam --> RenameDeBanCu: ghi xong file tạm (atomic)
+    RenameDeBanCu --> RotateBackup: rename đè, xoay vòng giữ tối đa 5 bản
+    RotateBackup --> Unlocked: xong, không cần thao tác gì thêm
+```
+
+- Không yêu cầu xác thực lại Master Password — dùng Vault Key đã có sẵn trong session `Unlocked`.
+- Thư mục lưu do người dùng chọn 1 lần qua SAF, thường trỏ tới thư mục được Google Drive/FolderSync tự đồng bộ.
+- Khác với Export thủ công bên dưới: đây là cơ chế nền, không cần user bấm nút mỗi lần.
+
+---
+
+## Luồng Backup / Restore (thủ công)
+
+> Trạng thái: **chưa code** — mô tả theo [functional-spec.md §7.2](functional-spec.md).
 
 ```mermaid
 stateDiagram-v2
@@ -87,10 +104,10 @@ stateDiagram-v2
     XuatFile --> ChonEncrypted: mặc định → `.pwvbackup` (AES-256, khóa từ Master Password)
     XuatFile --> ChonPlaintext: tùy chọn phụ → CSV/Excel (cảnh báo 2 bước + nén zip có mật khẩu)
     ChonEncrypted --> Unlocked: lưu qua SAF (SD card/USB OTG)
-    ChonPlaintext --> Unlocked: lưu qua SAF, file tạm tự xóa sau X phút
+    ChonPlaintext --> Unlocked: lưu qua SAF, file tạm tự xóa sau 5 phút
 ```
 
-**Restore** (đổi máy/khôi phục): cài app mới → `CheckVault` không thấy Vault → nhưng thay vì `Setup` tạo mới, user chọn **Import `.pwvbackup`** → nhập Master Password → derive lại Vault Key từ salt trong file backup → mở được → vào `Unlocked` với dữ liệu cũ.
+**Restore** (đổi máy/khôi phục): cài app mới → `CheckVault` không thấy Vault → nhưng thay vì `Setup` tạo mới, user chọn **Import `.pwvbackup`** (từ bản Auto-backup hoặc Export thủ công) → nhập Master Password → derive lại Vault Key từ salt trong file backup → mở được → vào `Unlocked` với dữ liệu cũ.
 
 ---
 
@@ -117,7 +134,8 @@ stateDiagram-v2
 | Auto-lock timer | ⬜ Chưa code |
 | Lockout khi nhập sai nhiều lần | ⬜ Chưa code |
 | Vault Item CRUD (Room thật) | ⬜ Chưa code (Feature 5) |
-| Backup/Export (`.pwvbackup`, CSV/Excel) | ⬜ Chưa code |
+| Auto-backup nền (rotate 5 bản) | ⬜ Chưa code (Feature 13) |
+| Export thủ công (`.pwvbackup`, CSV/Excel) | ⬜ Chưa code |
 | Import (CSV/Excel) | ⬜ Chưa code |
 
 Xem thứ tự implement đầy đủ ở [docs/plans/roadmap.md](plans/roadmap.md).

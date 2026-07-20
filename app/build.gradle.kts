@@ -7,6 +7,9 @@ plugins {
     alias(libs.plugins.detekt)
 }
 
+val enableScreenshotBlock =
+    (project.findProperty("enableScreenshotBlock") as String?)?.toBoolean() ?: true
+
 android {
     namespace = "com.pwvault.app"
     compileSdk {
@@ -22,6 +25,7 @@ android {
         targetSdk = 37
         versionCode = 1
         versionName = "0.1.0"
+        buildConfigField("boolean", "ENABLE_SCREENSHOT_BLOCK", "$enableScreenshotBlock")
     }
 
     buildTypes {

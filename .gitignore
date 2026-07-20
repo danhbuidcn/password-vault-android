@@ -18,3 +18,6 @@ local.properties
 # Build output APKs (published separately, not committed)
 *.apk
 *.aab
+
+# Local git worktrees (per-feature checkouts, not repo content)
+.claude/worktrees/

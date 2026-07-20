@@ -44,16 +44,23 @@ App Android quản lý mật khẩu offline, lưu file mã hóa cục bộ, khô
 - Sau khi import xong, nhắc người dùng xóa file nguồn nếu là plaintext.
 
 ## 7. Export & Backup (gộp, dùng chung cho cả backup và chuyển máy)
+
+### 7.1 Auto-backup (tự động, chạy nền)
+- Mỗi khi thêm/sửa/xóa Vault Item thành công, tự động ghi 1 bản `.pwvbackup` (mã hóa AES-256, khóa từ Master Password — dùng lại Vault Key đang có sẵn trong session `Unlocked`, **không** cần xác thực lại).
+- Ghi atomic: ghi ra file tạm trước, rename đè lên bản cũ sau khi ghi xong — tránh hỏng file backup nếu app crash/mất điện giữa chừng.
+- Lưu vào 1 thư mục do người dùng chọn **1 lần duy nhất** qua Storage Access Framework (ví dụ thư mục được Google Drive/FolderSync tự đồng bộ) — app xin quyền ghi lâu dài (persistable URI permission), không hardcode đường dẫn.
+- Giữ tối đa 5 bản gần nhất (rotate) ✅, không ghi đè hoàn toàn 1 file duy nhất — tránh mất cả máy lẫn backup nếu bản mới nhất bị hỏng.
+- Người dùng tự đưa thư mục này lên Google Drive/nơi lưu ngoài; app không tự động upload cloud.
+- Khôi phục: cài app mới → import 1 trong các bản `.pwvbackup` → nhập đúng Master Password cũ → xem được dữ liệu. Không có cách khôi phục nếu quên Master Password (giữ nguyên mô hình zero-knowledge, xem mục 9).
+
+### 7.2 Export thủ công (theo yêu cầu người dùng)
 - Mặc định export ra **file mã hóa riêng của app** (định dạng `.pwvbackup`, AES-256, khóa từ Master Password) — dùng để backup hoặc chuyển máy.
 - Export CSV/Excel plaintext là tùy chọn **phụ**, không phải mặc định:
   - Yêu cầu xác nhận cảnh báo 2 bước trước khi xuất.
   - File CSV/Excel plaintext bắt buộc được nén kèm mật khẩu (zip + password) trước khi ghi ra bộ nhớ ngoài.
   - File tạm lưu ở thư mục riêng, tự động xóa sau 5 phút ✅ hoặc khi thoát app.
-- Yêu cầu xác thực lại (Master Password) trước mọi thao tác export.
-- Backup định kỳ (tự động nhắc, không tự động gửi đi đâu):
-  - App nhắc người dùng backup nếu quá 30 ngày ✅ chưa export bản mới.
-  - Người dùng chọn nơi lưu qua Storage Access Framework (SD card, USB OTG, bộ nhớ ngoài) — không mặc định lưu cloud.
-  - Giữ tối đa K bản backup gần nhất (rotate), tránh ghi đè mất bản cũ. ❓ (chưa có giá trị K, cần bạn chốt)
+- Yêu cầu xác thực lại (Master Password) trước mọi thao tác export thủ công (khác Auto-backup ở mục 7.1 — auto-backup dùng session key có sẵn, không hỏi lại).
+- App vẫn nhắc người dùng export thủ công nếu quá 30 ngày ✅ chưa export bản mới (phòng trường hợp Auto-backup bị tắt hoặc thư mục đích không truy cập được).
 - Import lại từ `.pwvbackup` để khôi phục/chuyển máy: chỉ cần Master Password, không cần map cột như CSV.
 
 ## 8. Bảo mật bổ sung
