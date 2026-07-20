@@ -138,4 +138,21 @@
     <string name="export_reminder_channel_name">Nhắc backup</string>
     <string name="export_reminder_notification_title">Đến lúc backup Vault</string>
     <string name="export_reminder_notification_text">Đã lâu bạn chưa export bản mới — cân nhắc tạo 1 bản backup mới.</string>
+
+    <string name="settings_cd">Cài đặt</string>
+    <string name="settings_title">Cài đặt</string>
+    <string name="settings_unlock_method_section">Phương thức mở khóa</string>
+    <string name="settings_security_section">Bảo mật</string>
+    <string name="settings_appearance_section">Giao diện</string>
+    <string name="settings_data_section">Dữ liệu</string>
+    <string name="pin_enabled_label">Đang bật mở khóa bằng PIN</string>
+    <string name="biometric_enabled_label">Đang bật mở khóa bằng vân tay/khuôn mặt</string>
+    <string name="auto_lock_30s">30 giây</string>
+    <string name="auto_lock_1m">1 phút</string>
+    <string name="auto_lock_5m">5 phút</string>
+    <string name="auto_lock_15m">15 phút</string>
+    <string name="auto_lock_never">Không bao giờ</string>
+    <string name="theme_light">Sáng</string>
+    <string name="theme_dark">Tối</string>
+    <string name="theme_system">Theo hệ thống</string>
 </resources>

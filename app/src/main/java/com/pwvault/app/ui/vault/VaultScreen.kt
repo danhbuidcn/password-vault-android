@@ -13,17 +13,14 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Label
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Description
-import androidx.compose.material.icons.filled.FolderOpen
-import androidx.compose.material.icons.filled.IosShare
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.WarningAmber
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -51,9 +48,10 @@ import com.pwvault.app.ui.export.ExportScreen
 import com.pwvault.app.ui.export.ExportTarget
 import com.pwvault.app.ui.export.ExportUiState
 import com.pwvault.app.ui.export.ExportViewModel
+import com.pwvault.app.ui.settings.SettingsScreen
+import com.pwvault.app.ui.settings.SettingsViewModel
 import com.pwvault.app.ui.unlock.PinSetupDialog
 import com.pwvault.app.ui.unlock.UnlockUiState
-import com.pwvault.app.ui.unlock.message
 
 @Composable
 fun VaultScreen(
@@ -65,6 +63,7 @@ fun VaultScreen(
     tagViewModel: TagViewModel,
     passwordTemplateViewModel: PasswordTemplateViewModel,
     exportViewModel: ExportViewModel,
+    settingsViewModel: SettingsViewModel,
     onVerifyMasterPassword: suspend (CharArray) -> Boolean,
     onPickExportDestination: (ExportTarget, String) -> Unit,
     hasAutoBackupFolder: Boolean,
@@ -72,6 +71,7 @@ fun VaultScreen(
 ) {
     var showPinDialog by remember { mutableStateOf(false) }
     var showTagManager by remember { mutableStateOf(false) }
+    var showSettings by remember { mutableStateOf(false) }
 
     // Close the dialog only once setup actually succeeds, so validation errors stay visible
     // instead of the dialog closing itself away on every confirm tap.
@@ -85,80 +85,92 @@ fun VaultScreen(
         viewModel.startObservingItems()
     }
 
-    if (showTagManager) {
-        TagManagerScreen(viewModel = tagViewModel, onBack = { showTagManager = false })
-        return
-    }
-
     val exportState = exportViewModel.state.collectAsState().value
-    if (exportState != ExportUiState.Closed) {
-        ExportScreen(
-            state = exportState,
-            onChooseTarget = exportViewModel::chooseTarget,
-            onSubmitMasterPassword = { password ->
-                exportViewModel.submitMasterPassword(password, onVerifyMasterPassword)
-            },
-            onToggleAck1 = exportViewModel::toggleAck1,
-            onToggleAck2 = exportViewModel::toggleAck2,
-            onContinueFromWarning = exportViewModel::continueFromWarning,
-            onSubmitZipPassword = exportViewModel::submitZipPassword,
-            onPickDestination = onPickExportDestination,
-            onClose = exportViewModel::close,
-        )
-        return
-    }
 
-    when (val vaultState = viewModel.state.collectAsState().value) {
-        is VaultUiState.ItemList ->
-            VaultItemListScreen(
-                vaultItems = vaultState.items,
-                warnings = vaultState.warnings,
-                searchQuery = vaultState.searchQuery,
+    // A plain if/else chain (not early `return`s) so the trailing PinSetupDialog check below is
+    // always reached regardless of which branch renders — PIN setup can now be triggered from
+    // SettingsScreen, not just the main list, so skipping past it would silently hide the dialog.
+    when {
+        showSettings ->
+            SettingsScreen(
                 unlockedState = state,
                 canSetupBiometric = canSetupBiometric,
                 onSetupPin = { showPinDialog = true },
                 onSetupBiometric = onSetupBiometric,
-                onAddItem = viewModel::openAddForm,
-                onOpenItem = viewModel::openDetail,
-                onSearchQueryChange = viewModel::updateSearchQuery,
-                onManageTags = { showTagManager = true },
-                onExport = exportViewModel::open,
+                onManageTags = {
+                    showSettings = false
+                    showTagManager = true
+                },
+                onExport = {
+                    showSettings = false
+                    exportViewModel.open()
+                },
                 hasAutoBackupFolder = hasAutoBackupFolder,
                 onPickAutoBackupFolder = onPickAutoBackupFolder,
+                viewModel = settingsViewModel,
+                onBack = { showSettings = false },
             )
-        is VaultUiState.ItemDetail ->
-            VaultItemDetailScreen(
-                state = vaultState,
-                onBack = viewModel::backToList,
-                onEdit = { viewModel.openEditForm(vaultState.item) },
-                onDelete = { viewModel.openDeleteConfirm(vaultState.item) },
-                onTogglePasswordVisible = viewModel::togglePasswordVisible,
-                onCopyPassword = viewModel::copyPassword,
-            )
-        is VaultUiState.ItemForm ->
-            VaultItemFormScreen(
-                state = vaultState,
-                passwordTemplateViewModel = passwordTemplateViewModel,
-                onSave = viewModel::save,
-                onCancel = viewModel::backToList,
-                onToggleTag = viewModel::toggleTagSelected,
-            )
-        is VaultUiState.DeleteConfirm ->
-            AlertDialog(
-                onDismissRequest = viewModel::cancelDeleteConfirm,
-                title = { Text(stringResource(R.string.vault_delete_confirm_title)) },
-                text = { Text(stringResource(R.string.vault_delete_confirm_message, vaultState.item.name)) },
-                confirmButton = {
-                    TextButton(onClick = viewModel::confirmDelete) {
-                        Text(stringResource(R.string.vault_delete_button))
-                    }
+        showTagManager -> TagManagerScreen(viewModel = tagViewModel, onBack = { showTagManager = false })
+        exportState != ExportUiState.Closed ->
+            ExportScreen(
+                state = exportState,
+                onChooseTarget = exportViewModel::chooseTarget,
+                onSubmitMasterPassword = { password ->
+                    exportViewModel.submitMasterPassword(password, onVerifyMasterPassword)
                 },
-                dismissButton = {
-                    TextButton(onClick = viewModel::cancelDeleteConfirm) {
-                        Text(stringResource(R.string.vault_cancel_button))
-                    }
-                },
+                onToggleAck1 = exportViewModel::toggleAck1,
+                onToggleAck2 = exportViewModel::toggleAck2,
+                onContinueFromWarning = exportViewModel::continueFromWarning,
+                onSubmitZipPassword = exportViewModel::submitZipPassword,
+                onPickDestination = onPickExportDestination,
+                onClose = exportViewModel::close,
             )
+        else ->
+            when (val vaultState = viewModel.state.collectAsState().value) {
+                is VaultUiState.ItemList ->
+                    VaultItemListScreen(
+                        vaultItems = vaultState.items,
+                        warnings = vaultState.warnings,
+                        searchQuery = vaultState.searchQuery,
+                        onAddItem = viewModel::openAddForm,
+                        onOpenItem = viewModel::openDetail,
+                        onSearchQueryChange = viewModel::updateSearchQuery,
+                        onOpenSettings = { showSettings = true },
+                    )
+                is VaultUiState.ItemDetail ->
+                    VaultItemDetailScreen(
+                        state = vaultState,
+                        onBack = viewModel::backToList,
+                        onEdit = { viewModel.openEditForm(vaultState.item) },
+                        onDelete = { viewModel.openDeleteConfirm(vaultState.item) },
+                        onTogglePasswordVisible = viewModel::togglePasswordVisible,
+                        onCopyPassword = viewModel::copyPassword,
+                    )
+                is VaultUiState.ItemForm ->
+                    VaultItemFormScreen(
+                        state = vaultState,
+                        passwordTemplateViewModel = passwordTemplateViewModel,
+                        onSave = viewModel::save,
+                        onCancel = viewModel::backToList,
+                        onToggleTag = viewModel::toggleTagSelected,
+                    )
+                is VaultUiState.DeleteConfirm ->
+                    AlertDialog(
+                        onDismissRequest = viewModel::cancelDeleteConfirm,
+                        title = { Text(stringResource(R.string.vault_delete_confirm_title)) },
+                        text = { Text(stringResource(R.string.vault_delete_confirm_message, vaultState.item.name)) },
+                        confirmButton = {
+                            TextButton(onClick = viewModel::confirmDelete) {
+                                Text(stringResource(R.string.vault_delete_button))
+                            }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = viewModel::cancelDeleteConfirm) {
+                                Text(stringResource(R.string.vault_cancel_button))
+                            }
+                        },
+                    )
+            }
     }
 
     if (showPinDialog) {
@@ -172,56 +184,14 @@ fun VaultScreen(
 }
 
 @Composable
-private fun VaultActionButtons(
-    onManageTags: () -> Unit,
-    onExport: () -> Unit,
-    hasAutoBackupFolder: Boolean,
-    onPickAutoBackupFolder: () -> Unit,
-) {
-    Row {
-        TextButton(onClick = onManageTags, modifier = Modifier.padding(horizontal = 8.dp)) {
-            Icon(
-                Icons.AutoMirrored.Filled.Label,
-                contentDescription = null,
-                modifier = Modifier.padding(end = 4.dp),
-            )
-            Text(stringResource(R.string.manage_tags_cd))
-        }
-        TextButton(onClick = onExport, modifier = Modifier.padding(horizontal = 8.dp)) {
-            Icon(
-                Icons.Filled.IosShare,
-                contentDescription = null,
-                modifier = Modifier.padding(end = 4.dp),
-            )
-            Text(stringResource(R.string.export_cd))
-        }
-        TextButton(onClick = onPickAutoBackupFolder, modifier = Modifier.padding(horizontal = 8.dp)) {
-            Icon(
-                Icons.Filled.FolderOpen,
-                contentDescription = null,
-                modifier = Modifier.padding(end = 4.dp),
-            )
-            Text(stringResource(if (hasAutoBackupFolder) R.string.auto_backup_on_cd else R.string.auto_backup_off_cd))
-        }
-    }
-}
-
-@Composable
 private fun VaultItemListScreen(
     vaultItems: List<VaultItem>,
     warnings: Map<Long, VaultItemWarning>,
     searchQuery: String,
-    unlockedState: UnlockUiState.Unlocked,
-    canSetupBiometric: Boolean,
-    onSetupPin: () -> Unit,
-    onSetupBiometric: () -> Unit,
     onAddItem: () -> Unit,
     onOpenItem: (VaultItem) -> Unit,
     onSearchQueryChange: (String) -> Unit,
-    onManageTags: () -> Unit,
-    onExport: () -> Unit,
-    hasAutoBackupFolder: Boolean,
-    onPickAutoBackupFolder: () -> Unit,
+    onOpenSettings: () -> Unit,
 ) {
     Scaffold(
         floatingActionButton = {
@@ -231,22 +201,12 @@ private fun VaultItemListScreen(
         },
     ) { padding ->
         Column(modifier = Modifier.fillMaxSize().padding(padding)) {
-            if (!unlockedState.hasPin) {
-                Button(onClick = onSetupPin, modifier = Modifier.padding(16.dp)) {
-                    Text(stringResource(R.string.setup_pin_button))
-                }
-            }
-            if (!unlockedState.hasBiometric && canSetupBiometric) {
-                Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-                    Button(onClick = onSetupBiometric, enabled = !unlockedState.biometricSetupBusy) {
-                        Text(stringResource(R.string.setup_biometric_button))
-                    }
-                    if (unlockedState.biometricSetupError != null) {
-                        Text(
-                            text = unlockedState.biometricSetupError.message(),
-                            color = MaterialTheme.colorScheme.error,
-                        )
-                    }
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.End,
+            ) {
+                IconButton(onClick = onOpenSettings) {
+                    Icon(Icons.Filled.Settings, contentDescription = stringResource(R.string.settings_cd))
                 }
             }
 
@@ -264,13 +224,6 @@ private fun VaultItemListScreen(
                     }
                 },
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
-            )
-
-            VaultActionButtons(
-                onManageTags = onManageTags,
-                onExport = onExport,
-                hasAutoBackupFolder = hasAutoBackupFolder,
-                onPickAutoBackupFolder = onPickAutoBackupFolder,
             )
 
             if (vaultItems.isEmpty()) {
