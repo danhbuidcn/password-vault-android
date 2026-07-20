@@ -16,12 +16,15 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -36,7 +39,14 @@ fun PinUnlockScreen(
     onUseBiometric: (() -> Unit)? = null,
 ) {
     var pin by remember { mutableStateOf("") }
+    // Driven by user actions (submit shows, edit hides) rather than keyed on `error`'s value — two
+    // consecutive failures can carry the exact same UnlockError, which a value-equality key can't
+    // distinguish from "unchanged", so it would fail to re-show the second time.
+    var showError by remember { mutableStateOf(state.error != null) }
     val lockoutSecondsRemaining = rememberLockoutSecondsRemaining(state.lockedUntilMillis)
+
+    val pinFocusRequester = remember { FocusRequester() }
+    LaunchedEffect(Unit) { pinFocusRequester.requestFocus() }
 
     Column(
         modifier = Modifier.fillMaxSize().padding(24.dp),
@@ -56,18 +66,24 @@ fun PinUnlockScreen(
         )
         OutlinedTextField(
             value = pin,
-            onValueChange = { pin = it },
+            onValueChange = {
+                pin = it
+                showError = false
+            },
             label = { Text(stringResource(R.string.pin_label)) },
             singleLine = true,
             visualTransformation = PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth().focusRequester(pinFocusRequester),
         )
-        UnlockStatusMessage(error = state.error, lockoutSecondsRemaining = lockoutSecondsRemaining)
+        UnlockStatusMessage(
+            error = if (showError) state.error else null,
+            lockoutSecondsRemaining = lockoutSecondsRemaining,
+        )
         Button(
             onClick = {
+                showError = true
                 onUnlock(pin.toCharArray())
-                pin = ""
             },
             enabled = !state.busy && lockoutSecondsRemaining <= 0,
             modifier = Modifier.fillMaxWidth().padding(top = 16.dp),

@@ -12,7 +12,7 @@
 | 3 | Sinh trắc học unlock (BiometricPrompt, tùy chọn) | ✅ Done | [feature-03-biometric-unlock-plan.md](feature-03-biometric-unlock-plan.md) |
 | 4 | Tự động khóa theo thời gian + giới hạn số lần nhập sai (lockout tăng dần) | ✅ Done | [feature-04-autolock-lockout-plan.md](feature-04-autolock-lockout-plan.md) |
 | 5 | Vault Item CRUD — loại Login (thêm/sửa/xóa/danh sách) | ✅ Done | [feature-05-vault-item-crud-plan.md](feature-05-vault-item-crud-plan.md) |
-| 5b | UX polish: không xóa field khi lỗi, tự ẩn lỗi khi gõ lại, auto-focus (SetupScreen/UnlockScreen/PinUnlockScreen/PinSetupDialog) | ⏳ Pending | — |
+| 5b | UX polish: không xóa field khi lỗi, tự ẩn lỗi khi gõ lại, auto-focus (SetupScreen/UnlockScreen/PinUnlockScreen/PinSetupDialog) | ✅ Done | [feature-5b-ux-polish-plan.md](feature-5b-ux-polish-plan.md) |
 | 6 | Tìm kiếm Vault Item | ✅ Done | [feature-06-search-plan.md](feature-06-search-plan.md) |
 | 7 | Quản lý Tag (CRUD + gắn nhiều tag cho 1 item) | ✅ Done | [feature-07-tag-plan.md](feature-07-tag-plan.md) |
 | 8 | Custom Field (trường tùy biến free-form theo từng item) | ✅ Done | [feature-08-custom-field-plan.md](feature-08-custom-field-plan.md) |
