@@ -21,7 +21,7 @@
 | 11 | Import CSV/Excel (map cột, cảnh báo trùng lặp) | ⏳ Pending | — |
 | 12 | Export — mã hóa `.pwvbackup` + plaintext CSV/Excel (cảnh báo 2 bước, nén có mật khẩu) | ⏳ Pending | — |
 | 13 | Auto-backup nền (ghi mỗi khi đổi Vault Item, atomic, rotate 5 bản) + nhắc export thủ công định kỳ (WorkManager) | ⏳ Pending | — |
-| 14 | Cảnh báo mật khẩu yếu/trùng lặp | ⏳ Pending | — |
+| 14 | Cảnh báo mật khẩu yếu/trùng lặp | ✅ Done | [feature-14-weak-duplicate-warning-plan.md](feature-14-weak-duplicate-warning-plan.md) |
 | 15 | Màn hình Settings (tham số bảo mật, theme, phương thức unlock) | ⏳ Pending | — |
 | 16 | UI/UX redesign (visual: Unlock/List/Detail theo ảnh tham khảo + UX: góp ý tương tác gộp dần, vd password generator 8 ký tự) | ⏳ Pending | [feature-16-ui-ux-redesign-plan.md](feature-16-ui-ux-redesign-plan.md) |
 

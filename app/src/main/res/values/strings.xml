@@ -110,4 +110,8 @@
     <string name="error_password_generator_no_class_selected">Select at least one character type</string>
     <string name="error_password_template_name_required">Template name is required</string>
     <string name="error_password_template_name_duplicate">A template with this name already exists</string>
+
+    <string name="password_warning_cd">Weak or reused password</string>
+    <string name="warning_weak_password">Weak password</string>
+    <string name="warning_duplicate_password">Used by another item</string>
 </resources>

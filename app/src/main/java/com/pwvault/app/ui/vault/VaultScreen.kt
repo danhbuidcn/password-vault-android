@@ -19,6 +19,7 @@ import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.WarningAmber
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.FloatingActionButton
@@ -82,6 +83,7 @@ fun VaultScreen(
         is VaultUiState.ItemList ->
             VaultItemListScreen(
                 vaultItems = vaultState.items,
+                warnings = vaultState.warnings,
                 searchQuery = vaultState.searchQuery,
                 unlockedState = state,
                 canSetupBiometric = canSetupBiometric,
@@ -140,6 +142,7 @@ fun VaultScreen(
 @Composable
 private fun VaultItemListScreen(
     vaultItems: List<VaultItem>,
+    warnings: Map<Long, VaultItemWarning>,
     searchQuery: String,
     unlockedState: UnlockUiState.Unlocked,
     canSetupBiometric: Boolean,
@@ -239,7 +242,7 @@ private fun VaultItemListScreen(
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.padding(top = 2.dp, end = 12.dp),
                             )
-                            Column {
+                            Column(modifier = Modifier.weight(1f)) {
                                 Text(text = item.name, style = MaterialTheme.typography.bodyLarge)
                                 if (item.username.isNotEmpty()) {
                                     Text(
@@ -260,6 +263,14 @@ private fun VaultItemListScreen(
                                         }
                                     }
                                 }
+                            }
+                            if (warnings[item.id]?.hasWarning == true) {
+                                Icon(
+                                    imageVector = Icons.Filled.WarningAmber,
+                                    contentDescription = stringResource(R.string.password_warning_cd),
+                                    tint = MaterialTheme.colorScheme.error,
+                                    modifier = Modifier.padding(start = 8.dp, top = 2.dp),
+                                )
                             }
                         }
                     }

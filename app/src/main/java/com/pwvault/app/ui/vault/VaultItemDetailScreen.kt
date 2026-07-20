@@ -106,6 +106,8 @@ fun VaultItemDetailScreen(
                 }
             }
 
+            PasswordWarnings(state.warning)
+
             if (state.item.url.isNotEmpty()) {
                 Text(
                     text = state.item.url,
@@ -146,6 +148,24 @@ fun VaultItemDetailScreen(
         }
 
         SnackbarHost(hostState = snackbarHostState)
+    }
+}
+
+@Composable
+private fun PasswordWarnings(warning: VaultItemWarning) {
+    if (warning.weak) {
+        Text(
+            text = stringResource(R.string.warning_weak_password),
+            color = MaterialTheme.colorScheme.error,
+            style = MaterialTheme.typography.bodySmall,
+        )
+    }
+    if (warning.duplicate) {
+        Text(
+            text = stringResource(R.string.warning_duplicate_password),
+            color = MaterialTheme.colorScheme.error,
+            style = MaterialTheme.typography.bodySmall,
+        )
     }
 }
 
