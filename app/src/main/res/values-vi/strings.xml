@@ -132,4 +132,10 @@
     <string name="password_warning_cd">Password yếu hoặc bị dùng lại</string>
     <string name="warning_weak_password">Password yếu</string>
     <string name="warning_duplicate_password">Đang dùng chung với mục khác</string>
+
+    <string name="auto_backup_off_cd">Auto-backup: chưa thiết lập</string>
+    <string name="auto_backup_on_cd">Auto-backup: đang bật</string>
+    <string name="export_reminder_channel_name">Nhắc backup</string>
+    <string name="export_reminder_notification_title">Đến lúc backup Vault</string>
+    <string name="export_reminder_notification_text">Đã lâu bạn chưa export bản mới — cân nhắc tạo 1 bản backup mới.</string>
 </resources>

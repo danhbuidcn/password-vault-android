@@ -9,6 +9,7 @@ import com.pwvault.app.data.VaultItemRepository
 import com.pwvault.app.export.CsvExporter
 import com.pwvault.app.export.ExportTempFileCleaner
 import com.pwvault.app.export.PasswordZipWriter
+import com.pwvault.app.security.BackupPreferences
 import com.pwvault.app.ui.unlock.MIN_PASSWORD_LENGTH
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -84,6 +85,7 @@ class ExportViewModel
         private val csvExporter: CsvExporter,
         private val passwordZipWriter: PasswordZipWriter,
         private val exportTempFileCleaner: ExportTempFileCleaner,
+        private val backupPreferences: BackupPreferences,
     ) : ViewModel() {
         private val _state = MutableStateFlow<ExportUiState>(ExportUiState.Closed)
         val state: StateFlow<ExportUiState> = _state.asStateFlow()
@@ -172,6 +174,7 @@ class ExportViewModel
             viewModelScope.launch {
                 val success =
                     if (target == ExportTarget.BACKUP) writeBackup(uri) else writeCsv(uri)
+                if (success) backupPreferences.recordManualExportNow()
                 _state.value = if (success) ExportUiState.Done else ExportUiState.Failed(ExportError.WRITE_FAILED)
             }
         }

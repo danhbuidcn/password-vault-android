@@ -25,9 +25,10 @@ complexity:
     # VaultItem's perspective, so splitting them into separate DAOs would fragment one atomic-transaction
     # interface for marginal benefit.
   LongParameterList:
-    constructorThreshold: 8 # UnlockViewModel's constructor is all Hilt-injected singletons, one per
-    # security concern (KDF, PIN, biometric, lockout, auto-lock) — grouping them into a synthetic
-    # wrapper class would fight Hilt's per-dependency injection convention for no real benefit
+    constructorThreshold: 9 # UnlockViewModel's constructor is all Hilt-injected singletons, one per
+    # security concern (KDF, PIN, biometric, lockout, auto-lock, backup-reminder-seeding) — grouping
+    # them into a synthetic wrapper class would fight Hilt's per-dependency injection convention for
+    # no real benefit
     ignoreAnnotated: ["Composable"] # Compose screens take one callback param per user action by convention;
     # bundling them into a synthetic actions object would add indirection, not clarity
   LongMethod:

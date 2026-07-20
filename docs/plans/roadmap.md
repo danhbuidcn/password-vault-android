@@ -20,7 +20,7 @@
 | 10 | Sinh mật khẩu ngẫu nhiên + lưu template tái dùng | ✅ Done | [feature-10-password-generator-plan.md](feature-10-password-generator-plan.md) |
 | 11 | Import CSV/Excel (map cột, cảnh báo trùng lặp) | ⏳ Pending | — |
 | 12 | Export — mã hóa `.pwvbackup` + plaintext CSV (cảnh báo 2 bước, nén có mật khẩu) | ✅ Done | [feature-12-export-plan.md](feature-12-export-plan.md) |
-| 13 | Auto-backup nền (ghi mỗi khi đổi Vault Item, atomic, rotate 5 bản) + nhắc export thủ công định kỳ (WorkManager) | ⏳ Pending | — |
+| 13 | Auto-backup nền (ghi mỗi khi đổi Vault Item, atomic, rotate 5 bản) + nhắc export thủ công định kỳ (WorkManager) | ✅ Done | [feature-13-autobackup-plan.md](feature-13-autobackup-plan.md) |
 | 14 | Cảnh báo mật khẩu yếu/trùng lặp | ✅ Done | [feature-14-weak-duplicate-warning-plan.md](feature-14-weak-duplicate-warning-plan.md) |
 | 15 | Màn hình Settings (tham số bảo mật, theme, phương thức unlock) | ⏳ Pending | — |
 | 16 | UI/UX redesign (visual: Unlock/List/Detail theo ảnh tham khảo + UX: góp ý tương tác gộp dần, vd password generator 8 ký tự) | ⏳ Pending | [feature-16-ui-ux-redesign-plan.md](feature-16-ui-ux-redesign-plan.md) |

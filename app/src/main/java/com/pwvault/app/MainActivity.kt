@@ -1,6 +1,10 @@
 package com.pwvault.app
 
+import android.Manifest
+import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.compose.setContent
@@ -12,9 +16,12 @@ import androidx.biometric.BiometricPrompt
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.lifecycleScope
+import com.pwvault.app.security.BackupPreferences
 import com.pwvault.app.ui.export.ExportTarget
 import com.pwvault.app.ui.export.ExportViewModel
 import com.pwvault.app.ui.theme.PwVaultTheme
@@ -30,6 +37,7 @@ import com.pwvault.app.ui.vault.VaultScreen
 import com.pwvault.app.ui.vault.VaultViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 private const val EXPORT_DESTINATION_MIME_TYPE = "application/octet-stream"
 private const val STATE_PENDING_EXPORT_TARGET = "pendingExportTarget"
@@ -38,6 +46,9 @@ private enum class BiometricOperation { UNLOCK, SETUP }
 
 @AndroidEntryPoint
 class MainActivity : FragmentActivity() {
+    @Inject
+    lateinit var backupPreferences: BackupPreferences
+
     private val unlockViewModel: UnlockViewModel by viewModels()
     private val vaultViewModel: VaultViewModel by viewModels()
     private val tagViewModel: TagViewModel by viewModels()
@@ -47,8 +58,11 @@ class MainActivity : FragmentActivity() {
     private lateinit var unlockPromptInfo: BiometricPrompt.PromptInfo
     private lateinit var setupPromptInfo: BiometricPrompt.PromptInfo
     private lateinit var exportDestinationLauncher: ActivityResultLauncher<String>
+    private lateinit var autoBackupFolderLauncher: ActivityResultLauncher<Uri?>
+    private lateinit var notificationPermissionLauncher: ActivityResultLauncher<String>
     private var pendingBiometricOperation = BiometricOperation.UNLOCK
     private var pendingExportTarget: ExportTarget? = null
+    private var hasAutoBackupFolder by mutableStateOf(false)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -70,6 +84,13 @@ class MainActivity : FragmentActivity() {
             registerForActivityResult(ActivityResultContracts.CreateDocument(EXPORT_DESTINATION_MIME_TYPE)) { uri ->
                 onExportDestinationPicked(uri)
             }
+        autoBackupFolderLauncher =
+            registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
+                onAutoBackupFolderPicked(uri)
+            }
+        notificationPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) {}
+        requestNotificationPermissionIfNeeded()
+        hasAutoBackupFolder = backupPreferences.getAutoBackupFolderUri() != null
         val canSetupBiometric =
             BiometricManager.from(this).canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_STRONG) ==
                 BiometricManager.BIOMETRIC_SUCCESS
@@ -86,6 +107,8 @@ class MainActivity : FragmentActivity() {
                     onAuthenticateBiometricUnlock = ::triggerBiometricUnlock,
                     onSetupBiometric = ::triggerBiometricSetup,
                     onPickExportDestination = ::triggerExportDestinationPicker,
+                    hasAutoBackupFolder = hasAutoBackupFolder,
+                    onPickAutoBackupFolder = { autoBackupFolderLauncher.launch(null) },
                 )
             }
         }
@@ -103,6 +126,26 @@ class MainActivity : FragmentActivity() {
         val target = pendingExportTarget ?: return
         pendingExportTarget = null
         exportViewModel.onDestinationPicked(target, uri)
+    }
+
+    private fun onAutoBackupFolderPicked(uri: Uri?) {
+        if (uri == null) return
+        contentResolver.takePersistableUriPermission(
+            uri,
+            Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION,
+        )
+        backupPreferences.setAutoBackupFolderUri(uri)
+        hasAutoBackupFolder = true
+    }
+
+    private fun requestNotificationPermissionIfNeeded() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) ==
+            PackageManager.PERMISSION_GRANTED
+        ) {
+            return
+        }
+        notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
     }
 
     private fun createBiometricPromptInfo(negativeButtonText: String): BiometricPrompt.PromptInfo =
@@ -198,6 +241,8 @@ private fun PwVaultApp(
     onAuthenticateBiometricUnlock: () -> Unit,
     onSetupBiometric: () -> Unit,
     onPickExportDestination: (ExportTarget, String) -> Unit,
+    hasAutoBackupFolder: Boolean,
+    onPickAutoBackupFolder: () -> Unit,
 ) {
     when (val state = unlockViewModel.state.collectAsState().value) {
         is UnlockUiState.Loading -> Unit
@@ -241,6 +286,8 @@ private fun PwVaultApp(
                 exportViewModel = exportViewModel,
                 onVerifyMasterPassword = unlockViewModel::verifyMasterPassword,
                 onPickExportDestination = onPickExportDestination,
+                hasAutoBackupFolder = hasAutoBackupFolder,
+                onPickAutoBackupFolder = onPickAutoBackupFolder,
             )
     }
 }
