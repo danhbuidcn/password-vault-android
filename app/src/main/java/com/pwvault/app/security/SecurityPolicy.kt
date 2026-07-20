@@ -23,4 +23,10 @@ object SecurityPolicy {
 
     /** Length of a suggested password from [com.pwvault.app.security.PasswordGenerator]. */
     const val GENERATED_PASSWORD_LENGTH = 20
+
+    /** Below this length, a Vault Item password is flagged weak — see [com.pwvault.app.security.PasswordStrength]. */
+    const val WEAK_PASSWORD_MIN_LENGTH = 8
+
+    /** Below this many distinct character classes (upper/lower/digit/special), a password is flagged weak. */
+    const val WEAK_PASSWORD_MIN_CHAR_CLASSES = 3
 }

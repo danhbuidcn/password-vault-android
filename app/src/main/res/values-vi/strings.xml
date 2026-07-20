@@ -110,4 +110,8 @@
     <string name="error_password_generator_no_class_selected">Chọn ít nhất 1 loại ký tự</string>
     <string name="error_password_template_name_required">Cần nhập tên template</string>
     <string name="error_password_template_name_duplicate">Đã có template trùng tên này</string>
+
+    <string name="password_warning_cd">Password yếu hoặc bị dùng lại</string>
+    <string name="warning_weak_password">Password yếu</string>
+    <string name="warning_duplicate_password">Đang dùng chung với mục khác</string>
 </resources>

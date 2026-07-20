@@ -9,6 +9,7 @@ import com.pwvault.app.domain.Tag
 import com.pwvault.app.domain.VaultItem
 import com.pwvault.app.domain.VaultItemType
 import com.pwvault.app.security.ClipboardClearer
+import com.pwvault.app.security.PasswordStrength
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -29,16 +30,25 @@ data class VaultItemFormInput(
     val customFields: List<Pair<String, String>>,
 )
 
+data class VaultItemWarning(
+    val weak: Boolean = false,
+    val duplicate: Boolean = false,
+) {
+    val hasWarning: Boolean get() = weak || duplicate
+}
+
 sealed interface VaultUiState {
     data class ItemList(
         val items: List<VaultItem> = emptyList(),
         val searchQuery: String = "",
+        val warnings: Map<Long, VaultItemWarning> = emptyMap(),
     ) : VaultUiState
 
     data class ItemDetail(
         val item: VaultItem,
         val passwordVisible: Boolean = false,
         val copyEventId: Int = 0,
+        val warning: VaultItemWarning = VaultItemWarning(),
     ) : VaultUiState
 
     data class ItemForm(
@@ -67,6 +77,7 @@ class VaultViewModel
         val state: StateFlow<VaultUiState> = _state.asStateFlow()
 
         private var latestItems: List<VaultItem> = emptyList()
+        private var latestWarnings: Map<Long, VaultItemWarning> = emptyMap()
         private var availableTags: List<Tag> = emptyList()
         private var searchQuery: String = ""
         private var observeJob: Job? = null
@@ -84,6 +95,7 @@ class VaultViewModel
                 viewModelScope.launch {
                     repository.observeItems().collect { items ->
                         latestItems = items
+                        latestWarnings = computeWarnings(items)
                         if (_state.value is VaultUiState.ItemList) {
                             _state.value = currentListState()
                         }
@@ -111,7 +123,24 @@ class VaultViewModel
                             it.username.contains(searchQuery, ignoreCase = true)
                     }
                 }
-            return VaultUiState.ItemList(items = filtered, searchQuery = searchQuery)
+            return VaultUiState.ItemList(items = filtered, searchQuery = searchQuery, warnings = latestWarnings)
+        }
+
+        private fun computeWarnings(items: List<VaultItem>): Map<Long, VaultItemWarning> {
+            val passwordCounts =
+                items
+                    .map { it.password }
+                    .filter { it.isNotEmpty() }
+                    .groupingBy { it }
+                    .eachCount()
+            return items.associate { item ->
+                val hasPassword = item.password.isNotEmpty()
+                item.id to
+                    VaultItemWarning(
+                        weak = hasPassword && PasswordStrength.isWeak(item.password),
+                        duplicate = hasPassword && (passwordCounts[item.password] ?: 0) > 1,
+                    )
+            }
         }
 
         fun openAddForm() {
@@ -136,7 +165,7 @@ class VaultViewModel
         }
 
         fun openDetail(item: VaultItem) {
-            _state.value = VaultUiState.ItemDetail(item)
+            _state.value = VaultUiState.ItemDetail(item, warning = latestWarnings[item.id] ?: VaultItemWarning())
         }
 
         fun openDeleteConfirm(item: VaultItem) {
