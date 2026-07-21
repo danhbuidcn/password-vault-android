@@ -3,10 +3,13 @@ package com.pwvault.app.importer
 /** Parses RFC4180-style CSV text into rows of raw cell strings — mirrors `export/CsvExporter`'s escaping. */
 class CsvImportParser {
     fun parse(text: String): List<List<String>> {
+        // Windows/Excel-authored CSV commonly starts with a UTF-8 BOM — strip it so it doesn't
+        // silently attach itself to the first header/field.
+        val body = text.removePrefix("\uFEFF")
         val state = ParserState()
         var i = 0
-        while (i < text.length) {
-            i = state.consume(text, i)
+        while (i < body.length) {
+            i = state.consume(body, i)
         }
         state.finish()
         return state.rows
