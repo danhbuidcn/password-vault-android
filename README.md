@@ -1,35 +1,49 @@
-# pwvault-android
+# PWVault
 
-Ứng dụng Android quản lý mật khẩu cá nhân, chạy hoàn toàn offline. Chi tiết nghiệp vụ/kiến trúc xem [docs/overview.md](docs/overview.md) và [docs/architecture.md](docs/architecture.md).
+![Platform](https://img.shields.io/badge/platform-Android-3DDC84?logo=android&logoColor=white)
+![Kotlin](https://img.shields.io/badge/Kotlin-2.4.10-7F52FF?logo=kotlin&logoColor=white)
+![minSdk](https://img.shields.io/badge/minSdk-26-blue)
+
+Ứng dụng Android quản lý mật khẩu cá nhân, chạy hoàn toàn offline. Dữ liệu mã hóa AES-256 (SQLCipher) ngay trên máy, không server, không đồng bộ cloud. Chi tiết xem [docs/overview.md](docs/overview.md) và [docs/architecture.md](docs/architecture.md).
+
+**Trạng thái:** 16/16 roadmap item đã xong. Chi tiết: [docs/plans/roadmap.md](docs/plans/roadmap.md).
+
+## Tính năng chính
+
+- Mở khóa bằng Master Password, PIN số, hoặc sinh trắc học (vân tay/khuôn mặt).
+- CRUD Vault Item (Login/Note), tìm kiếm, phân loại theo Tag, trường tùy biến (custom field).
+- Sinh mật khẩu ngẫu nhiên, lưu template tái dùng.
+- Import CSV/Excel; export mã hóa (`.pwvbackup`) hoặc CSV/Excel không mã hóa.
+- Auto-backup nền (rotate 5 bản), cảnh báo mật khẩu yếu/trùng lặp, chặn chụp màn hình.
+
+Danh sách đầy đủ: [docs/overview.md § Main Features](docs/overview.md#main-features).
+
+## Tech Stack
+
+| | |
+|---|---|
+| Ngôn ngữ | Kotlin 2.4.10 |
+| UI | Jetpack Compose (Material 3) |
+| Database | Room 2.8.4 + SQLCipher (AES-256) |
+| KDF | Argon2id (`argon2kt`) |
+| Bảo mật khóa | Android Keystore, `BiometricPrompt` |
+| DI | Hilt |
+| Background job | WorkManager |
+| Import/Export | SAF, `zip4j`, `fastexcel-reader` |
+| minSdk / targetSdk | 26 / 37 |
+
+Quyết định kỹ thuật chi tiết: [docs/architecture.md](docs/architecture.md).
 
 ## Screenshots
 
-_(Sẽ bổ sung ảnh chụp màn hình sau khi hoàn thành app.)_
+| | | |
+|---|---|---|
+| ![Setup](Screenshots/01-setup.png) Setup | ![Unlock](Screenshots/02-unlock.png) Unlock | ![List](Screenshots/03-list.png) List |
+| ![Detail](Screenshots/04-detail.png) Chi tiết | ![Form](Screenshots/05-form.png) Thêm/sửa | ![Settings](Screenshots/06-settings.png) Cài đặt |
 
 ## Cài đặt (Download)
 
-App chưa phát hành bản release — sẽ đăng file `.apk` kèm ghi chú version/ngày build tại [GitHub Releases](https://github.com/danhbuidcn/password-vault-android/releases) sau khi hoàn thành roadmap. Quy trình publish: [docs/dev-setup.md#publish-github-release](docs/dev-setup.md#publish-github-release).
-
-## Quick start
-
-Yêu cầu: JDK 21, Android SDK, thiết bị Android thật (minSdk 26+) qua USB. Setup môi trường lần đầu + hướng dẫn chạy trên emulator (khi không có thiết bị thật) xem [docs/dev-setup.md](docs/dev-setup.md).
-
-```bash
-./gradlew installDebug
-adb shell am start -n com.pwvault.app/.MainActivity
-```
-
-## Verify trước khi commit
-
-```bash
-./gradlew ktlintCheck detekt lint testDebugUnitTest assembleDebug
-```
-
-Rule/code style áp dụng cho project này nằm ở kho trung tâm — xem [docs/manifest.md](docs/manifest.md) (load map) và `AI/kit/context/lang/kotlin.md` + `AI/kit/context/security.md`.
-
-## Build file cài đặt (APK)
-
-App chỉ dùng cho 1 người (side-load, không đăng Play Store). Chưa có `signingConfig` cho release nên dùng bản debug-signed làm file cài — chi tiết lệnh xem [docs/dev-setup.md](docs/dev-setup.md#build-file-cài-đặt-apk-cho-người-dùng-cuối).
+Tải bản mới nhất (debug-signed APK) tại [GitHub Releases](https://github.com/danhbuidcn/password-vault-android/releases/latest).
 
 ## Tài liệu dự án
 
@@ -40,4 +54,5 @@ App chỉ dùng cho 1 người (side-load, không đăng Play Store). Chưa có 
 - [docs/glossary.md](docs/glossary.md) — thuật ngữ
 - [docs/manifest.md](docs/manifest.md) — stack + rule load map cho `/code-plan`, `/code-guard`
 - [docs/dev-setup.md](docs/dev-setup.md) — setup môi trường dev, chạy trên thiết bị thật/emulator, build APK
+- [docs/plans/roadmap.md](docs/plans/roadmap.md) — trạng thái từng roadmap item
 - [docs/plans/](docs/plans/) — implementation plan theo từng task

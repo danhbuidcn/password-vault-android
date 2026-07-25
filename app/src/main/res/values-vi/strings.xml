@@ -171,7 +171,6 @@
     <string name="export_reminder_notification_text">Đã lâu bạn chưa export bản mới — cân nhắc tạo 1 bản backup mới.</string>
 
     <string name="settings_cd">Cài đặt</string>
-    <string name="settings_title">Cài đặt</string>
     <string name="settings_tagline">Offline. Mã hóa. Của riêng bạn.</string>
     <string name="settings_unlock_method_section">Phương thức mở khóa</string>
     <string name="settings_security_section">Bảo mật</string>

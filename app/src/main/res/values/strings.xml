@@ -171,7 +171,6 @@
     <string name="export_reminder_notification_text">It\'s been a while since your last export — consider making a fresh one.</string>
 
     <string name="settings_cd">Settings</string>
-    <string name="settings_title">Settings</string>
     <string name="settings_tagline">Offline. Encrypted. Yours.</string>
     <string name="settings_unlock_method_section">Unlock method</string>
     <string name="settings_security_section">Security</string>
