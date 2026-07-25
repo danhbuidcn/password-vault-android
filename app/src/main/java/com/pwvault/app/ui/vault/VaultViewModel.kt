@@ -42,6 +42,8 @@ sealed interface VaultUiState {
         val items: List<VaultItem> = emptyList(),
         val searchQuery: String = "",
         val warnings: Map<Long, VaultItemWarning> = emptyMap(),
+        val availableTags: List<Tag> = emptyList(),
+        val selectedTagFilterIds: Set<Long> = emptySet(),
     ) : VaultUiState
 
     data class ItemDetail(
@@ -80,6 +82,7 @@ class VaultViewModel
         private var latestWarnings: Map<Long, VaultItemWarning> = emptyMap()
         private var availableTags: List<Tag> = emptyList()
         private var searchQuery: String = ""
+        private var tagFilterIds: Set<Long> = emptySet()
         private var observeJob: Job? = null
         private var tagsObserveJob: Job? = null
 
@@ -104,7 +107,12 @@ class VaultViewModel
             tagsObserveJob?.cancel()
             tagsObserveJob =
                 viewModelScope.launch {
-                    tagRepository.observeTags().collect { tags -> availableTags = tags }
+                    tagRepository.observeTags().collect { tags ->
+                        availableTags = tags
+                        if (_state.value is VaultUiState.ItemList) {
+                            _state.value = currentListState()
+                        }
+                    }
                 }
         }
 
@@ -113,8 +121,18 @@ class VaultViewModel
             _state.value = currentListState()
         }
 
+        fun toggleTagFilter(tagId: Long) {
+            tagFilterIds = if (tagId in tagFilterIds) tagFilterIds - tagId else tagFilterIds + tagId
+            _state.value = currentListState()
+        }
+
+        fun clearTagFilter() {
+            tagFilterIds = emptySet()
+            _state.value = currentListState()
+        }
+
         private fun currentListState(): VaultUiState.ItemList {
-            val filtered =
+            val searchFiltered =
                 if (searchQuery.isBlank()) {
                     latestItems
                 } else {
@@ -123,7 +141,19 @@ class VaultViewModel
                             it.username.contains(searchQuery, ignoreCase = true)
                     }
                 }
-            return VaultUiState.ItemList(items = filtered, searchQuery = searchQuery, warnings = latestWarnings)
+            val tagFiltered =
+                if (tagFilterIds.isEmpty()) {
+                    searchFiltered
+                } else {
+                    searchFiltered.filter { item -> item.tags.any { it.id in tagFilterIds } }
+                }
+            return VaultUiState.ItemList(
+                items = tagFiltered,
+                searchQuery = searchQuery,
+                warnings = latestWarnings,
+                availableTags = availableTags,
+                selectedTagFilterIds = tagFilterIds,
+            )
         }
 
         private fun computeWarnings(items: List<VaultItem>): Map<Long, VaultItemWarning> {

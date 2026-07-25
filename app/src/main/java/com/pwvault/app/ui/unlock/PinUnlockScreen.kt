@@ -5,14 +5,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.Button
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -25,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -48,54 +46,60 @@ fun PinUnlockScreen(
     val pinFocusRequester = remember { FocusRequester() }
     LaunchedEffect(Unit) { pinFocusRequester.requestFocus() }
 
-    Column(
-        modifier = Modifier.fillMaxSize().padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
-    ) {
-        Icon(
-            imageVector = Icons.Filled.Lock,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.size(48.dp),
-        )
-        Text(
-            text = stringResource(R.string.pin_unlock_title),
-            style = MaterialTheme.typography.headlineSmall,
-            modifier = Modifier.padding(top = 16.dp, bottom = 24.dp),
-        )
-        OutlinedTextField(
-            value = pin,
-            onValueChange = {
-                pin = it
-                showError = false
-            },
-            label = { Text(stringResource(R.string.pin_label)) },
-            singleLine = true,
-            visualTransformation = PasswordVisualTransformation(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
-            modifier = Modifier.fillMaxWidth().focusRequester(pinFocusRequester),
-        )
-        UnlockStatusMessage(
-            error = if (showError) state.error else null,
-            lockoutSecondsRemaining = lockoutSecondsRemaining,
-        )
-        Button(
-            onClick = {
-                showError = true
-                onUnlock(pin.toCharArray())
-            },
-            enabled = !state.busy && lockoutSecondsRemaining <= 0,
-            modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
+    Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+        Column(
+            modifier = Modifier.fillMaxSize().padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
         ) {
-            Text(stringResource(R.string.pin_unlock_button))
-        }
-        TextButton(onClick = onUseMasterPassword, modifier = Modifier.padding(top = 8.dp)) {
-            Text(stringResource(R.string.use_master_password_instead))
-        }
-        if (onUseBiometric != null) {
-            TextButton(onClick = onUseBiometric) {
-                Text(stringResource(R.string.use_biometric_instead))
+            LockIconBadge(
+                painter = painterResource(R.drawable.ic_launcher_monochrome),
+                contentDescription = null,
+            )
+            Text(
+                text = stringResource(R.string.pin_unlock_title),
+                style = MaterialTheme.typography.headlineSmall,
+                modifier = Modifier.padding(top = 16.dp),
+            )
+            Text(
+                text = stringResource(R.string.pin_unlock_subtitle),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(top = 4.dp, bottom = 24.dp),
+            )
+            OutlinedTextField(
+                value = pin,
+                onValueChange = {
+                    pin = it
+                    showError = false
+                },
+                label = { Text(stringResource(R.string.pin_label)) },
+                singleLine = true,
+                visualTransformation = PasswordVisualTransformation(),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
+                modifier = Modifier.fillMaxWidth().focusRequester(pinFocusRequester),
+            )
+            UnlockStatusMessage(
+                error = if (showError) state.error else null,
+                lockoutSecondsRemaining = lockoutSecondsRemaining,
+            )
+            Button(
+                onClick = {
+                    showError = true
+                    onUnlock(pin.toCharArray())
+                },
+                enabled = !state.busy && lockoutSecondsRemaining <= 0,
+                modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
+            ) {
+                Text(stringResource(R.string.pin_unlock_button))
+            }
+            TextButton(onClick = onUseMasterPassword, modifier = Modifier.padding(top = 8.dp)) {
+                Text(stringResource(R.string.use_master_password_instead))
+            }
+            if (onUseBiometric != null) {
+                TextButton(onClick = onUseBiometric) {
+                    Text(stringResource(R.string.use_biometric_instead))
+                }
             }
         }
     }

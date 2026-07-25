@@ -13,6 +13,7 @@
     <string name="error_create_failed">Couldn\'t create the vault, please try again</string>
 
     <string name="unlock_title">Enter your password</string>
+    <string name="unlock_subtitle">Unlock PWVault to see your saved passwords.</string>
     <string name="unlock_button">Unlock</string>
     <string name="unlock_button_busy">Unlocking…</string>
     <string name="error_wrong_password">Wrong password</string>
@@ -33,6 +34,7 @@
     <string name="error_pin_not_numeric">PIN can only contain digits</string>
 
     <string name="pin_unlock_title">Enter your PIN</string>
+    <string name="pin_unlock_subtitle">Enter your PIN for quick unlock.</string>
     <string name="pin_unlock_button">Unlock</string>
     <string name="use_master_password_instead">Use password instead</string>
     <string name="use_pin_instead">Use PIN instead</string>
@@ -41,6 +43,7 @@
     <string name="setup_biometric_button">Set up fingerprint/face unlock</string>
     <string name="biometric_prompt_title">Unlock PWVault</string>
     <string name="biometric_unlock_title">Unlock with fingerprint or face</string>
+    <string name="biometric_unlock_subtitle">Use your fingerprint or face to unlock PWVault.</string>
     <string name="biometric_unlock_retry_button">Try again</string>
     <string name="use_biometric_instead">Use fingerprint/face instead</string>
     <string name="error_biometric_failed">Fingerprint/face unlock failed</string>
@@ -52,6 +55,9 @@
     <string name="vault_no_results_state">No items match your search</string>
     <string name="search_placeholder">Search by name or username</string>
     <string name="search_clear_cd">Clear search</string>
+    <string name="vault_filter_all_label">All</string>
+    <string name="vault_last_updated_label">Last updated %1$s</string>
+    <string name="vault_last_updated_field_label">Last updated</string>
     <string name="vault_add_item_cd">Add item</string>
     <string name="vault_add_item_title">Add item</string>
     <string name="vault_edit_item_title">Edit item</string>
@@ -166,6 +172,7 @@
 
     <string name="settings_cd">Settings</string>
     <string name="settings_title">Settings</string>
+    <string name="settings_tagline">Offline. Encrypted. Yours.</string>
     <string name="settings_unlock_method_section">Unlock method</string>
     <string name="settings_security_section">Security</string>
     <string name="settings_appearance_section">Appearance</string>

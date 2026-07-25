@@ -1,12 +1,17 @@
 package com.pwvault.app.ui.settings
 
 import androidx.annotation.StringRes
+import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Label
@@ -17,16 +22,23 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.pwvault.app.BuildConfig
 import com.pwvault.app.R
 import com.pwvault.app.security.ThemeMode
+import com.pwvault.app.ui.theme.PwVaultChrome
 import com.pwvault.app.ui.unlock.UnlockUiState
 import com.pwvault.app.ui.unlock.message
 import kotlin.time.Duration
@@ -49,34 +61,77 @@ fun SettingsScreen(
 ) {
     val state = viewModel.state.collectAsState().value
 
+    Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+        Column(
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(24.dp),
+        ) {
+            SettingsBanner()
+
+            SettingsSectionTitle(R.string.settings_unlock_method_section)
+            UnlockMethodSection(unlockedState, canSetupBiometric, onSetupPin, onSetupBiometric)
+
+            SettingsSectionTitle(R.string.settings_security_section)
+            AutoLockSection(
+                options = viewModel.autoLockOptions,
+                selected = state.autoLockTimeout,
+                onSelect = viewModel::setAutoLockTimeout,
+            )
+
+            SettingsSectionTitle(R.string.settings_appearance_section)
+            ThemeSection(selected = state.themeMode, onSelect = viewModel::setThemeMode)
+
+            SettingsSectionTitle(R.string.settings_data_section)
+            DataSection(onManageTags, onExport, onImport, hasAutoBackupFolder, onPickAutoBackupFolder)
+
+            TextButton(onClick = onBack, modifier = Modifier.fillMaxWidth().padding(top = 24.dp)) {
+                Text(stringResource(R.string.vault_back_button))
+            }
+        }
+    }
+}
+
+@Composable
+private fun SettingsBanner() {
     Column(
         modifier =
             Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(24.dp),
+                .fillMaxWidth()
+                .background(
+                    brush = Brush.linearGradient(listOf(Color(0xFF232838), Color(0xFF171A22))),
+                    shape = RoundedCornerShape(20.dp),
+                ).padding(vertical = 24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Text(stringResource(R.string.settings_title), style = MaterialTheme.typography.headlineSmall)
-
-        SettingsSectionTitle(R.string.settings_unlock_method_section)
-        UnlockMethodSection(unlockedState, canSetupBiometric, onSetupPin, onSetupBiometric)
-
-        SettingsSectionTitle(R.string.settings_security_section)
-        AutoLockSection(
-            options = viewModel.autoLockOptions,
-            selected = state.autoLockTimeout,
-            onSelect = viewModel::setAutoLockTimeout,
-        )
-
-        SettingsSectionTitle(R.string.settings_appearance_section)
-        ThemeSection(selected = state.themeMode, onSelect = viewModel::setThemeMode)
-
-        SettingsSectionTitle(R.string.settings_data_section)
-        DataSection(onManageTags, onExport, onImport, hasAutoBackupFolder, onPickAutoBackupFolder)
-
-        TextButton(onClick = onBack, modifier = Modifier.fillMaxWidth().padding(top = 24.dp)) {
-            Text(stringResource(R.string.vault_back_button))
+        Surface(shape = CircleShape, color = MaterialTheme.colorScheme.primaryContainer) {
+            Icon(
+                painter = painterResource(R.drawable.ic_launcher_monochrome),
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                modifier = Modifier.padding(14.dp).size(26.dp),
+            )
         }
+        Text(
+            text = stringResource(R.string.app_name),
+            style = MaterialTheme.typography.headlineSmall,
+            color = PwVaultChrome.Content,
+            modifier = Modifier.padding(top = 10.dp),
+        )
+        Text(
+            text = stringResource(R.string.settings_tagline),
+            style = MaterialTheme.typography.bodySmall,
+            color = PwVaultChrome.ContentMuted,
+            modifier = Modifier.padding(top = 2.dp),
+        )
+        Text(
+            text = "v${BuildConfig.VERSION_NAME}",
+            style = MaterialTheme.typography.labelSmall,
+            color = PwVaultChrome.ContentFaint,
+            modifier = Modifier.padding(top = 6.dp),
+        )
     }
 }
 
@@ -123,7 +178,7 @@ private fun AutoLockSection(
     selected: Duration?,
     onSelect: (Duration?) -> Unit,
 ) {
-    Row {
+    Row(modifier = Modifier.horizontalScroll(rememberScrollState())) {
         options.forEach { option ->
             FilterChip(
                 selected = option == selected,

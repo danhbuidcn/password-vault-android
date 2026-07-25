@@ -12,6 +12,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Language
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
 import androidx.compose.material3.FilterChip
@@ -19,6 +22,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -74,158 +78,164 @@ fun VaultItemFormScreen(
     val nameFocusRequester = remember { FocusRequester() }
     LaunchedEffect(Unit) { nameFocusRequester.requestFocus() }
 
-    Column(
-        modifier =
-            Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(24.dp),
-    ) {
-        Text(
-            text =
-                stringResource(
-                    if (state.editingId != null) R.string.vault_edit_item_title else R.string.vault_add_item_title,
-                ),
-            style = MaterialTheme.typography.headlineSmall,
-        )
-        if (state.editingId == null) {
-            Row(modifier = Modifier.padding(top = 12.dp)) {
-                FilterChip(
-                    selected = type == VaultItemType.LOGIN,
-                    onClick = { type = VaultItemType.LOGIN },
-                    label = { Text(stringResource(R.string.item_type_login)) },
-                    modifier = Modifier.padding(end = 8.dp),
-                )
-                FilterChip(
-                    selected = type == VaultItemType.NOTE,
-                    onClick = { type = VaultItemType.NOTE },
-                    label = { Text(stringResource(R.string.item_type_note)) },
-                )
-            }
-        }
-        OutlinedTextField(
-            value = name,
-            onValueChange = { name = it },
-            label = { Text(stringResource(R.string.item_name_label)) },
-            singleLine = true,
-            isError = showNameError,
-            modifier = Modifier.fillMaxWidth().padding(top = 16.dp).focusRequester(nameFocusRequester),
-        )
-        if (showNameError) {
+    Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+        Column(
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(24.dp),
+        ) {
             Text(
-                text = state.error.message(),
-                color = MaterialTheme.colorScheme.error,
-                modifier = Modifier.padding(top = 4.dp),
-            )
-        }
-        if (type == VaultItemType.LOGIN) {
-            OutlinedTextField(
-                value = username,
-                onValueChange = { username = it },
-                label = { Text(stringResource(R.string.item_username_label)) },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
-            )
-            PasswordField(
-                value = password,
-                onValueChange = { password = it },
-                label = stringResource(R.string.password_label),
-                modifier = Modifier.padding(top = 8.dp),
-            )
-            TextButton(onClick = { showGeneratorDialog = true }) {
-                Icon(Icons.Filled.Refresh, contentDescription = null, modifier = Modifier.padding(end = 4.dp))
-                Text(stringResource(R.string.generate_password_button))
-            }
-            OutlinedTextField(
-                value = url,
-                onValueChange = { url = it },
-                label = { Text(stringResource(R.string.item_url_label)) },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
-            )
-        }
-        OutlinedTextField(
-            value = note,
-            onValueChange = { note = it },
-            label = {
-                Text(
+                text =
                     stringResource(
-                        if (type == VaultItemType.NOTE) R.string.item_content_label else R.string.item_note_label,
+                        if (state.editingId != null) R.string.vault_edit_item_title else R.string.vault_add_item_title,
                     ),
-                )
-            },
-            minLines = 4,
-            modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
-        )
-        if (state.availableTags.isNotEmpty()) {
-            Text(
-                text = stringResource(R.string.tags_label),
-                style = MaterialTheme.typography.labelLarge,
-                modifier = Modifier.padding(top = 16.dp),
+                style = MaterialTheme.typography.headlineSmall,
             )
-            Row(modifier = Modifier.horizontalScroll(rememberScrollState()).padding(top = 8.dp)) {
-                state.availableTags.forEach { tag ->
+            if (state.editingId == null) {
+                Row(modifier = Modifier.padding(top = 12.dp)) {
                     FilterChip(
-                        selected = tag.id in state.selectedTagIds,
-                        onClick = { onToggleTag(tag.id) },
-                        label = { Text(tag.name) },
-                        leadingIcon = { TagColorDot(tag.id) },
+                        selected = type == VaultItemType.LOGIN,
+                        onClick = { type = VaultItemType.LOGIN },
+                        label = { Text(stringResource(R.string.item_type_login)) },
                         modifier = Modifier.padding(end = 8.dp),
+                    )
+                    FilterChip(
+                        selected = type == VaultItemType.NOTE,
+                        onClick = { type = VaultItemType.NOTE },
+                        label = { Text(stringResource(R.string.item_type_note)) },
                     )
                 }
             }
-        }
-        Text(
-            text = stringResource(R.string.custom_fields_label),
-            style = MaterialTheme.typography.labelLarge,
-            modifier = Modifier.padding(top = 16.dp),
-        )
-        customFieldRows.forEachIndexed { index, row ->
-            Row(modifier = Modifier.fillMaxWidth().padding(top = 8.dp)) {
-                OutlinedTextField(
-                    value = row.label,
-                    onValueChange = { row.label = it },
-                    label = { Text(stringResource(R.string.custom_field_label_hint)) },
-                    singleLine = true,
-                    modifier = Modifier.weight(1f),
+            OutlinedTextField(
+                value = name,
+                onValueChange = { name = it },
+                label = { Text(stringResource(R.string.item_name_label)) },
+                singleLine = true,
+                isError = showNameError,
+                leadingIcon = { Icon(Icons.Filled.Language, contentDescription = null) },
+                modifier = Modifier.fillMaxWidth().padding(top = 16.dp).focusRequester(nameFocusRequester),
+            )
+            if (showNameError) {
+                Text(
+                    text = state.error.message(),
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.padding(top = 4.dp),
                 )
-                Spacer(modifier = Modifier.width(8.dp))
+            }
+            if (type == VaultItemType.LOGIN) {
                 OutlinedTextField(
-                    value = row.value,
-                    onValueChange = { row.value = it },
-                    label = { Text(stringResource(R.string.custom_field_value_hint)) },
+                    value = username,
+                    onValueChange = { username = it },
+                    label = { Text(stringResource(R.string.item_username_label)) },
                     singleLine = true,
-                    modifier = Modifier.weight(1f),
+                    leadingIcon = { Icon(Icons.Filled.Person, contentDescription = null) },
+                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
                 )
-                IconButton(onClick = { customFieldRows.removeAt(index) }) {
-                    Icon(Icons.Filled.Close, contentDescription = stringResource(R.string.remove_custom_field_cd))
+                PasswordField(
+                    value = password,
+                    onValueChange = { password = it },
+                    label = stringResource(R.string.password_label),
+                    leadingIcon = { Icon(Icons.Filled.Lock, contentDescription = null) },
+                    modifier = Modifier.padding(top = 8.dp),
+                )
+                TextButton(onClick = { showGeneratorDialog = true }) {
+                    Icon(Icons.Filled.Refresh, contentDescription = null, modifier = Modifier.padding(end = 4.dp))
+                    Text(stringResource(R.string.generate_password_button))
+                }
+                OutlinedTextField(
+                    value = url,
+                    onValueChange = { url = it },
+                    label = { Text(stringResource(R.string.item_url_label)) },
+                    singleLine = true,
+                    leadingIcon = { Icon(Icons.Filled.Language, contentDescription = null) },
+                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                )
+            }
+            OutlinedTextField(
+                value = note,
+                onValueChange = { note = it },
+                label = {
+                    Text(
+                        stringResource(
+                            if (type == VaultItemType.NOTE) R.string.item_content_label else R.string.item_note_label,
+                        ),
+                    )
+                },
+                minLines = 4,
+                modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+            )
+            if (state.availableTags.isNotEmpty()) {
+                Text(
+                    text = stringResource(R.string.tags_label),
+                    style = MaterialTheme.typography.labelLarge,
+                    modifier = Modifier.padding(top = 16.dp),
+                )
+                Row(modifier = Modifier.horizontalScroll(rememberScrollState()).padding(top = 8.dp)) {
+                    state.availableTags.forEach { tag ->
+                        FilterChip(
+                            selected = tag.id in state.selectedTagIds,
+                            onClick = { onToggleTag(tag.id) },
+                            label = { Text(tag.name) },
+                            leadingIcon = { TagColorDot(tag.id) },
+                            modifier = Modifier.padding(end = 8.dp),
+                        )
+                    }
                 }
             }
-        }
-        TextButton(onClick = { customFieldRows.add(CustomFieldRow()) }) {
-            Text(stringResource(R.string.add_custom_field_button))
-        }
-        Button(
-            onClick = {
-                onSave(
-                    VaultItemFormInput(
-                        type = type,
-                        name = name,
-                        username = username,
-                        password = password,
-                        url = url,
-                        note = note,
-                        customFields = customFieldRows.map { it.label to it.value },
-                    ),
-                )
-            },
-            enabled = !state.busy,
-            modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
-        ) {
-            Text(stringResource(R.string.vault_save_button))
-        }
-        TextButton(onClick = onCancel, modifier = Modifier.fillMaxWidth()) {
-            Text(stringResource(R.string.vault_cancel_button))
+            Text(
+                text = stringResource(R.string.custom_fields_label),
+                style = MaterialTheme.typography.labelLarge,
+                modifier = Modifier.padding(top = 16.dp),
+            )
+            customFieldRows.forEachIndexed { index, row ->
+                Row(modifier = Modifier.fillMaxWidth().padding(top = 8.dp)) {
+                    OutlinedTextField(
+                        value = row.label,
+                        onValueChange = { row.label = it },
+                        label = { Text(stringResource(R.string.custom_field_label_hint)) },
+                        singleLine = true,
+                        modifier = Modifier.weight(1f),
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    OutlinedTextField(
+                        value = row.value,
+                        onValueChange = { row.value = it },
+                        label = { Text(stringResource(R.string.custom_field_value_hint)) },
+                        singleLine = true,
+                        modifier = Modifier.weight(1f),
+                    )
+                    IconButton(onClick = { customFieldRows.removeAt(index) }) {
+                        Icon(Icons.Filled.Close, contentDescription = stringResource(R.string.remove_custom_field_cd))
+                    }
+                }
+            }
+            TextButton(onClick = { customFieldRows.add(CustomFieldRow()) }) {
+                Text(stringResource(R.string.add_custom_field_button))
+            }
+            Button(
+                onClick = {
+                    onSave(
+                        VaultItemFormInput(
+                            type = type,
+                            name = name,
+                            username = username,
+                            password = password,
+                            url = url,
+                            note = note,
+                            customFields = customFieldRows.map { it.label to it.value },
+                        ),
+                    )
+                },
+                enabled = !state.busy,
+                modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
+            ) {
+                Text(stringResource(R.string.vault_save_button))
+            }
+            TextButton(onClick = onCancel, modifier = Modifier.fillMaxWidth()) {
+                Text(stringResource(R.string.vault_cancel_button))
+            }
         }
     }
 

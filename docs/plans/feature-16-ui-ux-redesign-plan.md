@@ -1,5 +1,151 @@
 # Plan — Feature 16: UI/UX redesign (visual + tương tác)
 
+## Cập nhật 2026-07-24 — thay thế phần "A. Visual" bên dưới
+
+Bản gốc (2026-07-19, giữ nguyên bên dưới để tham khảo lịch sử quyết định) tham khảo ảnh ManageEngine PasswordManager Pro và chủ động loại bỏ việc đổi màu thương hiệu ("Theme.kt vẫn dùng `lightColorScheme()`/`darkColorScheme()` mặc định Material3, không hardcode màu").
+
+2026-07-24: người dùng gửi bộ ảnh tham khảo khác (app "Password Manager" — thẻ danh sách, chip lọc theo danh mục, FAB tròn, banner Settings) kèm yêu cầu icon đẹp hơn. Đã duyệt bảng màu + icon + mockup 4 màn hình (List/Detail/Form/Settings) — xem `### A0.` bên dưới. **Bản này thay thế "A. Visual" gốc**: có đổi màu thương hiệu, không giữ Material3 mặc định nữa.
+
+Trạng thái các phần còn lại của plan gốc (tất cả ✅ Done 2026-07-25, xem `## Status`):
+- **B2 đã xong** — `TagColor.kt` + `TagChip.kt` dùng ở `VaultScreen.kt`/`VaultItemFormScreen.kt`/`TagManagerScreen.kt`, palette đã đổi sang 8 tông mới.
+- **B1 đã xong** — `SecurityPolicy.GENERATED_PASSWORD_LENGTH` 20 → 8.
+- **A (Unlock family — LockIconBadge + subtitle) đã xong** — khối tròn nền icon dùng token `brass`/`ink` qua `Theme.kt`, không phải `primaryContainer` mặc định.
+
+### A0. Visual — bảng màu, icon, 4 màn hình (2026-07-24, thay thế "A. Visual" gốc)
+
+**Bảng màu** (thêm vào `colors.xml` + dựng `ColorScheme` tuỳ biến trong `Theme.kt`, không dùng `lightColorScheme()`/`darkColorScheme()` trần nữa):
+
+| Token | Light | Dark | Vai trò |
+|---|---|---|---|
+| Ink Chrome | `#1C2230` | `#1C2230` (cố định, không đổi theo theme) | Top app bar / banner Settings |
+| Brass (accent chính) | `#C6903E` | `#D9A54B` | FAB, nút Save, chip đang chọn, icon nhấn trên chrome |
+| Verdigris (phụ/success) | `#2F8F7E` | `#4CA89B` | Trạng thái tích cực (mật khẩu mạnh, đã copy) — không dùng làm accent chính |
+| Danger | `#C1443A` | `#E2685D` | Cảnh báo mật khẩu yếu/trùng |
+| Paper (bg) | `#F3F4F7` | `#14171F` | Nền màn hình |
+| Surface / Surface-2 | `#FFFFFF` / `#ECEEF2` | `#1D212C` / `#262B38` | Thẻ / nền field |
+
+Tag palette (`TagColor.kt`) tinh chỉnh lại 8 tông (Coral `#E0725A`, Marigold `#D2A23F`, Moss `#6B9080`, Teal `#4C93A6`, Indigo `#5B6FD9`, Plum `#8B5FA8`, Rose `#C1638A`, Slate `#7B8AA8`) — thay 8 tông Material 300 gốc, giữ nguyên cơ chế `tagId % palette.size`.
+
+**Icon** — Concept A đã duyệt: nền gradient graphite (`#2A3040` → `#171A22`), khoá hình mề đay gradient đồng thau (`#F0C878` → `#B8792A`), lỗ khoá "khoét" màu nền tạo chiều sâu. Vẽ lại `ic_launcher_foreground.xml` + `ic_launcher_monochrome.xml`, đổi `ic_launcher_background`.
+
+**4 màn hình** (mockup đã duyệt tại artifact phiên 2026-07-24):
+- **List** (`VaultItemListScreen` trong `VaultScreen.kt`): top bar chrome cố định (title + gear icon), search pill bo tròn thay `OutlinedTextField` viền, hàng chip lọc theo Tag, đổi `Row` thẻ hiện tại sang `Card` (avatar tròn màu verdigris-tint, tên, username, password row ẩn dạng pill, tag chip, timestamp), FAB bo góc vuông (không phải tròn) dùng `brass`.
+- **Detail** (`VaultItemDetailScreen.kt`): giữ đề xuất `DetailField` (label nhỏ phía trên value) từ plan gốc, áp token màu mới; banner cảnh báo mật khẩu yếu dùng token `danger`.
+- **Form** (`VaultItemFormScreen.kt`): field có leading icon (globe/person/lock), chip chọn nhiều Tag (đã đúng model, chỉ style lại), nút Save full-width `brass`.
+- **Settings** (`SettingsScreen.kt`): thêm banner thương hiệu ở đầu (gradient ink + mark khoá đồng thau + tên app + tagline), giữ nguyên cấu trúc section/row hiện có, chỉ style lại.
+
+Không đổi kiến trúc điều hướng (Settings vẫn full-screen `TextButton` back, không thêm drawer trượt).
+
+### Phase 2 (làm sau khi Phase 1 lên máy thật) — Responsive cho tablet
+
+Theo yêu cầu người dùng (2026-07-24): mở rộng bố cục cho tablet **sau khi** Phase 1 (bảng màu + icon + 4 màn hình trên) đã triển khai và duyệt trên điện thoại. Chưa thiết kế chi tiết ở bước này — chỉ ghi nhận thứ tự. Khi tới lượt, cần ít nhất: layout 2-pane (List + Detail cạnh nhau khi width class Expanded, dùng `WindowSizeClass`), kiểm tra lại spacing/max-width của Form và Settings trên màn rộng, và chip/card không kéo giãn full-width một cách xấu xí trên tablet.
+
+## Code-plan 2026-07-24 — Phase 1 (chi tiết triển khai)
+
+*File location: giữ trong `docs/plans/` của repo này, không chuyển sang `kit/context/` — vì
+15 feature trước đều lưu ở đây, `roadmap.md` và code đang trỏ tới đường dẫn này. `common.md` §9
+(bản mới nhất) cũng yêu cầu lưu trong repo dự án, dưới `docs/` — khớp với cách làm hiện tại.*
+
+### Goal
+
+- Áp bảng màu + icon mới đã duyệt vào code thật, style lại 4 màn hình (List/Detail/Form/Settings).
+- Thêm khối icon tròn cho 4 màn Unlock, rút độ dài mật khẩu sinh tự động 20 → 8 ký tự.
+
+### Scope
+
+#### In Scope
+
+- `colors.xml` + `Theme.kt`: bảng màu ink/brass/verdigris/danger tuỳ biến, thay cho Material3 mặc định.
+- `TagColor.kt`: đổi 8 màu tag sang bảng mới.
+- Vẽ lại icon app (`ic_launcher_foreground.xml`, `ic_launcher_monochrome.xml`, màu nền).
+- `LockIconBadge` mới, áp cho 4 màn Unlock (Setup/Unlock/PinUnlock/Biometric) + thêm subtitle.
+- Style lại List, Detail, Form, Settings theo mockup đã duyệt (chỉ đổi giao diện, không đổi logic).
+- `SecurityPolicy.GENERATED_PASSWORD_LENGTH`: 20 → 8.
+- Thêm bộ lọc theo Tag ở màn List (xem mục Questions — đây là hành vi mới, không chỉ giao diện).
+
+#### Out of Scope
+
+- Responsive cho tablet (Phase 2, làm sau khi Phase 1 lên máy thật và được duyệt).
+- Đổi kiến trúc điều hướng (Settings vẫn full-screen, không thêm drawer trượt).
+- Đổi model dữ liệu Tag/VaultItem, đổi schema DB.
+- Loại ký tự dễ nhầm hoặc cho tuỳ chỉnh độ dài mật khẩu sinh tự động (đã out of scope từ bản gốc).
+
+### Flow
+
+1. App khởi động: `MainActivity` đọc `ThemeMode` đã lưu → `PwVaultTheme` dựng `ColorScheme` mới.
+2. User chưa unlock: mở Setup/Unlock/PinUnlock/Biometric → thấy `LockIconBadge` + subtitle mới.
+3. User vào màn List: `VaultViewModel` phát danh sách + tag → UI hiện top bar, ô tìm kiếm, chip lọc
+   tag, `Card` cho mỗi item, FAB — chọn chip tag sẽ lọc lại danh sách hiển thị.
+4. User mở 1 item: `VaultItemDetailScreen` hiện từng trường qua `DetailField` (label + value).
+5. User thêm/sửa item: `VaultItemFormScreen` hiện field có icon, chọn Tag bằng chip (logic cũ).
+6. User mở Settings: banner thương hiệu mới ở đầu, các mục bên dưới giữ nguyên logic đọc/ghi.
+7. User bấm "Generate password": `PasswordGenerator` sinh đúng 8 ký tự, vẫn đủ 4 loại ký tự.
+
+### Files
+
+- `app/src/main/res/values/colors.xml`
+- `app/src/main/java/com/pwvault/app/ui/theme/Theme.kt`
+- `app/src/main/java/com/pwvault/app/ui/theme/TagColor.kt`
+- `app/src/main/res/drawable/ic_launcher_foreground.xml`
+- `app/src/main/res/drawable/ic_launcher_monochrome.xml`
+- `app/src/main/java/com/pwvault/app/ui/unlock/LockIconBadge.kt` (mới)
+- `app/src/main/java/com/pwvault/app/ui/unlock/SetupScreen.kt`
+- `app/src/main/java/com/pwvault/app/ui/unlock/UnlockScreen.kt`
+- `app/src/main/java/com/pwvault/app/ui/unlock/PinUnlockScreen.kt`
+- `app/src/main/java/com/pwvault/app/ui/unlock/BiometricUnlockScreen.kt`
+- `app/src/main/java/com/pwvault/app/ui/vault/VaultViewModel.kt` (thêm state lọc theo Tag ở List)
+- `app/src/main/java/com/pwvault/app/ui/vault/VaultScreen.kt`
+- `app/src/main/java/com/pwvault/app/ui/vault/VaultItemDetailScreen.kt`
+- `app/src/main/java/com/pwvault/app/ui/vault/VaultItemFormScreen.kt`
+- `app/src/main/java/com/pwvault/app/ui/settings/SettingsScreen.kt`
+- `app/src/main/java/com/pwvault/app/security/SecurityPolicy.kt`
+- `app/src/main/res/values/strings.xml` + `app/src/main/res/values-vi/strings.xml`
+- `docs/plans/roadmap.md` (cập nhật trạng thái sau khi xong)
+
+### Implementation Steps
+
+1. `colors.xml`: thêm token màu ink/brass/verdigris/danger/paper/surface (light + dark).
+2. `Theme.kt`: dựng `ColorScheme` từ token mới thay vì `lightColorScheme()`/`darkColorScheme()` trần.
+3. `TagColor.kt`: đổi 8 giá trị màu, giữ nguyên hàm `tagColor()`.
+4. Vẽ lại icon app theo Concept A đã duyệt (khoá gradient đồng thau trên nền graphite).
+5. Viết `LockIconBadge.kt`, áp vào 4 màn Unlock, thêm subtitle mới cho Unlock/PinUnlock/Biometric.
+6. `VaultViewModel.kt`: thêm `availableTags`/`selectedTagIds` vào `ItemList`, thêm hàm lọc theo tag,
+   cập nhật `currentListState()` lọc theo tag đã chọn (giữ nguyên lọc theo search hiện có).
+7. `VaultScreen.kt`: top bar cố định, ô tìm kiếm dạng pill, hàng chip lọc Tag, đổi `Row` sang `Card`.
+8. `VaultItemDetailScreen.kt`: viết `DetailField`, thêm field "Last updated" từ `item.updatedAt`.
+9. `VaultItemFormScreen.kt`: thêm leading icon cho field, style nút Save (chỉ đổi giao diện).
+10. `SettingsScreen.kt`: thêm banner thương hiệu ở đầu, giữ nguyên toàn bộ logic bên dưới.
+11. `SecurityPolicy.kt`: đổi `GENERATED_PASSWORD_LENGTH` = 8.
+12. Thêm string mới (en + vi) cho subtitle Unlock, label "Last updated", nhãn chip lọc.
+13. Build + verify: `ktlintCheck detekt lint testDebugUnitTest assembleDebug`.
+14. Verify sống trên máy thật: so từng màn với mockup, thử unlock 3 cách, CRUD, tìm kiếm, lọc theo
+    tag, generate password (đúng 8 ký tự, đủ 4 loại), đổi theme Light/Dark/System.
+15. `/code-guard` + `/code-review`, sửa hết lỗi mức Critical/Major trước khi commit.
+16. Cập nhật `roadmap.md` Feature 16 = Done, cập nhật mục Status trong file này.
+17. 1 commit.
+
+### Risks
+
+- Đổi màu toàn app là thay đổi lớn, dễ va vào rất nhiều màn hình — cần xem kỹ từng màn trên máy
+  thật trước khi commit, không chỉ tin vào build xanh.
+- Thêm bộ lọc theo Tag ở màn List là hành vi mới (không chỉ đổi giao diện) — nếu lọc sai sẽ làm
+  người dùng tưởng mất dữ liệu (item vẫn còn, chỉ đang bị ẩn do lọc nhầm) — cần test kỹ.
+- Vẽ lại icon app có thể bị hệ thống Android cache icon cũ — cần gỡ cài lại app khi test trên máy
+  thật để chắc chắn thấy icon mới, không nhầm là icon chưa đổi được.
+- Đổi 4 màn Unlock cùng lúc — đây là màn đầu tiên người dùng thấy mỗi lần mở app, lỗi ở đây chặn
+  luôn cả luồng dùng app, nên test luồng mở khóa kỹ trước khi commit.
+
+### Questions
+
+*(đã đề xuất phương án — chỉ hỏi lại nếu muốn đổi)*
+
+- **Mockup có chip lọc theo Tag ở màn List, nhưng code hiện tại chưa có logic lọc này (chỉ có ở màn
+  Thêm/sửa) — có làm luôn phần lọc thật, hay chỉ hiện chip cho đẹp mà chưa lọc?** 👉 Đề xuất: làm
+  luôn phần lọc thật (mục 6 ở Implementation Steps) — vì hiện chip mà bấm không có tác dụng gây
+  khó hiểu cho người dùng hơn là không hiện chip.
+
+---
+
 ## Goal
 
 - Cải thiện cả **visual** (bố cục, style) lẫn **UX/tương tác** (hành vi, mức độ dễ dùng) của app — không giới hạn ở "chỉ đổi giao diện, giữ nguyên logic" như phạm vi ban đầu.
@@ -37,14 +183,14 @@ Pattern rút ra từ từng ảnh tham khảo (ManageEngine PasswordManager Pro)
 - Thêm field mới hiển thị `item.updatedAt` (đã có sẵn trong `VaultItem`, domain model có nhưng chưa hiển thị ở đâu) dạng label "Last updated", format theo locale — tương ứng "Last Accessed Time" trong ảnh mẫu, dùng đúng dữ liệu đã có, không thêm cột DB mới.
 - Giữ nguyên nút eye-toggle + copy cho password — chỉ đổi layout bọc ngoài.
 
-### Out of Scope
+### Out of Scope (bản gốc 2026-07-19 — đã bị thay thế, xem `### A0.` ở trên)
 
-- Đổi màu thương hiệu (header xanh như ảnh) — `Theme.kt` vẫn dùng `lightColorScheme()`/`darkColorScheme()` mặc định Material3, không hardcode màu. Theme picker là đúng phạm vi Settings (#15).
+- ~~Đổi màu thương hiệu (header xanh như ảnh) — `Theme.kt` vẫn dùng `lightColorScheme()`/`darkColorScheme()` mặc định Material3, không hardcode màu.~~ **Đã đổi quyết định 2026-07-24** — nay có bảng màu thương hiệu riêng, xem `### A0.`. Theme picker (light/dark/system) ở Settings (#15) vẫn giữ nguyên, chỉ áp thêm token màu mới lên cả 2 chế độ.
 - Số đếm bên phải mỗi row trong ảnh Favorites (vd "31", "2") — không có dữ liệu tương ứng trong model phẳng hiện tại (pwvault không có khái niệm "resource chứa nhiều account con"), không fabricate số liệu giả.
 - Hiển thị Tag ở Detail — `VaultItem.tags` tồn tại trong model nhưng luôn rỗng tới khi Feature 7 (Tag management) xong; nên làm cùng/sau Feature 7, không phải ở đây dù cùng đụng Detail screen.
 - Đổi tương tác search thành icon-mở-rộng trong TopAppBar (xem mục List ở trên).
 - Hành vi lỗi/focus của form Unlock — vẫn là mục 5b riêng, độc lập, không gộp.
-- Settings screen (theme picker, offline toggle, clear data...) trong ảnh — roadmap #15 riêng, chưa tới lượt.
+- ~~Settings screen (theme picker, offline toggle, clear data...) trong ảnh — roadmap #15 riêng, chưa tới lượt.~~ **Đã đổi 2026-07-24** — #15 nay đã Done (Material3 mặc định, chưa có style riêng), Settings được style lại trong Feature 16 theo `### A0.` (banner thương hiệu + token màu mới), không đổi cấu trúc section/logic.
 
 ---
 
@@ -134,11 +280,17 @@ Pattern rút ra từ từng ảnh tham khảo (ManageEngine PasswordManager Pro)
 
 *(đã đề xuất phương án — chỉ hỏi lại nếu muốn đổi)*
 
-- **Avatar theo chữ cái đầu tên hay theo loại item?** 👉 Chữ cái đầu — Vault Item hiện chỉ có 1 loại ("Login"), phân loại theo type chưa có ý nghĩa tới khi Feature 9 (Note) xong.
+- **Avatar theo chữ cái đầu tên hay theo loại item?** 👉 **Đổi 2026-07-24**: theo loại item (icon Person/Description hiện có trong `VaultItemListScreen`, bọc trong khối tròn tint màu verdigris) — Feature 9 (Note) đã xong nên phân biệt Login/Note theo icon đã có ý nghĩa, không cần đổi sang chữ cái đầu nữa.
 - **"Rule cơ bản" cho password generator nghĩa là gì?** 👉 ≥1 chữ hoa + ≥1 chữ thường + ≥1 số + ≥1 ký tự đặc biệt (rule phức tạp mật khẩu kiểu phổ biến/OWASP-style cơ bản) — không đổi bộ ký tự đặc biệt hiện có, không loại ký tự dễ nhầm (chưa yêu cầu).
 
 ---
 
 ## Status
 
-⏳ Chưa triển khai — theo quyết định người dùng (2026-07-19), làm sau khi tất cả tính năng 1-15 trong roadmap hoàn tất. Doc này ghi lại scope (visual + UX) trước, để không mất ngữ cảnh khi tới lượt triển khai. Mọi góp ý UI/UX mới trong lúc làm các feature khác sẽ được thêm tiếp vào mục B của doc này.
+✅ Phase 1 xong (2026-07-25) — bảng màu ink/brass/verdigris/danger, icon app mới (Concept A), style lại List/Detail/Form/Settings, `LockIconBadge` + subtitle cho 4 màn Unlock, lọc theo Tag thật (không chỉ hiện chip), `GENERATED_PASSWORD_LENGTH` 20→8. B2 giữ nguyên (đã xong trước đó). `/code-guard` + `/code-review` sạch (1 vi phạm màu hardcode đã sửa, xem `docs/code-review/feature-16-ui-ux-redesign.md`). Build xanh (ktlint/detekt/lint/assembleDebug); repo không có unit test nào để chạy.
+
+2 lỗi phát hiện trong lúc hoàn thiện, đã sửa trước commit:
+- **Critical:** `VaultFileManager` còn `fallbackToDestructiveMigration(dropAllTables = true)` — sẽ xoá sạch vault thật trên máy đã cài `v0.1.0` ở lần bump version kế tiếp. Bỏ destructive fallback; thiếu migration giờ sẽ crash rõ ràng thay vì âm thầm mất dữ liệu.
+- **Major:** nhánh làm dở đã xoá toàn bộ tính năng "lưu template mật khẩu tái dùng" (Feature 10) mà không ghi vào plan nào. Khôi phục lại đầy đủ (DAO/Entity/Repository/ViewModel/dialog UI/strings), DB giữ nguyên version 5.
+
+Phase 2 (tablet responsive) làm sau, sau khi Phase 1 lên máy thật và được duyệt.

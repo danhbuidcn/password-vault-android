@@ -13,6 +13,7 @@
     <string name="error_create_failed">Không tạo được Vault, thử lại</string>
 
     <string name="unlock_title">Nhập mật khẩu</string>
+    <string name="unlock_subtitle">Mở khóa PWVault để xem mật khẩu đã lưu.</string>
     <string name="unlock_button">Mở khóa</string>
     <string name="unlock_button_busy">Đang mở…</string>
     <string name="error_wrong_password">Sai mật khẩu</string>
@@ -33,6 +34,7 @@
     <string name="error_pin_not_numeric">Mã PIN chỉ được chứa chữ số</string>
 
     <string name="pin_unlock_title">Nhập mã PIN</string>
+    <string name="pin_unlock_subtitle">Nhập mã PIN để mở khóa nhanh.</string>
     <string name="pin_unlock_button">Mở khóa</string>
     <string name="use_master_password_instead">Dùng mật khẩu thay thế</string>
     <string name="use_pin_instead">Dùng mã PIN thay thế</string>
@@ -41,6 +43,7 @@
     <string name="setup_biometric_button">Thiết lập mở khóa bằng vân tay/khuôn mặt</string>
     <string name="biometric_prompt_title">Mở khóa PWVault</string>
     <string name="biometric_unlock_title">Mở khóa bằng vân tay hoặc khuôn mặt</string>
+    <string name="biometric_unlock_subtitle">Dùng vân tay hoặc khuôn mặt để mở khóa PWVault.</string>
     <string name="biometric_unlock_retry_button">Thử lại</string>
     <string name="use_biometric_instead">Dùng vân tay/khuôn mặt thay thế</string>
     <string name="error_biometric_failed">Mở khóa bằng vân tay/khuôn mặt thất bại</string>
@@ -52,6 +55,9 @@
     <string name="vault_no_results_state">Không có mục nào khớp tìm kiếm</string>
     <string name="search_placeholder">Tìm theo tên hoặc tên đăng nhập</string>
     <string name="search_clear_cd">Xóa tìm kiếm</string>
+    <string name="vault_filter_all_label">Tất cả</string>
+    <string name="vault_last_updated_label">Cập nhật lần cuối %1$s</string>
+    <string name="vault_last_updated_field_label">Cập nhật lần cuối</string>
     <string name="vault_add_item_cd">Thêm mục</string>
     <string name="vault_add_item_title">Thêm mục</string>
     <string name="vault_edit_item_title">Sửa mục</string>
@@ -166,6 +172,7 @@
 
     <string name="settings_cd">Cài đặt</string>
     <string name="settings_title">Cài đặt</string>
+    <string name="settings_tagline">Offline. Mã hóa. Của riêng bạn.</string>
     <string name="settings_unlock_method_section">Phương thức mở khóa</string>
     <string name="settings_security_section">Bảo mật</string>
     <string name="settings_appearance_section">Giao diện</string>

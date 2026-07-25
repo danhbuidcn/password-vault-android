@@ -1,5 +1,6 @@
 package com.pwvault.app.ui.vault
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -9,9 +10,12 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Clear
@@ -19,8 +23,13 @@ import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material.icons.filled.WarningAmber
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Card
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -30,6 +39,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -42,6 +53,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.pwvault.app.R
+import com.pwvault.app.domain.Tag
 import com.pwvault.app.domain.VaultItem
 import com.pwvault.app.domain.VaultItemType
 import com.pwvault.app.ui.export.ExportScreen
@@ -50,8 +62,12 @@ import com.pwvault.app.ui.export.ExportUiState
 import com.pwvault.app.ui.export.ExportViewModel
 import com.pwvault.app.ui.settings.SettingsScreen
 import com.pwvault.app.ui.settings.SettingsViewModel
+import com.pwvault.app.ui.theme.PwVaultChrome
 import com.pwvault.app.ui.unlock.PinSetupDialog
 import com.pwvault.app.ui.unlock.UnlockUiState
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @Composable
 fun VaultScreen(
@@ -156,9 +172,13 @@ fun VaultScreen(
                         vaultItems = vaultState.items,
                         warnings = vaultState.warnings,
                         searchQuery = vaultState.searchQuery,
+                        availableTags = vaultState.availableTags,
+                        selectedTagFilterIds = vaultState.selectedTagFilterIds,
                         onAddItem = viewModel::openAddForm,
                         onOpenItem = viewModel::openDetail,
                         onSearchQueryChange = viewModel::updateSearchQuery,
+                        onToggleTagFilter = viewModel::toggleTagFilter,
+                        onClearTagFilter = viewModel::clearTagFilter,
                         onOpenSettings = { showSettings = true },
                     )
                 is VaultUiState.ItemDetail ->
@@ -207,33 +227,50 @@ fun VaultScreen(
     }
 }
 
+private val listUpdatedFormat = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun VaultItemListScreen(
     vaultItems: List<VaultItem>,
     warnings: Map<Long, VaultItemWarning>,
     searchQuery: String,
+    availableTags: List<Tag>,
+    selectedTagFilterIds: Set<Long>,
     onAddItem: () -> Unit,
     onOpenItem: (VaultItem) -> Unit,
     onSearchQueryChange: (String) -> Unit,
+    onToggleTagFilter: (Long) -> Unit,
+    onClearTagFilter: () -> Unit,
     onOpenSettings: () -> Unit,
 ) {
     Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(stringResource(R.string.app_name)) },
+                actions = {
+                    IconButton(onClick = onOpenSettings) {
+                        Icon(
+                            imageVector = Icons.Filled.Settings,
+                            contentDescription = stringResource(R.string.settings_cd),
+                            tint = PwVaultChrome.Accent,
+                        )
+                    }
+                },
+                colors =
+                    TopAppBarDefaults.topAppBarColors(
+                        containerColor = PwVaultChrome.Background,
+                        titleContentColor = PwVaultChrome.Content,
+                    ),
+            )
+        },
         floatingActionButton = {
-            FloatingActionButton(onClick = onAddItem) {
+            FloatingActionButton(onClick = onAddItem, shape = RoundedCornerShape(16.dp)) {
                 Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.vault_add_item_cd))
             }
         },
     ) { padding ->
         Column(modifier = Modifier.fillMaxSize().padding(padding)) {
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
-                horizontalArrangement = Arrangement.End,
-            ) {
-                IconButton(onClick = onOpenSettings) {
-                    Icon(Icons.Filled.Settings, contentDescription = stringResource(R.string.settings_cd))
-                }
-            }
-
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = onSearchQueryChange,
@@ -247,8 +284,35 @@ private fun VaultItemListScreen(
                         }
                     }
                 },
+                shape = RoundedCornerShape(28.dp),
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
             )
+
+            if (availableTags.isNotEmpty()) {
+                Row(
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .horizontalScroll(rememberScrollState())
+                            .padding(horizontal = 16.dp, vertical = 4.dp),
+                ) {
+                    FilterChip(
+                        selected = selectedTagFilterIds.isEmpty(),
+                        onClick = onClearTagFilter,
+                        label = { Text(stringResource(R.string.vault_filter_all_label)) },
+                        modifier = Modifier.padding(end = 8.dp),
+                    )
+                    availableTags.forEach { tag ->
+                        FilterChip(
+                            selected = tag.id in selectedTagFilterIds,
+                            onClick = { onToggleTagFilter(tag.id) },
+                            label = { Text(tag.name) },
+                            leadingIcon = { TagColorDot(tag.id) },
+                            modifier = Modifier.padding(end = 8.dp),
+                        )
+                    }
+                }
+            }
 
             if (vaultItems.isEmpty()) {
                 Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
@@ -272,55 +336,110 @@ private fun VaultItemListScreen(
             } else {
                 LazyColumn(contentPadding = PaddingValues(16.dp)) {
                     items(vaultItems, key = { it.id }) { item ->
-                        Row(
-                            modifier =
-                                Modifier
-                                    .fillMaxWidth()
-                                    .clickable { onOpenItem(item) }
-                                    .padding(vertical = 12.dp),
-                        ) {
-                            val isNote = item.type == VaultItemType.NOTE
-                            Icon(
-                                imageVector = if (isNote) Icons.Filled.Description else Icons.Filled.Person,
-                                contentDescription =
-                                    stringResource(if (isNote) R.string.item_type_note else R.string.item_type_login),
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.padding(top = 2.dp, end = 12.dp),
-                            )
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(text = item.name, style = MaterialTheme.typography.bodyLarge)
-                                if (item.username.isNotEmpty()) {
-                                    Text(
-                                        text = item.username,
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    )
-                                }
-                                if (item.tags.isNotEmpty()) {
-                                    Row(
-                                        modifier =
-                                            Modifier
-                                                .horizontalScroll(rememberScrollState())
-                                                .padding(top = 4.dp),
-                                    ) {
-                                        item.tags.forEach { tag ->
-                                            TagChip(tag = tag, modifier = Modifier.padding(end = 8.dp))
-                                        }
-                                    }
-                                }
-                            }
-                            if (warnings[item.id]?.hasWarning == true) {
-                                Icon(
-                                    imageVector = Icons.Filled.WarningAmber,
-                                    contentDescription = stringResource(R.string.password_warning_cd),
-                                    tint = MaterialTheme.colorScheme.error,
-                                    modifier = Modifier.padding(start = 8.dp, top = 2.dp),
-                                )
-                            }
-                        }
+                        VaultItemCard(
+                            item = item,
+                            hasWarning = warnings[item.id]?.hasWarning == true,
+                            onClick = { onOpenItem(item) },
+                            modifier = Modifier.padding(bottom = 12.dp),
+                        )
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun VaultItemCard(
+    item: VaultItem,
+    hasWarning: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Card(modifier = modifier.fillMaxWidth().clickable(onClick = onClick)) {
+        Column(modifier = Modifier.padding(14.dp)) {
+            Row(verticalAlignment = Alignment.Top) {
+                val isNote = item.type == VaultItemType.NOTE
+                Surface(
+                    shape = CircleShape,
+                    color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.14f),
+                ) {
+                    Icon(
+                        imageVector = if (isNote) Icons.Filled.Description else Icons.Filled.Person,
+                        contentDescription =
+                            stringResource(if (isNote) R.string.item_type_note else R.string.item_type_login),
+                        tint = MaterialTheme.colorScheme.secondary,
+                        modifier = Modifier.padding(9.dp).size(18.dp),
+                    )
+                }
+                Column(modifier = Modifier.weight(1f).padding(start = 12.dp)) {
+                    Text(text = item.name, style = MaterialTheme.typography.bodyLarge)
+                    if (item.username.isNotEmpty()) {
+                        Text(
+                            text = item.username,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+                if (hasWarning) {
+                    Icon(
+                        imageVector = Icons.Filled.WarningAmber,
+                        contentDescription = stringResource(R.string.password_warning_cd),
+                        tint = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.padding(start = 8.dp, top = 2.dp),
+                    )
+                }
+            }
+            if (item.type == VaultItemType.LOGIN) {
+                var passwordVisible by remember { mutableStateOf(false) }
+                Row(
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(top = 10.dp)
+                            .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(10.dp))
+                            .padding(horizontal = 10.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = if (passwordVisible) item.password else "•".repeat(item.password.length),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.weight(1f),
+                    )
+                    IconButton(onClick = { passwordVisible = !passwordVisible }, modifier = Modifier.size(20.dp)) {
+                        Icon(
+                            imageVector = if (passwordVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
+                            contentDescription =
+                                stringResource(
+                                    if (passwordVisible) R.string.password_hide_cd else R.string.password_show_cd,
+                                ),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(16.dp),
+                        )
+                    }
+                }
+            }
+            if (item.tags.isNotEmpty()) {
+                Row(
+                    modifier =
+                        Modifier
+                            .horizontalScroll(rememberScrollState())
+                            .padding(top = 10.dp),
+                ) {
+                    item.tags.forEach { tag ->
+                        TagChip(tag = tag, modifier = Modifier.padding(end = 8.dp))
+                    }
+                }
+            }
+            val updatedText = listUpdatedFormat.format(Date(item.updatedAt))
+            Text(
+                text = stringResource(R.string.vault_last_updated_label, updatedText),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(top = 8.dp),
+            )
         }
     }
 }

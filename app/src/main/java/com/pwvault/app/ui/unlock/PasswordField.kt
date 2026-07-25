@@ -28,6 +28,7 @@ fun PasswordField(
     onValueChange: (String) -> Unit,
     label: String,
     modifier: Modifier = Modifier,
+    leadingIcon: @Composable (() -> Unit)? = null,
 ) {
     var visible by remember { mutableStateOf(false) }
 
@@ -38,6 +39,7 @@ fun PasswordField(
         singleLine = true,
         visualTransformation = if (visible) VisualTransformation.None else PasswordVisualTransformation(),
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+        leadingIcon = leadingIcon,
         trailingIcon = {
             IconButton(onClick = { visible = !visible }) {
                 Icon(

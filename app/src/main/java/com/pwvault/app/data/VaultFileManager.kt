@@ -65,9 +65,11 @@ class VaultFileManager(
                 Room
                     .databaseBuilder(context, VaultDatabase::class.java, vaultFile.absolutePath)
                     .openHelperFactory(SupportOpenHelperFactory(key))
-                    // Schema is still evolving across features (7/8/9 each add tables/columns) and the
-                    // app hasn't been released yet — no real user data to preserve across a bump.
-                    .fallbackToDestructiveMigration(dropAllTables = true)
+                    // No destructive fallback: v0.1.0 (DB version 5) is installed on a real device with
+                    // real Vault data (see CHANGELOG/roadmap). A destructive fallback here would silently
+                    // wipe that vault the next time the schema version changes. Every version bump from 5
+                    // onward must ship an explicit Room Migration that preserves existing rows — a missing
+                    // Migration should surface as a loud crash (fixable), never a silent data loss.
                     .addCallback(
                         object : RoomDatabase.Callback() {
                             override fun onCreate(db: SupportSQLiteDatabase) {

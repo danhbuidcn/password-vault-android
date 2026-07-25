@@ -23,7 +23,7 @@
 | 13 | Auto-backup nền (ghi mỗi khi đổi Vault Item, atomic, rotate 5 bản) + nhắc export thủ công định kỳ (WorkManager) | ✅ Done | [feature-13-autobackup-plan.md](feature-13-autobackup-plan.md) |
 | 14 | Cảnh báo mật khẩu yếu/trùng lặp | ✅ Done | [feature-14-weak-duplicate-warning-plan.md](feature-14-weak-duplicate-warning-plan.md) |
 | 15 | Màn hình Settings (tham số bảo mật, theme, phương thức unlock) | ✅ Done | [feature-15-settings-plan.md](feature-15-settings-plan.md) |
-| 16 | UI/UX redesign (visual: Unlock/List/Detail theo ảnh tham khảo + UX: góp ý tương tác gộp dần, vd password generator 8 ký tự) | ⏳ Pending | [feature-16-ui-ux-redesign-plan.md](feature-16-ui-ux-redesign-plan.md) |
+| 16 | UI/UX redesign Phase 1 (bảng màu ink/brass/verdigris, icon app mới, style List/Detail/Form/Settings, lọc theo Tag thật) | ✅ Done | [feature-16-ui-ux-redesign-plan.md](feature-16-ui-ux-redesign-plan.md) |
 
 ## Ghi chú phụ thuộc
 
