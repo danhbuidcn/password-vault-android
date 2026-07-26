@@ -375,6 +375,18 @@ private fun VaultItemCard(
                         )
                     }
                 }
+                if (item.tags.isNotEmpty()) {
+                    Row(
+                        modifier =
+                            Modifier
+                                .horizontalScroll(rememberScrollState())
+                                .padding(start = 8.dp),
+                    ) {
+                        item.tags.forEach { tag ->
+                            TagChip(tag = tag, modifier = Modifier.padding(start = 4.dp))
+                        }
+                    }
+                }
             }
             if (item.type == VaultItemType.LOGIN) {
                 var passwordVisible by remember { mutableStateOf(false) }
@@ -403,18 +415,6 @@ private fun VaultItemCard(
                             tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(16.dp),
                         )
-                    }
-                }
-            }
-            if (item.tags.isNotEmpty()) {
-                Row(
-                    modifier =
-                        Modifier
-                            .horizontalScroll(rememberScrollState())
-                            .padding(top = 10.dp),
-                ) {
-                    item.tags.forEach { tag ->
-                        TagChip(tag = tag, modifier = Modifier.padding(end = 8.dp))
                     }
                 }
             }

@@ -11,8 +11,8 @@
 ## Tính năng chính
 
 - Mở khóa bằng Master Password, PIN số, hoặc sinh trắc học (vân tay/khuôn mặt).
-- CRUD Vault Item (Login/Note), tìm kiếm, phân loại theo Tag, trường tùy biến (custom field).
-- Sinh mật khẩu ngẫu nhiên, lưu template tái dùng.
+- CRUD Vault Item, tìm kiếm, phân loại theo Tag.
+- Sinh mật khẩu ngẫu nhiên.
 - Import CSV/Excel; export mã hóa (`.pwvbackup`) hoặc CSV/Excel không mã hóa.
 - Auto-backup nền (rotate 5 bản), cảnh báo mật khẩu yếu/trùng lặp, chặn chụp màn hình.
 
