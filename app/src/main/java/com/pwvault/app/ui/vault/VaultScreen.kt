@@ -25,7 +25,6 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.material.icons.filled.WarningAmber
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -77,7 +76,6 @@ fun VaultScreen(
     onSetupBiometric: () -> Unit,
     viewModel: VaultViewModel,
     tagViewModel: TagViewModel,
-    passwordTemplateViewModel: PasswordTemplateViewModel,
     exportViewModel: ExportViewModel,
     importViewModel: ImportViewModel,
     settingsViewModel: SettingsViewModel,
@@ -170,7 +168,6 @@ fun VaultScreen(
                 is VaultUiState.ItemList ->
                     VaultItemListScreen(
                         vaultItems = vaultState.items,
-                        warnings = vaultState.warnings,
                         searchQuery = vaultState.searchQuery,
                         availableTags = vaultState.availableTags,
                         selectedTagFilterIds = vaultState.selectedTagFilterIds,
@@ -193,7 +190,6 @@ fun VaultScreen(
                 is VaultUiState.ItemForm ->
                     VaultItemFormScreen(
                         state = vaultState,
-                        passwordTemplateViewModel = passwordTemplateViewModel,
                         onSave = viewModel::save,
                         onCancel = viewModel::backToList,
                         onToggleTag = viewModel::toggleTagSelected,
@@ -233,7 +229,6 @@ private val listUpdatedFormat = SimpleDateFormat("dd MMM yyyy", Locale.getDefaul
 @Composable
 private fun VaultItemListScreen(
     vaultItems: List<VaultItem>,
-    warnings: Map<Long, VaultItemWarning>,
     searchQuery: String,
     availableTags: List<Tag>,
     selectedTagFilterIds: Set<Long>,
@@ -338,7 +333,6 @@ private fun VaultItemListScreen(
                     items(vaultItems, key = { it.id }) { item ->
                         VaultItemCard(
                             item = item,
-                            hasWarning = warnings[item.id]?.hasWarning == true,
                             onClick = { onOpenItem(item) },
                             modifier = Modifier.padding(bottom = 12.dp),
                         )
@@ -352,7 +346,6 @@ private fun VaultItemListScreen(
 @Composable
 private fun VaultItemCard(
     item: VaultItem,
-    hasWarning: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -381,14 +374,6 @@ private fun VaultItemCard(
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
-                }
-                if (hasWarning) {
-                    Icon(
-                        imageVector = Icons.Filled.WarningAmber,
-                        contentDescription = stringResource(R.string.password_warning_cd),
-                        tint = MaterialTheme.colorScheme.error,
-                        modifier = Modifier.padding(start = 8.dp, top = 2.dp),
-                    )
                 }
             }
             if (item.type == VaultItemType.LOGIN) {

@@ -35,7 +35,6 @@ import com.pwvault.app.ui.unlock.UnlockScreen
 import com.pwvault.app.ui.unlock.UnlockUiState
 import com.pwvault.app.ui.unlock.UnlockViewModel
 import com.pwvault.app.ui.vault.ImportViewModel
-import com.pwvault.app.ui.vault.PasswordTemplateViewModel
 import com.pwvault.app.ui.vault.TagViewModel
 import com.pwvault.app.ui.vault.VaultScreen
 import com.pwvault.app.ui.vault.VaultViewModel
@@ -63,7 +62,6 @@ class MainActivity : FragmentActivity() {
     private val unlockViewModel: UnlockViewModel by viewModels()
     private val vaultViewModel: VaultViewModel by viewModels()
     private val tagViewModel: TagViewModel by viewModels()
-    private val passwordTemplateViewModel: PasswordTemplateViewModel by viewModels()
     private val exportViewModel: ExportViewModel by viewModels()
     private val importViewModel: ImportViewModel by viewModels()
     private val settingsViewModel: SettingsViewModel by viewModels()
@@ -129,7 +127,6 @@ class MainActivity : FragmentActivity() {
                     unlockViewModel = unlockViewModel,
                     vaultViewModel = vaultViewModel,
                     tagViewModel = tagViewModel,
-                    passwordTemplateViewModel = passwordTemplateViewModel,
                     exportViewModel = exportViewModel,
                     importViewModel = importViewModel,
                     settingsViewModel = settingsViewModel,
@@ -266,7 +263,6 @@ private fun PwVaultApp(
     unlockViewModel: UnlockViewModel,
     vaultViewModel: VaultViewModel,
     tagViewModel: TagViewModel,
-    passwordTemplateViewModel: PasswordTemplateViewModel,
     exportViewModel: ExportViewModel,
     importViewModel: ImportViewModel,
     settingsViewModel: SettingsViewModel,
@@ -316,7 +312,6 @@ private fun PwVaultApp(
                 onSetupBiometric = onSetupBiometric,
                 viewModel = vaultViewModel,
                 tagViewModel = tagViewModel,
-                passwordTemplateViewModel = passwordTemplateViewModel,
                 exportViewModel = exportViewModel,
                 importViewModel = importViewModel,
                 settingsViewModel = settingsViewModel,

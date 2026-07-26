@@ -28,10 +28,10 @@
 - Thêm/sửa/xóa/tìm kiếm/phân loại (tag) Vault Item.
 - Hiển thị thời gian cập nhật gần nhất (last update) trên mỗi Vault Item.
 - Một ứng dụng/dịch vụ có thể có nhiều Vault Item (nhiều tài khoản), không giới hạn số lượng.
-- Ngoài Vault Item loại Login (username/password/URL), hỗ trợ loại Note — ghi chú bảo mật không gắn với tài khoản (VD: mã khóa két, ghi chú riêng tư).
+- Vault Item loại Login (username/password/URL); loại Note (ghi chú bảo mật không gắn tài khoản) vẫn xem/sửa được nếu đã có từ trước, nhưng màn Thêm mục chỉ tạo mới được Login.
 - Phân loại Vault Item bằng tag: app có sẵn tag gợi ý (Personal, Bank, Social Media...), người dùng tự tạo/sửa/xóa tag riêng, một Vault Item có thể gắn nhiều tag.
-- Trường dữ liệu tùy biến: ngoài các trường mặc định (username, password, URL, ghi chú), người dùng tự thêm trường tùy ý cho từng mục (VD: security question, mã PIN thẻ, backup code...).
-- Sinh mật khẩu ngẫu nhiên, tùy chỉnh độ dài/bộ ký tự/loại trừ ký tự dễ nhầm, lưu lại thành nhiều mẫu (template) để tái dùng.
+- Trường dữ liệu tùy biến (Custom Field): mục đã có từ trước vẫn hiển thị nguyên vẹn, nhưng màn Thêm/sửa không còn cho thêm trường mới.
+- Sinh mật khẩu ngẫu nhiên, tùy chỉnh độ dài (tối đa 15 ký tự)/bộ ký tự.
 - Tùy chỉnh bảo mật & mở khóa: thời gian tự khóa, bật/tắt từng phương thức mở khóa, độ mạnh tham số mã hóa — trong giới hạn an toàn tối thiểu do app quy định.
 - Tùy chỉnh giao diện & tổ chức dữ liệu: theme, tag/nhóm/icon tự đặt, cách sắp xếp/hiển thị danh sách.
 - Import mật khẩu từ file CSV/Excel.
@@ -96,7 +96,6 @@
 - Vault Item: loại (Login hoặc Note), tên, ghi chú, danh sách Tag, danh sách Custom Field, thời gian tạo/cập nhật gần nhất. Login có thêm username/password/URL; Note có thêm nội dung.
 - Tag: nhãn phân loại Vault Item, có tag gợi ý sẵn (Personal, Bank, Social Media...) và tag tự tạo.
 - Custom Field: trường tùy biến gắn với 1 Vault Item (key, value, loại hiển thị).
-- Password Generator Template: bộ quy tắc sinh mật khẩu người dùng lưu lại để tái dùng.
 - Vault: file dữ liệu mã hóa chính (AES-256).
 - Backup file (`.pwvbackup`): file mã hóa dùng cho backup và chuyển máy.
 - Master Password.

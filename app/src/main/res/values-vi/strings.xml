@@ -18,8 +18,6 @@
     <string name="unlock_button_busy">Đang mở…</string>
     <string name="error_wrong_password">Sai mật khẩu</string>
 
-    <string name="setup_pin_button">Thiết lập mở khóa bằng PIN</string>
-
     <string name="password_show_cd">Hiện mật khẩu</string>
     <string name="password_hide_cd">Ẩn mật khẩu</string>
 
@@ -40,7 +38,6 @@
     <string name="use_pin_instead">Dùng mã PIN thay thế</string>
     <string name="error_wrong_pin">Sai mã PIN</string>
 
-    <string name="setup_biometric_button">Thiết lập mở khóa bằng vân tay/khuôn mặt</string>
     <string name="biometric_prompt_title">Mở khóa PWVault</string>
     <string name="biometric_unlock_title">Mở khóa bằng vân tay hoặc khuôn mặt</string>
     <string name="biometric_unlock_subtitle">Dùng vân tay hoặc khuôn mặt để mở khóa PWVault.</string>
@@ -93,11 +90,6 @@
     <string name="error_tag_name_required">Cần nhập tên tag</string>
     <string name="error_tag_name_duplicate">Đã có tag trùng tên này</string>
 
-    <string name="custom_fields_label">Trường tùy biến</string>
-    <string name="custom_field_label_hint">Tên trường</string>
-    <string name="custom_field_value_hint">Giá trị</string>
-    <string name="add_custom_field_button">Thêm trường</string>
-    <string name="remove_custom_field_cd">Xóa trường</string>
     <string name="custom_field_show_value_cd">Hiện giá trị</string>
     <string name="custom_field_hide_value_cd">Ẩn giá trị</string>
 
@@ -109,13 +101,7 @@
     <string name="password_generator_use_special">Ký tự đặc biệt</string>
     <string name="password_generator_regenerate_button">Tạo lại</string>
     <string name="password_generator_use_button">Dùng mật khẩu này</string>
-    <string name="password_template_name_placeholder">Tên template</string>
-    <string name="password_template_save_button">Lưu thành template</string>
-    <string name="password_templates_label">Template đã lưu</string>
-    <string name="delete_password_template_cd">Xóa template</string>
     <string name="error_password_generator_no_class_selected">Chọn ít nhất 1 loại ký tự</string>
-    <string name="error_password_template_name_required">Cần nhập tên template</string>
-    <string name="error_password_template_name_duplicate">Đã có template trùng tên này</string>
 
     <string name="export_cd">Export</string>
     <string name="export_title">Export Vault</string>
@@ -135,7 +121,6 @@
     <string name="export_done">Export hoàn tất.</string>
     <string name="export_failed">Export thất bại, thử lại.</string>
 
-    <string name="password_warning_cd">Password yếu hoặc bị dùng lại</string>
     <string name="warning_weak_password">Password yếu</string>
     <string name="warning_duplicate_password">Đang dùng chung với mục khác</string>
 
@@ -176,8 +161,12 @@
     <string name="settings_security_section">Bảo mật</string>
     <string name="settings_appearance_section">Giao diện</string>
     <string name="settings_data_section">Dữ liệu</string>
-    <string name="pin_enabled_label">Đang bật mở khóa bằng PIN</string>
-    <string name="biometric_enabled_label">Đang bật mở khóa bằng vân tay/khuôn mặt</string>
+    <string name="settings_app_password_label">Mật khẩu app</string>
+    <string name="settings_always_on">Luôn bật</string>
+    <string name="settings_pin_label">Mở khóa bằng PIN</string>
+    <string name="settings_biometric_label">Mở khóa vân tay/khuôn mặt</string>
+    <string name="settings_status_on">Đang bật</string>
+    <string name="settings_setup_button">Thiết lập</string>
     <string name="auto_lock_30s">30 giây</string>
     <string name="auto_lock_1m">1 phút</string>
     <string name="auto_lock_5m">5 phút</string>

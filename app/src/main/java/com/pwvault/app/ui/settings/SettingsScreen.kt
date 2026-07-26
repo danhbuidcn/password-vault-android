@@ -2,6 +2,7 @@ package com.pwvault.app.ui.settings
 
 import androidx.annotation.StringRes
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -14,11 +15,13 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Label
+import androidx.compose.material.icons.filled.Dialpad
 import androidx.compose.material.icons.filled.FileDownload
+import androidx.compose.material.icons.filled.Fingerprint
 import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.IosShare
-import androidx.compose.material3.Button
+import androidx.compose.material.icons.filled.Password
+import androidx.compose.material.icons.filled.Sell
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -32,6 +35,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -146,6 +150,49 @@ private fun SettingsSectionTitle(
     )
 }
 
+/** Shared "icon in a tonal circle + label + trailing status/action" row used by both Unlock method and Data. */
+@Composable
+private fun SettingsIconRow(
+    icon: ImageVector,
+    label: String,
+    modifier: Modifier = Modifier,
+    onClick: (() -> Unit)? = null,
+    trailing: @Composable () -> Unit = {},
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .let { if (onClick != null) it.clickable(onClick = onClick) else it }
+                .padding(vertical = 10.dp),
+    ) {
+        Surface(shape = CircleShape, color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.14f)) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.secondary,
+                modifier = Modifier.padding(8.dp).size(18.dp),
+            )
+        }
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyLarge,
+            modifier = Modifier.padding(start = 12.dp).weight(1f),
+        )
+        trailing()
+    }
+}
+
+@Composable
+private fun SettingsStatusOn() {
+    Text(
+        text = stringResource(R.string.settings_status_on),
+        style = MaterialTheme.typography.labelMedium,
+        color = MaterialTheme.colorScheme.secondary,
+    )
+}
+
 @Composable
 private fun UnlockMethodSection(
     unlockedState: UnlockUiState.Unlocked,
@@ -153,20 +200,49 @@ private fun UnlockMethodSection(
     onSetupPin: () -> Unit,
     onSetupBiometric: () -> Unit,
 ) {
-    if (unlockedState.hasPin) {
-        Text(stringResource(R.string.pin_enabled_label))
-    } else {
-        Button(onClick = onSetupPin) { Text(stringResource(R.string.setup_pin_button)) }
-    }
-    if (unlockedState.hasBiometric) {
-        Text(stringResource(R.string.biometric_enabled_label), modifier = Modifier.padding(top = 8.dp))
-    } else if (canSetupBiometric) {
-        Column(modifier = Modifier.padding(top = 8.dp)) {
-            Button(onClick = onSetupBiometric, enabled = !unlockedState.biometricSetupBusy) {
-                Text(stringResource(R.string.setup_biometric_button))
+    Surface(
+        shape = RoundedCornerShape(16.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+    ) {
+        Column(modifier = Modifier.padding(horizontal = 12.dp)) {
+            SettingsIconRow(
+                icon = Icons.Filled.Password,
+                label = stringResource(R.string.settings_app_password_label),
+            ) {
+                Text(
+                    text = stringResource(R.string.settings_always_on),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
-            if (unlockedState.biometricSetupError != null) {
-                Text(text = unlockedState.biometricSetupError.message(), color = MaterialTheme.colorScheme.error)
+            SettingsIconRow(icon = Icons.Filled.Dialpad, label = stringResource(R.string.settings_pin_label)) {
+                if (unlockedState.hasPin) {
+                    SettingsStatusOn()
+                } else {
+                    TextButton(onClick = onSetupPin) { Text(stringResource(R.string.settings_setup_button)) }
+                }
+            }
+            if (unlockedState.hasBiometric || canSetupBiometric) {
+                SettingsIconRow(
+                    icon = Icons.Filled.Fingerprint,
+                    label = stringResource(R.string.settings_biometric_label),
+                ) {
+                    if (unlockedState.hasBiometric) {
+                        SettingsStatusOn()
+                    } else {
+                        TextButton(onClick = onSetupBiometric, enabled = !unlockedState.biometricSetupBusy) {
+                            Text(stringResource(R.string.settings_setup_button))
+                        }
+                    }
+                }
+                if (unlockedState.biometricSetupError != null) {
+                    Text(
+                        text = unlockedState.biometricSetupError.message(),
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(bottom = 8.dp),
+                    )
+                }
             }
         }
     }
@@ -235,20 +311,29 @@ private fun DataSection(
     hasAutoBackupFolder: Boolean,
     onPickAutoBackupFolder: () -> Unit,
 ) {
-    TextButton(onClick = onManageTags) {
-        Icon(Icons.AutoMirrored.Filled.Label, contentDescription = null, modifier = Modifier.padding(end = 4.dp))
-        Text(stringResource(R.string.manage_tags_cd))
-    }
-    TextButton(onClick = onExport) {
-        Icon(Icons.Filled.IosShare, contentDescription = null, modifier = Modifier.padding(end = 4.dp))
-        Text(stringResource(R.string.export_cd))
-    }
-    TextButton(onClick = onImport) {
-        Icon(Icons.Filled.FileDownload, contentDescription = null, modifier = Modifier.padding(end = 4.dp))
-        Text(stringResource(R.string.import_cd))
-    }
-    TextButton(onClick = onPickAutoBackupFolder) {
-        Icon(Icons.Filled.FolderOpen, contentDescription = null, modifier = Modifier.padding(end = 4.dp))
-        Text(stringResource(if (hasAutoBackupFolder) R.string.auto_backup_on_cd else R.string.auto_backup_off_cd))
+    Column {
+        SettingsIconRow(
+            icon = Icons.Filled.Sell,
+            label = stringResource(R.string.manage_tags_cd),
+            onClick = onManageTags,
+        )
+        SettingsIconRow(
+            icon = Icons.Filled.IosShare,
+            label = stringResource(R.string.export_cd),
+            onClick = onExport,
+        )
+        SettingsIconRow(
+            icon = Icons.Filled.FileDownload,
+            label = stringResource(R.string.import_cd),
+            onClick = onImport,
+        )
+        SettingsIconRow(
+            icon = Icons.Filled.FolderOpen,
+            label =
+                stringResource(
+                    if (hasAutoBackupFolder) R.string.auto_backup_on_cd else R.string.auto_backup_off_cd,
+                ),
+            onClick = onPickAutoBackupFolder,
+        )
     }
 }

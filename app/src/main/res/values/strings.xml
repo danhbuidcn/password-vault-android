@@ -18,8 +18,6 @@
     <string name="unlock_button_busy">Unlocking…</string>
     <string name="error_wrong_password">Wrong password</string>
 
-    <string name="setup_pin_button">Set up PIN unlock</string>
-
     <string name="password_show_cd">Show password</string>
     <string name="password_hide_cd">Hide password</string>
 
@@ -40,7 +38,6 @@
     <string name="use_pin_instead">Use PIN instead</string>
     <string name="error_wrong_pin">Wrong PIN</string>
 
-    <string name="setup_biometric_button">Set up fingerprint/face unlock</string>
     <string name="biometric_prompt_title">Unlock PWVault</string>
     <string name="biometric_unlock_title">Unlock with fingerprint or face</string>
     <string name="biometric_unlock_subtitle">Use your fingerprint or face to unlock PWVault.</string>
@@ -93,11 +90,6 @@
     <string name="error_tag_name_required">Tag name is required</string>
     <string name="error_tag_name_duplicate">A tag with this name already exists</string>
 
-    <string name="custom_fields_label">Custom fields</string>
-    <string name="custom_field_label_hint">Label</string>
-    <string name="custom_field_value_hint">Value</string>
-    <string name="add_custom_field_button">Add field</string>
-    <string name="remove_custom_field_cd">Remove field</string>
     <string name="custom_field_show_value_cd">Show value</string>
     <string name="custom_field_hide_value_cd">Hide value</string>
 
@@ -109,13 +101,7 @@
     <string name="password_generator_use_special">Special characters</string>
     <string name="password_generator_regenerate_button">Regenerate</string>
     <string name="password_generator_use_button">Use this password</string>
-    <string name="password_template_name_placeholder">Template name</string>
-    <string name="password_template_save_button">Save as template</string>
-    <string name="password_templates_label">Saved templates</string>
-    <string name="delete_password_template_cd">Delete template</string>
     <string name="error_password_generator_no_class_selected">Select at least one character type</string>
-    <string name="error_password_template_name_required">Template name is required</string>
-    <string name="error_password_template_name_duplicate">A template with this name already exists</string>
 
     <string name="export_cd">Export</string>
     <string name="export_title">Export Vault</string>
@@ -135,7 +121,6 @@
     <string name="export_done">Export complete.</string>
     <string name="export_failed">Export failed, please try again.</string>
 
-    <string name="password_warning_cd">Weak or reused password</string>
     <string name="warning_weak_password">Weak password</string>
     <string name="warning_duplicate_password">Used by another item</string>
 
@@ -176,8 +161,12 @@
     <string name="settings_security_section">Security</string>
     <string name="settings_appearance_section">Appearance</string>
     <string name="settings_data_section">Data</string>
-    <string name="pin_enabled_label">PIN unlock is on</string>
-    <string name="biometric_enabled_label">Fingerprint/face unlock is on</string>
+    <string name="settings_app_password_label">App password</string>
+    <string name="settings_always_on">Always on</string>
+    <string name="settings_pin_label">PIN unlock</string>
+    <string name="settings_biometric_label">Fingerprint/face unlock</string>
+    <string name="settings_status_on">On</string>
+    <string name="settings_setup_button">Set up</string>
     <string name="auto_lock_30s">30 seconds</string>
     <string name="auto_lock_1m">1 minute</string>
     <string name="auto_lock_5m">5 minutes</string>

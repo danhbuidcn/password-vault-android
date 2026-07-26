@@ -38,7 +38,7 @@
 > Đề xuất cấu trúc theo package-by-layer, chuẩn MVVM cho app Compose 1 module. Điều chỉnh khi implement nếu cần package-by-feature.
 
 - `data/` — Room entities/DAO, SQLCipher setup, repository implementation, import/export (CSV/Excel/`.pwvbackup`).
-- `domain/` — model nghiệp vụ (Vault Item, Tag, Custom Field, Password Generator Template), use case nếu cần tách khỏi ViewModel.
+- `domain/` — model nghiệp vụ (Vault Item, Tag, Custom Field), use case nếu cần tách khỏi ViewModel.
 - `ui/` — màn hình Compose theo feature (unlock, vault list, item detail, generator, settings/backup), theo Material 3 theming.
 - `security/` — KDF, Keystore wrapper, Biometric, lockout/rate-limit logic, FLAG_SECURE setup.
 - `di/` — Hilt module (nếu chọn Hilt).
@@ -59,7 +59,7 @@
 
 | Storage | Purpose |
 |---|---|
-| SQLCipher DB (qua Room) | Vault Item (Login/Note), Tag, Custom Field, Password Generator Template — dữ liệu chính. |
+| SQLCipher DB (qua Room) | Vault Item (Login/Note), Tag, Custom Field — dữ liệu chính. |
 | Android Keystore | Khóa mã hóa thật (dẫn xuất từ Master Password), không lưu plaintext. |
 | App private storage | File DB, file backup tạm trước khi ghi ra ngoài qua SAF. |
 | External storage (qua SAF) | File `.pwvbackup` và export CSV/Excel do người dùng chọn nơi lưu (SD card, USB OTG...). |

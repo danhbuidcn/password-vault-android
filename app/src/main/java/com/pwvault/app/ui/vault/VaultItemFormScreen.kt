@@ -3,15 +3,12 @@ package com.pwvault.app.ui.vault
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
@@ -19,7 +16,6 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
@@ -52,17 +48,22 @@ private class CustomFieldRow(
 @Composable
 fun VaultItemFormScreen(
     state: VaultUiState.ItemForm,
-    passwordTemplateViewModel: PasswordTemplateViewModel,
     onSave: (VaultItemFormInput) -> Unit,
     onCancel: () -> Unit,
     onToggleTag: (Long) -> Unit,
 ) {
-    var type by remember { mutableStateOf(state.initial?.type ?: VaultItemType.LOGIN) }
+    // No type picker in this form any more — every new item is Login. An existing Note item being
+    // edited keeps its own type (read from state.initial), so it still renders its Note-only fields
+    // below untouched.
+    val type = state.initial?.type ?: VaultItemType.LOGIN
     var name by remember { mutableStateOf(state.initial?.name.orEmpty()) }
     var username by remember { mutableStateOf(state.initial?.username.orEmpty()) }
     var password by remember { mutableStateOf(state.initial?.password.orEmpty()) }
     var url by remember { mutableStateOf(state.initial?.url.orEmpty()) }
     var note by remember { mutableStateOf(state.initial?.note.orEmpty()) }
+    // Kept out of the visible UI (no more editing custom fields here), but still round-tripped on
+    // save unchanged — otherwise saving an item that already has custom fields would silently wipe
+    // them, since VaultViewModel.save() replaces the full set from this payload every time.
     val customFieldRows =
         remember {
             mutableStateListOf<CustomFieldRow>().apply {
@@ -93,21 +94,6 @@ fun VaultItemFormScreen(
                     ),
                 style = MaterialTheme.typography.headlineSmall,
             )
-            if (state.editingId == null) {
-                Row(modifier = Modifier.padding(top = 12.dp)) {
-                    FilterChip(
-                        selected = type == VaultItemType.LOGIN,
-                        onClick = { type = VaultItemType.LOGIN },
-                        label = { Text(stringResource(R.string.item_type_login)) },
-                        modifier = Modifier.padding(end = 8.dp),
-                    )
-                    FilterChip(
-                        selected = type == VaultItemType.NOTE,
-                        onClick = { type = VaultItemType.NOTE },
-                        label = { Text(stringResource(R.string.item_type_note)) },
-                    )
-                }
-            }
             OutlinedTextField(
                 value = name,
                 onValueChange = { name = it },
@@ -184,36 +170,6 @@ fun VaultItemFormScreen(
                     }
                 }
             }
-            Text(
-                text = stringResource(R.string.custom_fields_label),
-                style = MaterialTheme.typography.labelLarge,
-                modifier = Modifier.padding(top = 16.dp),
-            )
-            customFieldRows.forEachIndexed { index, row ->
-                Row(modifier = Modifier.fillMaxWidth().padding(top = 8.dp)) {
-                    OutlinedTextField(
-                        value = row.label,
-                        onValueChange = { row.label = it },
-                        label = { Text(stringResource(R.string.custom_field_label_hint)) },
-                        singleLine = true,
-                        modifier = Modifier.weight(1f),
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    OutlinedTextField(
-                        value = row.value,
-                        onValueChange = { row.value = it },
-                        label = { Text(stringResource(R.string.custom_field_value_hint)) },
-                        singleLine = true,
-                        modifier = Modifier.weight(1f),
-                    )
-                    IconButton(onClick = { customFieldRows.removeAt(index) }) {
-                        Icon(Icons.Filled.Close, contentDescription = stringResource(R.string.remove_custom_field_cd))
-                    }
-                }
-            }
-            TextButton(onClick = { customFieldRows.add(CustomFieldRow()) }) {
-                Text(stringResource(R.string.add_custom_field_button))
-            }
             Button(
                 onClick = {
                     onSave(
@@ -241,7 +197,6 @@ fun VaultItemFormScreen(
 
     if (showGeneratorDialog) {
         PasswordGeneratorDialog(
-            viewModel = passwordTemplateViewModel,
             onUsePassword = {
                 password = it
                 showGeneratorDialog = false

@@ -41,7 +41,6 @@ sealed interface VaultUiState {
     data class ItemList(
         val items: List<VaultItem> = emptyList(),
         val searchQuery: String = "",
-        val warnings: Map<Long, VaultItemWarning> = emptyMap(),
         val availableTags: List<Tag> = emptyList(),
         val selectedTagFilterIds: Set<Long> = emptySet(),
     ) : VaultUiState
@@ -150,7 +149,6 @@ class VaultViewModel
             return VaultUiState.ItemList(
                 items = tagFiltered,
                 searchQuery = searchQuery,
-                warnings = latestWarnings,
                 availableTags = availableTags,
                 selectedTagFilterIds = tagFilterIds,
             )

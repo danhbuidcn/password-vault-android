@@ -2,6 +2,8 @@ package com.pwvault.app.data
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 
 @Database(
     entities = [
@@ -9,14 +11,19 @@ import androidx.room.RoomDatabase
         TagEntity::class,
         VaultItemTagCrossRef::class,
         CustomFieldEntity::class,
-        PasswordTemplateEntity::class,
     ],
-    version = 5,
+    version = 6,
 )
 abstract class VaultDatabase : RoomDatabase() {
     abstract fun vaultItemDao(): VaultItemDao
 
     abstract fun tagDao(): TagDao
-
-    abstract fun passwordTemplateDao(): PasswordTemplateDao
 }
+
+/** Drops the reusable-password-template feature's table — removed feature, no replacement column/table. */
+val MIGRATION_5_6 =
+    object : Migration(5, 6) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL("DROP TABLE IF EXISTS password_templates")
+        }
+    }

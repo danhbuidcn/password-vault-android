@@ -294,3 +294,10 @@ Pattern rút ra từ từng ảnh tham khảo (ManageEngine PasswordManager Pro)
 - **Major:** nhánh làm dở đã xoá toàn bộ tính năng "lưu template mật khẩu tái dùng" (Feature 10) mà không ghi vào plan nào. Khôi phục lại đầy đủ (DAO/Entity/Repository/ViewModel/dialog UI/strings), DB giữ nguyên version 5.
 
 Phase 2 (tablet responsive) làm sau, sau khi Phase 1 lên máy thật và được duyệt.
+
+**Refinement pass sau Phase 1 (2026-07-26), theo góp ý trực tiếp từ người dùng sau khi dùng thử:**
+- Bỏ icon cảnh báo mật khẩu yếu/trùng lặp khỏi từng dòng ở màn List (vẫn còn ở màn Detail) — dòng đó giờ chỉ hiện Tag.
+- Settings: icon "Manage tags" đổi sang `Icons.Filled.Sell` trong khối tròn tint màu (đồng bộ style avatar List/Detail); mục "Unlock method" viết lại thành khối card với icon-trong-vòng-tròn cho App password/PIN/Sinh trắc học thay vì Text/Button rời rạc.
+- Form Thêm/sửa: bỏ hẳn chọn loại Login/Note ở đầu (mục mới luôn là Login); bỏ khối "Custom fields"/"Add field" khỏi form — mục cũ có sẵn Custom Field hoặc type Note vẫn xem/sửa bình thường, chỉ không tạo mới được nữa qua UI.
+- Password generator: `MAX_LENGTH` slider 64→15; bỏ hẳn tính năng "lưu thành template" (Feature 10 phần B) — xoá toàn bộ `PasswordTemplate{Dao,Entity,Repository,ViewModel}` + `PasswordTemplateErrorMessage`, DB bump 5→6 kèm `MIGRATION_5_6` (DROP TABLE `password_templates`, không dùng destructive fallback) — verify sống bằng cách cài đè bản build cũ (schema v5, có sẵn 1 Vault Item + 1 template) rồi mở lại bằng build mới: unlock được, Vault Item còn nguyên (kể cả password), không crash.
+- `/code-guard` + `/code-review` sạch; build xanh (ktlint/detekt/lint/assembleDebug). Docs cập nhật: `overview.md` (bỏ Note/Custom Field/Template khỏi phần "tạo mới được"), `architecture.md` (bỏ Password Generator Template khỏi domain/data storage table).
