@@ -50,6 +50,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.pwvault.app.R
 import com.pwvault.app.domain.Tag
@@ -74,6 +75,8 @@ fun VaultScreen(
     canSetupBiometric: Boolean,
     onSetupPin: (pin: CharArray, confirm: CharArray) -> Unit,
     onSetupBiometric: () -> Unit,
+    onDisablePin: () -> Unit,
+    onDisableBiometric: () -> Unit,
     viewModel: VaultViewModel,
     tagViewModel: TagViewModel,
     exportViewModel: ExportViewModel,
@@ -84,6 +87,7 @@ fun VaultScreen(
     onPickImportSource: () -> Unit,
     hasAutoBackupFolder: Boolean,
     onPickAutoBackupFolder: () -> Unit,
+    onDisableAutoBackup: () -> Unit,
 ) {
     var showPinDialog by remember { mutableStateOf(false) }
     var showTagManager by remember { mutableStateOf(false) }
@@ -114,6 +118,8 @@ fun VaultScreen(
                 canSetupBiometric = canSetupBiometric,
                 onSetupPin = { showPinDialog = true },
                 onSetupBiometric = onSetupBiometric,
+                onDisablePin = onDisablePin,
+                onDisableBiometric = onDisableBiometric,
                 onManageTags = {
                     showSettings = false
                     showTagManager = true
@@ -128,6 +134,7 @@ fun VaultScreen(
                 },
                 hasAutoBackupFolder = hasAutoBackupFolder,
                 onPickAutoBackupFolder = onPickAutoBackupFolder,
+                onDisableAutoBackup = onDisableAutoBackup,
                 viewModel = settingsViewModel,
                 onBack = { showSettings = false },
             )
@@ -366,25 +373,34 @@ private fun VaultItemCard(
                     )
                 }
                 Column(modifier = Modifier.weight(1f).padding(start = 12.dp)) {
-                    Text(text = item.name, style = MaterialTheme.typography.bodyLarge)
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = item.name,
+                            style = MaterialTheme.typography.bodyLarge,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.weight(1f, fill = false),
+                        )
+                        if (item.tags.isNotEmpty()) {
+                            Row(
+                                modifier =
+                                    Modifier
+                                        .horizontalScroll(rememberScrollState())
+                                        .padding(start = 8.dp),
+                            ) {
+                                item.tags.forEach { tag ->
+                                    TagChip(tag = tag, modifier = Modifier.padding(start = 4.dp))
+                                }
+                            }
+                        }
+                    }
                     if (item.username.isNotEmpty()) {
                         Text(
                             text = item.username,
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.fillMaxWidth(),
                         )
-                    }
-                }
-                if (item.tags.isNotEmpty()) {
-                    Row(
-                        modifier =
-                            Modifier
-                                .horizontalScroll(rememberScrollState())
-                                .padding(start = 8.dp),
-                    ) {
-                        item.tags.forEach { tag ->
-                            TagChip(tag = tag, modifier = Modifier.padding(start = 4.dp))
-                        }
                     }
                 }
             }

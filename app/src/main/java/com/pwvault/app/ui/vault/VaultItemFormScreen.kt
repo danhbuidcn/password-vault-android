@@ -35,6 +35,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.pwvault.app.R
 import com.pwvault.app.domain.VaultItemType
+import com.pwvault.app.security.PasswordStrength
 import com.pwvault.app.ui.unlock.PasswordField
 
 private class CustomFieldRow(
@@ -126,6 +127,14 @@ fun VaultItemFormScreen(
                     leadingIcon = { Icon(Icons.Filled.Lock, contentDescription = null) },
                     modifier = Modifier.padding(top = 8.dp),
                 )
+                if (password.isNotEmpty() && PasswordStrength.isWeak(password)) {
+                    Text(
+                        text = stringResource(R.string.warning_weak_password),
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(top = 4.dp),
+                    )
+                }
                 TextButton(onClick = { showGeneratorDialog = true }) {
                     Icon(Icons.Filled.Refresh, contentDescription = null, modifier = Modifier.padding(end = 4.dp))
                     Text(stringResource(R.string.generate_password_button))

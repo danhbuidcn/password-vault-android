@@ -26,6 +26,7 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -41,6 +42,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.pwvault.app.BuildConfig
 import com.pwvault.app.R
+import com.pwvault.app.security.AppLanguage
 import com.pwvault.app.security.ThemeMode
 import com.pwvault.app.ui.theme.PwVaultChrome
 import com.pwvault.app.ui.unlock.UnlockUiState
@@ -55,11 +57,14 @@ fun SettingsScreen(
     canSetupBiometric: Boolean,
     onSetupPin: () -> Unit,
     onSetupBiometric: () -> Unit,
+    onDisablePin: () -> Unit,
+    onDisableBiometric: () -> Unit,
     onManageTags: () -> Unit,
     onExport: () -> Unit,
     onImport: () -> Unit,
     hasAutoBackupFolder: Boolean,
     onPickAutoBackupFolder: () -> Unit,
+    onDisableAutoBackup: () -> Unit,
     viewModel: SettingsViewModel,
     onBack: () -> Unit,
 ) {
@@ -76,9 +81,22 @@ fun SettingsScreen(
             SettingsBanner()
 
             SettingsSectionTitle(R.string.settings_unlock_method_section)
-            UnlockMethodSection(unlockedState, canSetupBiometric, onSetupPin, onSetupBiometric)
+            UnlockMethodSection(
+                unlockedState,
+                canSetupBiometric,
+                onSetupPin,
+                onSetupBiometric,
+                onDisablePin,
+                onDisableBiometric,
+            )
 
             SettingsSectionTitle(R.string.settings_security_section)
+            Text(
+                text = stringResource(R.string.settings_security_section_description),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(bottom = 8.dp),
+            )
             AutoLockSection(
                 options = viewModel.autoLockOptions,
                 selected = state.autoLockTimeout,
@@ -88,8 +106,18 @@ fun SettingsScreen(
             SettingsSectionTitle(R.string.settings_appearance_section)
             ThemeSection(selected = state.themeMode, onSelect = viewModel::setThemeMode)
 
+            SettingsSectionTitle(R.string.settings_language_section)
+            LanguageSection(selected = state.language, onSelect = viewModel::setLanguage)
+
             SettingsSectionTitle(R.string.settings_data_section)
-            DataSection(onManageTags, onExport, onImport, hasAutoBackupFolder, onPickAutoBackupFolder)
+            DataSection(
+                onManageTags,
+                onExport,
+                onImport,
+                hasAutoBackupFolder,
+                onPickAutoBackupFolder,
+                onDisableAutoBackup,
+            )
 
             TextButton(onClick = onBack, modifier = Modifier.fillMaxWidth().padding(top = 24.dp)) {
                 Text(stringResource(R.string.vault_back_button))
@@ -185,21 +213,19 @@ private fun SettingsIconRow(
 }
 
 @Composable
-private fun SettingsStatusOn() {
-    Text(
-        text = stringResource(R.string.settings_status_on),
-        style = MaterialTheme.typography.labelMedium,
-        color = MaterialTheme.colorScheme.secondary,
-    )
-}
-
-@Composable
 private fun UnlockMethodSection(
     unlockedState: UnlockUiState.Unlocked,
     canSetupBiometric: Boolean,
     onSetupPin: () -> Unit,
     onSetupBiometric: () -> Unit,
+    onDisablePin: () -> Unit,
+    onDisableBiometric: () -> Unit,
 ) {
+    // Master password is always on, so it never counts toward the "at least one" guard below —
+    // the guard is only between PIN and Biometric, the two methods that can actually be toggled.
+    val pinIsOnlyMethod = unlockedState.hasPin && !unlockedState.hasBiometric
+    val biometricIsOnlyMethod = unlockedState.hasBiometric && !unlockedState.hasPin
+
     Surface(
         shape = RoundedCornerShape(16.dp),
         color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
@@ -216,24 +242,38 @@ private fun UnlockMethodSection(
                 )
             }
             SettingsIconRow(icon = Icons.Filled.Dialpad, label = stringResource(R.string.settings_pin_label)) {
-                if (unlockedState.hasPin) {
-                    SettingsStatusOn()
-                } else {
-                    TextButton(onClick = onSetupPin) { Text(stringResource(R.string.settings_setup_button)) }
-                }
+                Switch(
+                    checked = unlockedState.hasPin,
+                    enabled = !pinIsOnlyMethod,
+                    onCheckedChange = { checked -> if (checked) onSetupPin() else onDisablePin() },
+                )
+            }
+            if (pinIsOnlyMethod) {
+                Text(
+                    text = stringResource(R.string.settings_unlock_method_required_hint),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.padding(bottom = 8.dp),
+                )
             }
             if (unlockedState.hasBiometric || canSetupBiometric) {
                 SettingsIconRow(
                     icon = Icons.Filled.Fingerprint,
                     label = stringResource(R.string.settings_biometric_label),
                 ) {
-                    if (unlockedState.hasBiometric) {
-                        SettingsStatusOn()
-                    } else {
-                        TextButton(onClick = onSetupBiometric, enabled = !unlockedState.biometricSetupBusy) {
-                            Text(stringResource(R.string.settings_setup_button))
-                        }
-                    }
+                    Switch(
+                        checked = unlockedState.hasBiometric,
+                        enabled = !biometricIsOnlyMethod && !unlockedState.biometricSetupBusy,
+                        onCheckedChange = { checked -> if (checked) onSetupBiometric() else onDisableBiometric() },
+                    )
+                }
+                if (biometricIsOnlyMethod) {
+                    Text(
+                        text = stringResource(R.string.settings_unlock_method_required_hint),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(bottom = 8.dp),
+                    )
                 }
                 if (unlockedState.biometricSetupError != null) {
                     Text(
@@ -304,12 +344,39 @@ private fun ThemeSection(
 }
 
 @Composable
+private fun LanguageSection(
+    selected: AppLanguage,
+    onSelect: (AppLanguage) -> Unit,
+) {
+    Row {
+        FilterChip(
+            selected = selected == AppLanguage.SYSTEM,
+            onClick = { onSelect(AppLanguage.SYSTEM) },
+            label = { Text(stringResource(R.string.language_system)) },
+            modifier = Modifier.padding(end = 8.dp),
+        )
+        FilterChip(
+            selected = selected == AppLanguage.EN,
+            onClick = { onSelect(AppLanguage.EN) },
+            label = { Text(stringResource(R.string.language_en)) },
+            modifier = Modifier.padding(end = 8.dp),
+        )
+        FilterChip(
+            selected = selected == AppLanguage.VI,
+            onClick = { onSelect(AppLanguage.VI) },
+            label = { Text(stringResource(R.string.language_vi)) },
+        )
+    }
+}
+
+@Composable
 private fun DataSection(
     onManageTags: () -> Unit,
     onExport: () -> Unit,
     onImport: () -> Unit,
     hasAutoBackupFolder: Boolean,
     onPickAutoBackupFolder: () -> Unit,
+    onDisableAutoBackup: () -> Unit,
 ) {
     Column {
         SettingsIconRow(
@@ -333,7 +400,11 @@ private fun DataSection(
                 stringResource(
                     if (hasAutoBackupFolder) R.string.auto_backup_on_cd else R.string.auto_backup_off_cd,
                 ),
-            onClick = onPickAutoBackupFolder,
-        )
+        ) {
+            Switch(
+                checked = hasAutoBackupFolder,
+                onCheckedChange = { checked -> if (checked) onPickAutoBackupFolder() else onDisableAutoBackup() },
+            )
+        }
     }
 }

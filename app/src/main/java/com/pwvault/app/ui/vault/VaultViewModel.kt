@@ -9,7 +9,6 @@ import com.pwvault.app.domain.Tag
 import com.pwvault.app.domain.VaultItem
 import com.pwvault.app.domain.VaultItemType
 import com.pwvault.app.security.ClipboardClearer
-import com.pwvault.app.security.PasswordStrength
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -31,10 +30,9 @@ data class VaultItemFormInput(
 )
 
 data class VaultItemWarning(
-    val weak: Boolean = false,
     val duplicate: Boolean = false,
 ) {
-    val hasWarning: Boolean get() = weak || duplicate
+    val hasWarning: Boolean get() = duplicate
 }
 
 sealed interface VaultUiState {
@@ -163,11 +161,7 @@ class VaultViewModel
                     .eachCount()
             return items.associate { item ->
                 val hasPassword = item.password.isNotEmpty()
-                item.id to
-                    VaultItemWarning(
-                        weak = hasPassword && PasswordStrength.isWeak(item.password),
-                        duplicate = hasPassword && (passwordCounts[item.password] ?: 0) > 1,
-                    )
+                item.id to VaultItemWarning(duplicate = hasPassword && (passwordCounts[item.password] ?: 0) > 1)
             }
         }
 

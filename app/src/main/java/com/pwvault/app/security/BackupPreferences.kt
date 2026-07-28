@@ -23,6 +23,11 @@ class BackupPreferences(
         prefs.edit().putString(KEY_AUTO_BACKUP_FOLDER_URI, uri.toString()).apply()
     }
 
+    /** Turns auto-backup off. Existing backup files already written to the folder are left in place. */
+    fun clearAutoBackupFolderUri() {
+        prefs.edit().remove(KEY_AUTO_BACKUP_FOLDER_URI).apply()
+    }
+
     /**
      * `null` only before [seedReminderClockAtVaultCreation] has ever run — in practice that means
      * right at Setup, so [ExportReminderWorker] should never actually see `null` once a vault exists.

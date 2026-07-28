@@ -24,6 +24,9 @@ class PinManager(
 ) {
     fun hasPin(): Boolean = credentialStore.hasPin()
 
+    /** Turns PIN unlock off. The Vault key stays reachable via master password / biometric. */
+    fun clearPin() = credentialStore.clear()
+
     suspend fun setupPin(
         pin: CharArray,
         vaultKey: ByteArray,

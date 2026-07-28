@@ -137,6 +137,7 @@ class MainActivity : FragmentActivity() {
                     onPickImportSource = { importSourceLauncher.launch(IMPORT_SOURCE_MIME_TYPES) },
                     hasAutoBackupFolder = hasAutoBackupFolder,
                     onPickAutoBackupFolder = { autoBackupFolderLauncher.launch(null) },
+                    onDisableAutoBackup = ::disableAutoBackup,
                 )
             }
         }
@@ -164,6 +165,11 @@ class MainActivity : FragmentActivity() {
         )
         backupPreferences.setAutoBackupFolderUri(uri)
         hasAutoBackupFolder = true
+    }
+
+    private fun disableAutoBackup() {
+        backupPreferences.clearAutoBackupFolderUri()
+        hasAutoBackupFolder = false
     }
 
     private fun requestNotificationPermissionIfNeeded() {
@@ -273,6 +279,7 @@ private fun PwVaultApp(
     onPickImportSource: () -> Unit,
     hasAutoBackupFolder: Boolean,
     onPickAutoBackupFolder: () -> Unit,
+    onDisableAutoBackup: () -> Unit,
 ) {
     when (val state = unlockViewModel.state.collectAsState().value) {
         is UnlockUiState.Loading -> Unit
@@ -310,6 +317,8 @@ private fun PwVaultApp(
                 canSetupBiometric = canSetupBiometric,
                 onSetupPin = unlockViewModel::setupPin,
                 onSetupBiometric = onSetupBiometric,
+                onDisablePin = unlockViewModel::disablePin,
+                onDisableBiometric = unlockViewModel::disableBiometric,
                 viewModel = vaultViewModel,
                 tagViewModel = tagViewModel,
                 exportViewModel = exportViewModel,
@@ -320,6 +329,7 @@ private fun PwVaultApp(
                 onPickImportSource = onPickImportSource,
                 hasAutoBackupFolder = hasAutoBackupFolder,
                 onPickAutoBackupFolder = onPickAutoBackupFolder,
+                onDisableAutoBackup = onDisableAutoBackup,
             )
     }
 }

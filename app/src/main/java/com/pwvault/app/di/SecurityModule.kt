@@ -8,6 +8,7 @@ import com.pwvault.app.security.BiometricKeystoreKeyProvider
 import com.pwvault.app.security.BiometricUnlockManager
 import com.pwvault.app.security.ClipboardClearer
 import com.pwvault.app.security.KeyDerivation
+import com.pwvault.app.security.LanguagePreferences
 import com.pwvault.app.security.LockoutPolicy
 import com.pwvault.app.security.LockoutStore
 import com.pwvault.app.security.PinCredentialStore
@@ -103,4 +104,8 @@ object SecurityModule {
     fun provideThemePreferences(
         @ApplicationContext context: Context,
     ): ThemePreferences = ThemePreferences(context)
+
+    @Provides
+    @Singleton
+    fun provideLanguagePreferences(): LanguagePreferences = LanguagePreferences()
 }

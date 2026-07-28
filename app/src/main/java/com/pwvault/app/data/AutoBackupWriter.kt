@@ -4,26 +4,24 @@ import android.content.Context
 import android.net.Uri
 import androidx.documentfile.provider.DocumentFile
 import com.pwvault.app.security.BackupPreferences
-import com.pwvault.app.security.SecurityPolicy
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
 private const val MIME_TYPE = "application/octet-stream"
 private const val TEMP_NAME = "pwvault-auto.tmp"
-private const val NAME_PREFIX = "pwvault-auto-"
-private const val NAME_SUFFIX = ".pwvbackup"
+private const val FINAL_NAME = "pwvault-auto-backup.pwvbackup"
 
 /**
  * Writes an auto-backup copy of the Vault after every item change — `functional-spec.md §7.1`.
  * No re-authentication needed: [VaultFileManager.copyVaultFileTo] just copies the already-encrypted
  * `vault.db` bytes, it never touches the Vault key.
+ *
+ * Overwrites a single fixed-name file each time rather than keeping a rotating history — the caller
+ * edits items often enough that a per-edit file history is mostly noise in the picked folder.
  *
  * Runs on its own process-lifetime scope rather than the caller's `viewModelScope` — same reasoning
  * as [com.pwvault.app.security.ClipboardClearer]: a save/delete's coroutine can return to the UI
@@ -52,28 +50,17 @@ class AutoBackupWriter(
         val folder = DocumentFile.fromTreeUri(context, folderUri) ?: return
         folder.findFile(TEMP_NAME)?.delete()
         val temp = folder.createFile(MIME_TYPE, TEMP_NAME) ?: return
-        val finalName = "$NAME_PREFIX${timestamp()}$NAME_SUFFIX"
 
         val written =
             context.contentResolver.openOutputStream(temp.uri)?.use { out ->
                 vaultFileManager.copyVaultFileTo(out)
                 true
             } ?: false
-        if (!written || !temp.renameTo(finalName)) {
+        if (!written) {
             temp.delete()
             return
         }
-        rotate(folder)
+        folder.findFile(FINAL_NAME)?.delete()
+        if (!temp.renameTo(FINAL_NAME)) temp.delete()
     }
-
-    private fun rotate(folder: DocumentFile) {
-        val backups =
-            folder
-                .listFiles()
-                .filter { it.name?.startsWith(NAME_PREFIX) == true && it.name?.endsWith(NAME_SUFFIX) == true }
-                .sortedByDescending { it.name }
-        backups.drop(SecurityPolicy.AUTO_BACKUP_MAX_FILES).forEach { it.delete() }
-    }
-
-    private fun timestamp(): String = SimpleDateFormat("yyyyMMdd-HHmmss", Locale.US).format(Date())
 }

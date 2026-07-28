@@ -21,6 +21,12 @@ class BiometricUnlockManager(
 ) {
     fun hasBiometric(): Boolean = credentialStore.hasBiometric()
 
+    /** Turns biometric unlock off. The Vault key stays reachable via master password / PIN. */
+    fun disable() {
+        keystoreKeyProvider.deleteKey()
+        credentialStore.clear()
+    }
+
     /** Returns `null` if the Keystore key was invalidated (e.g. a new fingerprint was enrolled). */
     suspend fun prepareSetupCipher(): Cipher? =
         withContext(Dispatchers.Default) {

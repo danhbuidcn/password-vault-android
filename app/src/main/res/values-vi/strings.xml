@@ -159,14 +159,14 @@
     <string name="settings_tagline">Offline. Mã hóa. Của riêng bạn.</string>
     <string name="settings_unlock_method_section">Phương thức mở khóa</string>
     <string name="settings_security_section">Bảo mật</string>
+    <string name="settings_security_section_description">Tự động khóa Vault sau một khoảng thời gian không sử dụng, giúp bảo vệ dữ liệu nếu bạn rời khỏi thiết bị.</string>
     <string name="settings_appearance_section">Giao diện</string>
     <string name="settings_data_section">Dữ liệu</string>
     <string name="settings_app_password_label">Mật khẩu app</string>
     <string name="settings_always_on">Luôn bật</string>
     <string name="settings_pin_label">Mở khóa bằng PIN</string>
     <string name="settings_biometric_label">Mở khóa vân tay/khuôn mặt</string>
-    <string name="settings_status_on">Đang bật</string>
-    <string name="settings_setup_button">Thiết lập</string>
+    <string name="settings_unlock_method_required_hint">Phải giữ ít nhất 1 phương thức mở khóa đang bật.</string>
     <string name="auto_lock_30s">30 giây</string>
     <string name="auto_lock_1m">1 phút</string>
     <string name="auto_lock_5m">5 phút</string>
@@ -175,4 +175,8 @@
     <string name="theme_light">Sáng</string>
     <string name="theme_dark">Tối</string>
     <string name="theme_system">Theo hệ thống</string>
+    <string name="settings_language_section">Ngôn ngữ</string>
+    <string name="language_system">Theo hệ thống</string>
+    <string name="language_en">English</string>
+    <string name="language_vi">Tiếng Việt</string>
 </resources>

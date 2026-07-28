@@ -302,6 +302,22 @@ class UnlockViewModel
             }
         }
 
+        /** No-op unless the other method (Biometric) is on — at least one of {PIN, Biometric} must stay enabled. */
+        fun disablePin() {
+            val current = _state.value as? UnlockUiState.Unlocked ?: return
+            if (!current.hasBiometric) return
+            pinManager.clearPin()
+            _state.value = current.copy(hasPin = false)
+        }
+
+        /** No-op unless the other method (PIN) is on — at least one of {PIN, Biometric} must stay enabled. */
+        fun disableBiometric() {
+            val current = _state.value as? UnlockUiState.Unlocked ?: return
+            if (!current.hasPin) return
+            biometricUnlockManager.disable()
+            _state.value = current.copy(hasBiometric = false)
+        }
+
         /** Prepares the unlock [Cipher]; the caller (Activity) must authorize it via `BiometricPrompt` before use. */
         suspend fun prepareBiometricUnlockCipher(): Cipher? {
             _state.value = UnlockUiState.BiometricEntry(hasPin = pinManager.hasPin(), busy = true)

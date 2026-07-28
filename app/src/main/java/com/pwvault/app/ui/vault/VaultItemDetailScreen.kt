@@ -233,14 +233,7 @@ private fun DetailField(
 @Composable
 private fun PasswordWarnings(warning: VaultItemWarning) {
     if (!warning.hasWarning) return
-    val message =
-        when {
-            warning.weak && warning.duplicate ->
-                stringResource(R.string.warning_weak_password) + " — " +
-                    stringResource(R.string.warning_duplicate_password)
-            warning.weak -> stringResource(R.string.warning_weak_password)
-            else -> stringResource(R.string.warning_duplicate_password)
-        }
+    val message = stringResource(R.string.warning_duplicate_password)
     Row(
         modifier =
             Modifier

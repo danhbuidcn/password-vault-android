@@ -39,6 +39,10 @@ class PinCredentialStore(
             .apply()
     }
 
+    fun clear() {
+        prefs.edit().clear().apply()
+    }
+
     fun load(): PinCredentials? {
         val salt = prefs.getString(KEY_PIN_SALT, null) ?: return null
         val hash = prefs.getString(KEY_PIN_HASH, null) ?: return null

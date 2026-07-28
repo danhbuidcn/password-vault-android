@@ -159,14 +159,14 @@
     <string name="settings_tagline">Offline. Encrypted. Yours.</string>
     <string name="settings_unlock_method_section">Unlock method</string>
     <string name="settings_security_section">Security</string>
+    <string name="settings_security_section_description">Automatically lock the Vault after a period of inactivity, so it stays protected if you leave your device unattended.</string>
     <string name="settings_appearance_section">Appearance</string>
     <string name="settings_data_section">Data</string>
     <string name="settings_app_password_label">App password</string>
     <string name="settings_always_on">Always on</string>
     <string name="settings_pin_label">PIN unlock</string>
     <string name="settings_biometric_label">Fingerprint/face unlock</string>
-    <string name="settings_status_on">On</string>
-    <string name="settings_setup_button">Set up</string>
+    <string name="settings_unlock_method_required_hint">At least one unlock method must stay on.</string>
     <string name="auto_lock_30s">30 seconds</string>
     <string name="auto_lock_1m">1 minute</string>
     <string name="auto_lock_5m">5 minutes</string>
@@ -175,4 +175,8 @@
     <string name="theme_light">Light</string>
     <string name="theme_dark">Dark</string>
     <string name="theme_system">System</string>
+    <string name="settings_language_section">Language</string>
+    <string name="language_system">System</string>
+    <string name="language_en">English</string>
+    <string name="language_vi">Tiếng Việt</string>
 </resources>

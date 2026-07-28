@@ -17,6 +17,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -43,61 +44,66 @@ fun TagManagerScreen(
     val state by viewModel.state.collectAsState()
     var newTagName by remember { mutableStateOf("") }
 
-    Column(modifier = Modifier.fillMaxSize().padding(24.dp)) {
-        Text(text = stringResource(R.string.tag_manager_title), style = MaterialTheme.typography.headlineSmall)
+    Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+        Column(modifier = Modifier.fillMaxSize().padding(24.dp)) {
+            Text(text = stringResource(R.string.tag_manager_title), style = MaterialTheme.typography.headlineSmall)
 
-        Row(modifier = Modifier.fillMaxWidth().padding(top = 16.dp)) {
-            OutlinedTextField(
-                value = newTagName,
-                onValueChange = { newTagName = it },
-                label = { Text(stringResource(R.string.add_tag_placeholder)) },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth(),
-            )
-        }
-        Button(
-            onClick = {
-                viewModel.addTag(newTagName)
-                newTagName = ""
-            },
-            modifier = Modifier.padding(top = 8.dp),
-        ) {
-            Text(stringResource(R.string.add_tag_button))
-        }
-        val newTagError = state.newTagError
-        if (newTagError != null) {
-            Text(
-                text = newTagError.message(),
-                color = MaterialTheme.colorScheme.error,
-                modifier = Modifier.padding(top = 4.dp),
-            )
-        }
+            Row(modifier = Modifier.fillMaxWidth().padding(top = 16.dp)) {
+                OutlinedTextField(
+                    value = newTagName,
+                    onValueChange = { newTagName = it },
+                    label = { Text(stringResource(R.string.add_tag_placeholder)) },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+            Button(
+                onClick = {
+                    viewModel.addTag(newTagName)
+                    newTagName = ""
+                },
+                modifier = Modifier.padding(top = 8.dp),
+            ) {
+                Text(stringResource(R.string.add_tag_button))
+            }
+            val newTagError = state.newTagError
+            if (newTagError != null) {
+                Text(
+                    text = newTagError.message(),
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.padding(top = 4.dp),
+                )
+            }
 
-        LazyColumn(modifier = Modifier.padding(top = 16.dp)) {
-            items(state.tags, key = { it.id }) { tag ->
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        TagColorDot(tag.id, modifier = Modifier.padding(end = 8.dp))
-                        Text(text = tag.name, style = MaterialTheme.typography.bodyLarge)
-                    }
-                    Row {
-                        IconButton(onClick = { viewModel.startRename(tag) }) {
-                            Icon(Icons.Filled.Edit, contentDescription = stringResource(R.string.rename_tag_cd))
+            LazyColumn(modifier = Modifier.padding(top = 16.dp)) {
+                items(state.tags, key = { it.id }) { tag ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            TagColorDot(tag.id, modifier = Modifier.padding(end = 8.dp))
+                            Text(text = tag.name, style = MaterialTheme.typography.bodyLarge)
                         }
-                        IconButton(onClick = { viewModel.startDelete(tag) }) {
-                            Icon(Icons.Filled.Delete, contentDescription = stringResource(R.string.delete_tag_cd))
+                        Row {
+                            IconButton(onClick = { viewModel.startRename(tag) }) {
+                                Icon(Icons.Filled.Edit, contentDescription = stringResource(R.string.rename_tag_cd))
+                            }
+                            IconButton(onClick = { viewModel.startDelete(tag) }) {
+                                Icon(
+                                    Icons.Filled.Delete,
+                                    contentDescription = stringResource(R.string.delete_tag_cd),
+                                )
+                            }
                         }
                     }
                 }
             }
-        }
 
-        TextButton(onClick = onBack, modifier = Modifier.fillMaxWidth()) {
-            Text(stringResource(R.string.vault_back_button))
+            TextButton(onClick = onBack, modifier = Modifier.fillMaxWidth()) {
+                Text(stringResource(R.string.vault_back_button))
+            }
         }
     }
 

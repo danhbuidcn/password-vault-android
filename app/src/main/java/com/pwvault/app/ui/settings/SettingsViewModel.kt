@@ -1,7 +1,9 @@
 package com.pwvault.app.ui.settings
 
 import androidx.lifecycle.ViewModel
+import com.pwvault.app.security.AppLanguage
 import com.pwvault.app.security.AutoLockPreferences
+import com.pwvault.app.security.LanguagePreferences
 import com.pwvault.app.security.SecurityPolicy
 import com.pwvault.app.security.ThemeMode
 import com.pwvault.app.security.ThemePreferences
@@ -15,6 +17,7 @@ import kotlin.time.Duration
 data class SettingsUiState(
     val autoLockTimeout: Duration?,
     val themeMode: ThemeMode,
+    val language: AppLanguage,
 )
 
 @HiltViewModel
@@ -23,12 +26,14 @@ class SettingsViewModel
     constructor(
         private val autoLockPreferences: AutoLockPreferences,
         private val themePreferences: ThemePreferences,
+        private val languagePreferences: LanguagePreferences,
     ) : ViewModel() {
         private val _state =
             MutableStateFlow(
                 SettingsUiState(
                     autoLockTimeout = autoLockPreferences.getTimeout(),
                     themeMode = themePreferences.getMode(),
+                    language = languagePreferences.getLanguage(),
                 ),
             )
         val state: StateFlow<SettingsUiState> = _state.asStateFlow()
@@ -43,5 +48,10 @@ class SettingsViewModel
         fun setThemeMode(mode: ThemeMode) {
             themePreferences.setMode(mode)
             _state.value = _state.value.copy(themeMode = mode)
+        }
+
+        fun setLanguage(language: AppLanguage) {
+            languagePreferences.setLanguage(language)
+            _state.value = _state.value.copy(language = language)
         }
     }

@@ -9,6 +9,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -37,39 +38,41 @@ fun ExportScreen(
     onPickDestination: (ExportTarget, suggestedFileName: String) -> Unit,
     onClose: () -> Unit,
 ) {
-    Column(modifier = Modifier.fillMaxSize().padding(24.dp)) {
-        when (state) {
-            is ExportUiState.Closed -> Unit
-            is ExportUiState.Choice ->
-                ExportChoice(onChooseTarget = onChooseTarget, onCancel = onClose)
-            is ExportUiState.Reauth ->
-                ExportReauth(state = state, onSubmit = onSubmitMasterPassword, onCancel = onClose)
-            is ExportUiState.CsvWarning ->
-                ExportCsvWarning(
-                    state = state,
-                    onToggleAck1 = onToggleAck1,
-                    onToggleAck2 = onToggleAck2,
-                    onContinue = onContinueFromWarning,
-                    onCancel = onClose,
-                )
-            is ExportUiState.CsvPassword ->
-                ExportCsvPassword(state = state, onSubmit = onSubmitZipPassword, onCancel = onClose)
-            is ExportUiState.PickDestination -> {
-                LaunchedEffect(state) { onPickDestination(state.target, state.suggestedFileName) }
-                Text(stringResource(R.string.export_preparing))
-                TextButton(onClick = onClose) { Text(stringResource(R.string.vault_cancel_button)) }
-            }
-            is ExportUiState.Writing -> {
-                CircularProgressIndicator()
-                Text(stringResource(R.string.export_writing), modifier = Modifier.padding(top = 16.dp))
-            }
-            is ExportUiState.Done -> {
-                Text(stringResource(R.string.export_done))
-                TextButton(onClick = onClose) { Text(stringResource(R.string.vault_back_button)) }
-            }
-            is ExportUiState.Failed -> {
-                Text(stringResource(R.string.export_failed), color = MaterialTheme.colorScheme.error)
-                TextButton(onClick = onClose) { Text(stringResource(R.string.vault_back_button)) }
+    Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+        Column(modifier = Modifier.fillMaxSize().padding(24.dp)) {
+            when (state) {
+                is ExportUiState.Closed -> Unit
+                is ExportUiState.Choice ->
+                    ExportChoice(onChooseTarget = onChooseTarget, onCancel = onClose)
+                is ExportUiState.Reauth ->
+                    ExportReauth(state = state, onSubmit = onSubmitMasterPassword, onCancel = onClose)
+                is ExportUiState.CsvWarning ->
+                    ExportCsvWarning(
+                        state = state,
+                        onToggleAck1 = onToggleAck1,
+                        onToggleAck2 = onToggleAck2,
+                        onContinue = onContinueFromWarning,
+                        onCancel = onClose,
+                    )
+                is ExportUiState.CsvPassword ->
+                    ExportCsvPassword(state = state, onSubmit = onSubmitZipPassword, onCancel = onClose)
+                is ExportUiState.PickDestination -> {
+                    LaunchedEffect(state) { onPickDestination(state.target, state.suggestedFileName) }
+                    Text(stringResource(R.string.export_preparing))
+                    TextButton(onClick = onClose) { Text(stringResource(R.string.vault_cancel_button)) }
+                }
+                is ExportUiState.Writing -> {
+                    CircularProgressIndicator()
+                    Text(stringResource(R.string.export_writing), modifier = Modifier.padding(top = 16.dp))
+                }
+                is ExportUiState.Done -> {
+                    Text(stringResource(R.string.export_done))
+                    TextButton(onClick = onClose) { Text(stringResource(R.string.vault_back_button)) }
+                }
+                is ExportUiState.Failed -> {
+                    Text(stringResource(R.string.export_failed), color = MaterialTheme.colorScheme.error)
+                    TextButton(onClick = onClose) { Text(stringResource(R.string.vault_back_button)) }
+                }
             }
         }
     }
