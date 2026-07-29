@@ -1,5 +1,6 @@
 package com.pwvault.app.ui.export
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -39,7 +40,11 @@ fun ExportScreen(
     onClose: () -> Unit,
 ) {
     Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
-        Column(modifier = Modifier.fillMaxSize().padding(24.dp)) {
+        Column(
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.fillMaxSize().padding(24.dp),
+        ) {
             when (state) {
                 is ExportUiState.Closed -> Unit
                 is ExportUiState.Choice ->

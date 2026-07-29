@@ -174,9 +174,7 @@
     <string name="auto_lock_never">Không bao giờ</string>
     <string name="theme_light">Sáng</string>
     <string name="theme_dark">Tối</string>
-    <string name="theme_system">Theo hệ thống</string>
     <string name="settings_language_section">Ngôn ngữ</string>
-    <string name="language_system">Theo hệ thống</string>
     <string name="language_en">English</string>
     <string name="language_vi">Tiếng Việt</string>
 </resources>

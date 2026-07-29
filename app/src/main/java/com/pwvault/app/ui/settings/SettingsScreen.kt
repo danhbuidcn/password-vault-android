@@ -1,9 +1,9 @@
 package com.pwvault.app.ui.settings
 
+import android.app.Activity
 import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -22,9 +22,15 @@ import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.IosShare
 import androidx.compose.material.icons.filled.Password
 import androidx.compose.material.icons.filled.Sell
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -32,11 +38,15 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -288,20 +298,34 @@ private fun UnlockMethodSection(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun AutoLockSection(
     options: List<Duration?>,
     selected: Duration?,
     onSelect: (Duration?) -> Unit,
 ) {
-    Row(modifier = Modifier.horizontalScroll(rememberScrollState())) {
-        options.forEach { option ->
-            FilterChip(
-                selected = option == selected,
-                onClick = { onSelect(option) },
-                label = { Text(autoLockLabel(option)) },
-                modifier = Modifier.padding(end = 8.dp),
-            )
+    var expanded by remember { mutableStateOf(false) }
+
+    ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
+        OutlinedTextField(
+            value = autoLockLabel(selected),
+            onValueChange = {},
+            readOnly = true,
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            shape = RoundedCornerShape(12.dp),
+            modifier = Modifier.fillMaxWidth().menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable),
+        )
+        ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            options.forEach { option ->
+                DropdownMenuItem(
+                    text = { Text(autoLockLabel(option)) },
+                    onClick = {
+                        onSelect(option)
+                        expanded = false
+                    },
+                )
+            }
         }
     }
 }
@@ -333,39 +357,52 @@ private fun ThemeSection(
             selected = selected == ThemeMode.DARK,
             onClick = { onSelect(ThemeMode.DARK) },
             label = { Text(stringResource(R.string.theme_dark)) },
-            modifier = Modifier.padding(end = 8.dp),
-        )
-        FilterChip(
-            selected = selected == ThemeMode.SYSTEM,
-            onClick = { onSelect(ThemeMode.SYSTEM) },
-            label = { Text(stringResource(R.string.theme_system)) },
         )
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun LanguageSection(
     selected: AppLanguage,
     onSelect: (AppLanguage) -> Unit,
 ) {
-    Row {
-        FilterChip(
-            selected = selected == AppLanguage.SYSTEM,
-            onClick = { onSelect(AppLanguage.SYSTEM) },
-            label = { Text(stringResource(R.string.language_system)) },
-            modifier = Modifier.padding(end = 8.dp),
+    @Composable
+    fun label(language: AppLanguage) =
+        when (language) {
+            AppLanguage.EN -> stringResource(R.string.language_en)
+            AppLanguage.VI -> stringResource(R.string.language_vi)
+        }
+
+    var expanded by remember { mutableStateOf(false) }
+    val activity = LocalContext.current as? Activity
+
+    ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
+        OutlinedTextField(
+            value = label(selected),
+            onValueChange = {},
+            readOnly = true,
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            shape = RoundedCornerShape(12.dp),
+            modifier = Modifier.fillMaxWidth().menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable),
         )
-        FilterChip(
-            selected = selected == AppLanguage.EN,
-            onClick = { onSelect(AppLanguage.EN) },
-            label = { Text(stringResource(R.string.language_en)) },
-            modifier = Modifier.padding(end = 8.dp),
-        )
-        FilterChip(
-            selected = selected == AppLanguage.VI,
-            onClick = { onSelect(AppLanguage.VI) },
-            label = { Text(stringResource(R.string.language_vi)) },
-        )
+        ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            AppLanguage.entries.forEach { language ->
+                DropdownMenuItem(
+                    text = { Text(label(language)) },
+                    onClick = {
+                        expanded = false
+                        if (language != selected) {
+                            onSelect(language)
+                            // AppCompatDelegate.setApplicationLocales() only updates the OS-level per-app
+                            // locale — MainActivity isn't an AppCompatActivity, so nothing else triggers
+                            // the recreate needed to actually re-resolve string resources in the new locale.
+                            activity?.recreate()
+                        }
+                    },
+                )
+            }
+        }
     }
 }
 

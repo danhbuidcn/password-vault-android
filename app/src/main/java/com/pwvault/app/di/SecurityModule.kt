@@ -107,5 +107,7 @@ object SecurityModule {
 
     @Provides
     @Singleton
-    fun provideLanguagePreferences(): LanguagePreferences = LanguagePreferences()
+    fun provideLanguagePreferences(
+        @ApplicationContext context: Context,
+    ): LanguagePreferences = LanguagePreferences(context)
 }

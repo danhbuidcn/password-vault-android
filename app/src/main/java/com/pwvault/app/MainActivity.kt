@@ -13,7 +13,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -120,7 +119,6 @@ class MainActivity : FragmentActivity() {
                 when (themeMode) {
                     ThemeMode.LIGHT -> false
                     ThemeMode.DARK -> true
-                    ThemeMode.SYSTEM -> isSystemInDarkTheme()
                 }
             PwVaultTheme(darkTheme = darkTheme) {
                 PwVaultApp(
