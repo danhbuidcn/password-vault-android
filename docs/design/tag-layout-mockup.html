@@ -1,0 +1,411 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8" />
+<title>PWVault — Tag layout options</title>
+<style>
+  :root {
+    --canvas: #14161b;
+    --canvas-raise: #1c1f26;
+    --canvas-line: #2b2f38;
+    --ink: #eef0f4;
+    --ink-dim: #9aa0ad;
+    --gold: #c6903e;
+    --gold-dim: #9a713366;
+
+    /* sampled 1:1 from the shipped app (light theme) */
+    --app-bg: #f3f4f7;
+    --app-header: #1c2230;
+    --app-card: #e6e0e9;
+    --app-accent: #c6903e;
+    --app-text: #1c2230;
+    --app-text-dim: #5b6472;
+    --tag-bank: #6b9080;
+    --tag-personal: #d2a23f;
+    --tag-social: #4c93a6;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--canvas);
+    color: var(--ink);
+    font-family: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    padding: 40px 24px 96px;
+  }
+
+  .wrap { max-width: 1280px; margin: 0 auto; }
+
+  header.page { margin-bottom: 40px; }
+  .eyebrow {
+    font-size: 12px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--gold); margin: 0 0 10px;
+  }
+  h1 { font-size: clamp(22px,3vw,30px); font-weight: 700; letter-spacing: -.01em; margin: 0 0 12px; }
+  .brief { max-width: 66ch; color: var(--ink-dim); font-size: 14.5px; line-height: 1.6; margin: 0; }
+  .brief b { color: var(--ink); font-weight: 600; }
+  .decision {
+    margin-top: 18px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #4c93a6;
+    background: #4c93a61c;
+    border: 1px solid #4c93a63d;
+    border-radius: 10px;
+    padding: 8px 14px;
+  }
+
+  .gallery {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(230px, 1fr));
+    gap: 22px;
+  }
+  @media (max-width: 1100px) { .gallery { grid-template-columns: repeat(2, minmax(230px, 1fr)); } }
+  @media (max-width: 560px)  { .gallery { grid-template-columns: 1fr; } }
+
+  .option {
+    background: var(--canvas-raise);
+    border: 1px solid var(--canvas-line);
+    border-radius: 18px;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .option.chosen { border-color: #4c93a670; box-shadow: 0 0 0 1px #4c93a670; }
+  .option-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+  .option-letter { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; }
+  .option-letter .badge {
+    width: 22px; height: 22px; border-radius: 6px; background: var(--gold-dim); color: var(--gold);
+    display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800;
+  }
+  .status {
+    font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+    padding: 3px 8px; border-radius: 999px; white-space: nowrap;
+  }
+  .status.chosen   { background: #4c93a622; color: #4c93a6; }
+  .status.rejected { background: #c0524622; color: #d4695d; }
+  .status.new      { background: var(--gold-dim); color: var(--gold); }
+
+  .rationale { font-size: 12.5px; line-height: 1.55; color: var(--ink-dim); margin: 0; }
+  .rationale b { color: var(--ink); font-weight: 600; }
+
+  /* ---------- phone frame ---------- */
+  .phone {
+    background: #000;
+    border-radius: 34px;
+    padding: 10px;
+    box-shadow: 0 0 0 1px #000, 0 18px 40px -18px #00000090;
+  }
+  .phone-screen {
+    background: var(--app-bg);
+    border-radius: 24px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .status-bar {
+    height: 26px;
+    background: var(--app-header);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    font-size: 10px;
+    color: #ffffffcc;
+    font-weight: 600;
+  }
+  .status-bar .icons { display: flex; gap: 5px; opacity: .85; }
+  .app-header {
+    background: var(--app-header);
+    color: #fff;
+    padding: 10px 14px 14px;
+    font-size: 16px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .app-header .gear { font-size: 14px; color: var(--app-accent); }
+
+  .screen-body { padding: 10px 10px 16px; display: flex; flex-direction: column; gap: 8px; }
+  .state-label {
+    font-size: 9.5px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase;
+    color: #7d8593; padding: 4px 2px 0;
+  }
+
+  .card {
+    background: var(--app-card);
+    border-radius: 12px;
+    padding: 11px;
+    display: flex;
+    gap: 9px;
+    align-items: flex-start;
+    position: relative;
+  }
+  .avatar {
+    width: 28px; height: 28px; border-radius: 999px; background: #ffffff8a;
+    flex: none; display: flex; align-items: center; justify-content: center; font-size: 12px;
+  }
+  .body { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: 2px; }
+
+  .name {
+    font-size: 13px; font-weight: 600; color: var(--app-text);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .username {
+    font-size: 11px; color: var(--app-text-dim);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+
+  .tag {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 10px; font-weight: 600; color: var(--app-text);
+    background: #ffffff9e; border: 1px solid #00000014; border-radius: 999px;
+    padding: 3px 8px 3px 6px; white-space: nowrap; flex: none;
+  }
+  .tag .dot { width: 6px; height: 6px; border-radius: 999px; flex: none; }
+  .tag.bank .dot { background: var(--tag-bank); }
+  .tag.personal .dot { background: var(--tag-personal); }
+  .tag.social .dot { background: var(--tag-social); }
+
+  /* A — same row: title + tag share the header line */
+  .layout-A .top-row { display: flex; align-items: center; gap: 7px; }
+  .layout-A .name { flex: 1 1 auto; min-width: 0; }
+
+  /* B — stacked: title alone, tag chip on its own row, right aligned */
+  .layout-B .tag-row { display: flex; justify-content: flex-end; min-height: 1px; }
+
+  /* C — meta line: title always full width; tag + username share one meta row */
+  .layout-C .meta-row { display: flex; align-items: center; gap: 6px; min-width: 0; }
+  .layout-C .meta-row .username { flex: 1 1 auto; min-width: 0; }
+  .layout-C .sep { color: var(--app-text-dim); font-size: 10px; flex: none; }
+
+  /* D — corner dot: no pill at all, tiny dot on the card corner */
+  .layout-D .corner-dot {
+    position: absolute; top: 10px; right: 11px;
+    width: 8px; height: 8px; border-radius: 999px;
+    box-shadow: 0 0 0 2px var(--app-card);
+  }
+  .layout-D .corner-dot.bank { background: var(--tag-bank); }
+  .layout-D .corner-dot.personal { background: var(--tag-personal); }
+  .layout-D .corner-dot.social { background: var(--tag-social); }
+
+  footer.note {
+    margin-top: 40px; font-size: 12.5px; color: var(--ink-dim); max-width: 70ch; line-height: 1.6;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="page">
+    <p class="eyebrow">PWVault · Vault list card · design review</p>
+    <h1>Tag đặt ở đâu cạnh tên tài khoản?</h1>
+    <p class="brief">
+      Cùng 3 account thật, 4 cách bố trí. <b>Netflix</b> không có tag — không được chừa khoảng trống.
+      <b>Tên dài</b> là case gây lỗi ban đầu — tên và tag không được đè/cắt lẫn nhau.
+    </p>
+    <div class="decision">✓ Đã chốt: Option A — đang release ở v0.4.1 (<code>VaultScreen.kt</code>, commit 2ba14b2)</div>
+  </header>
+
+  <div class="gallery">
+
+    <!-- OPTION A -->
+    <section class="option layout-A chosen">
+      <div class="option-head">
+        <span class="option-letter"><span class="badge">A</span>Same row</span>
+        <span class="status chosen">Đã chọn · release v0.4.1</span>
+      </div>
+      <p class="rationale">Tag nằm cạnh tên, cùng 1 hàng. <b>Tên nhường trước</b> — tự cắt bớt (…) để tag luôn hiện đủ, ghim bên phải.</p>
+
+      <div class="phone"><div class="phone-screen">
+        <div class="status-bar"><span>9:41</span><span class="icons">●●●</span></div>
+        <div class="app-header">PWVault <span class="gear">⚙</span></div>
+        <div class="screen-body">
+          <div class="state-label">Bình thường</div>
+          <div class="card">
+            <div class="avatar">👤</div>
+            <div class="body">
+              <div class="top-row">
+                <span class="name">GitHub</span>
+                <span class="tag social"><span class="dot"></span>Social Media</span>
+              </div>
+              <span class="username">octocat</span>
+            </div>
+          </div>
+
+          <div class="state-label">Tên dài</div>
+          <div class="card">
+            <div class="avatar">👤</div>
+            <div class="body">
+              <div class="top-row">
+                <span class="name">This is a very long service name for testing</span>
+                <span class="tag bank"><span class="dot"></span>Bank</span>
+              </div>
+              <span class="username">very.long.username.for.overflow.test@example.com</span>
+            </div>
+          </div>
+
+          <div class="state-label">Không tag</div>
+          <div class="card">
+            <div class="avatar">👤</div>
+            <div class="body">
+              <div class="top-row"><span class="name">Netflix</span></div>
+              <span class="username">myname.streaming.account@gmail.com</span>
+            </div>
+          </div>
+        </div>
+      </div></div>
+    </section>
+
+    <!-- OPTION B -->
+    <section class="option layout-B">
+      <div class="option-head">
+        <span class="option-letter"><span class="badge">B</span>Stacked below</span>
+        <span class="status rejected">Đã thử, bị từ chối</span>
+      </div>
+      <p class="rationale">Tên chiếm trọn hàng, tag rơi xuống hàng riêng bên dưới, căn phải. <b>Đã build thử trong phiên trước</b> — bị báo "vẫn vỡ UI".</p>
+
+      <div class="phone"><div class="phone-screen">
+        <div class="status-bar"><span>9:41</span><span class="icons">●●●</span></div>
+        <div class="app-header">PWVault <span class="gear">⚙</span></div>
+        <div class="screen-body">
+          <div class="state-label">Bình thường</div>
+          <div class="card">
+            <div class="avatar">👤</div>
+            <div class="body">
+              <span class="name">GitHub</span>
+              <div class="tag-row"><span class="tag social"><span class="dot"></span>Social Media</span></div>
+              <span class="username">octocat</span>
+            </div>
+          </div>
+
+          <div class="state-label">Tên dài</div>
+          <div class="card">
+            <div class="avatar">👤</div>
+            <div class="body">
+              <span class="name">This is a very long service name for testing</span>
+              <div class="tag-row"><span class="tag bank"><span class="dot"></span>Bank</span></div>
+              <span class="username">very.long.username.for.overflow.test@example.com</span>
+            </div>
+          </div>
+
+          <div class="state-label">Không tag</div>
+          <div class="card">
+            <div class="avatar">👤</div>
+            <div class="body">
+              <span class="name">Netflix</span>
+              <div class="tag-row"></div>
+              <span class="username">myname.streaming.account@gmail.com</span>
+            </div>
+          </div>
+        </div>
+      </div></div>
+    </section>
+
+    <!-- OPTION C -->
+    <section class="option layout-C">
+      <div class="option-head">
+        <span class="option-letter"><span class="badge">C</span>Meta line</span>
+        <span class="status new">Không chọn</span>
+      </div>
+      <p class="rationale">Tên <b>luôn full-width</b>, không bao giờ chung hàng với tag. Tag xuống hàng dưới đứng cạnh username: "Bank · octocat".</p>
+
+      <div class="phone"><div class="phone-screen">
+        <div class="status-bar"><span>9:41</span><span class="icons">●●●</span></div>
+        <div class="app-header">PWVault <span class="gear">⚙</span></div>
+        <div class="screen-body">
+          <div class="state-label">Bình thường</div>
+          <div class="card">
+            <div class="avatar">👤</div>
+            <div class="body">
+              <span class="name">GitHub</span>
+              <div class="meta-row">
+                <span class="tag social"><span class="dot"></span>Social Media</span>
+                <span class="sep">·</span>
+                <span class="username">octocat</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="state-label">Tên dài</div>
+          <div class="card">
+            <div class="avatar">👤</div>
+            <div class="body">
+              <span class="name">This is a very long service name for testing</span>
+              <div class="meta-row">
+                <span class="tag bank"><span class="dot"></span>Bank</span>
+                <span class="sep">·</span>
+                <span class="username">very.long.username.for.overflow.test@example.com</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="state-label">Không tag</div>
+          <div class="card">
+            <div class="avatar">👤</div>
+            <div class="body">
+              <span class="name">Netflix</span>
+              <div class="meta-row"><span class="username">myname.streaming.account@gmail.com</span></div>
+            </div>
+          </div>
+        </div>
+      </div></div>
+    </section>
+
+    <!-- OPTION D -->
+    <section class="option layout-D">
+      <div class="option-head">
+        <span class="option-letter"><span class="badge">D</span>Corner dot</span>
+        <span class="status new">Không chọn</span>
+      </div>
+      <p class="rationale">Không có pill chữ — chỉ 1 chấm màu góc card. Tên/username <b>không bao giờ bị ảnh hưởng</b>. Đánh đổi: không đọc được tên tag trực tiếp trên list.</p>
+
+      <div class="phone"><div class="phone-screen">
+        <div class="status-bar"><span>9:41</span><span class="icons">●●●</span></div>
+        <div class="app-header">PWVault <span class="gear">⚙</span></div>
+        <div class="screen-body">
+          <div class="state-label">Bình thường</div>
+          <div class="card">
+            <span class="corner-dot social"></span>
+            <div class="avatar">👤</div>
+            <div class="body">
+              <span class="name">GitHub</span>
+              <span class="username">octocat</span>
+            </div>
+          </div>
+
+          <div class="state-label">Tên dài</div>
+          <div class="card">
+            <span class="corner-dot bank"></span>
+            <div class="avatar">👤</div>
+            <div class="body">
+              <span class="name">This is a very long service name for testing</span>
+              <span class="username">very.long.username.for.overflow.test@example.com</span>
+            </div>
+          </div>
+
+          <div class="state-label">Không tag</div>
+          <div class="card">
+            <div class="avatar">👤</div>
+            <div class="body">
+              <span class="name">Netflix</span>
+              <span class="username">myname.streaming.account@gmail.com</span>
+            </div>
+          </div>
+        </div>
+      </div></div>
+    </section>
+
+  </div>
+
+  <footer class="note">
+    Màu lấy đúng từ ảnh app v0.4.1 đã release (card #E6E0E9, accent #C6903E, tag Bank/Personal/Social Media) —
+    không phải màu tự bịa. Quyết định cuối: Option A, giữ nguyên như code hiện tại.
+  </footer>
+</div>
+</body>
+</html>
