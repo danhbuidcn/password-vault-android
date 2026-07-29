@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -199,7 +200,7 @@ fun VaultScreen(
                         state = vaultState,
                         onSave = viewModel::save,
                         onCancel = viewModel::backToList,
-                        onSelectTag = viewModel::selectTag,
+                        onToggleTag = viewModel::toggleTagSelected,
                     )
                 is VaultUiState.DeleteConfirm ->
                     AlertDialog(
@@ -350,6 +351,12 @@ private fun VaultItemListScreen(
     }
 }
 
+// Reserves room for the widest case (3 corner dots) so name/username always ellipsize before the
+// dot cluster, regardless of how many tags this particular item has — no per-item layout shift.
+private val CARD_TAG_DOT_NAME_RESERVE = 44.dp
+private val CARD_TAG_DOT_INSET = 12.dp
+private val CARD_TAG_DOT_GAP = 4.dp
+
 @Composable
 private fun VaultItemCard(
     item: VaultItem,
@@ -357,83 +364,100 @@ private fun VaultItemCard(
     modifier: Modifier = Modifier,
 ) {
     Card(modifier = modifier.fillMaxWidth().clickable(onClick = onClick)) {
-        Column(modifier = Modifier.padding(14.dp)) {
-            Row(verticalAlignment = Alignment.Top) {
-                val isNote = item.type == VaultItemType.NOTE
-                Surface(
-                    shape = CircleShape,
-                    color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.14f),
+        Box {
+            if (item.tags.isNotEmpty()) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(CARD_TAG_DOT_GAP),
+                    modifier =
+                        Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(top = CARD_TAG_DOT_INSET, end = CARD_TAG_DOT_INSET),
                 ) {
-                    Icon(
-                        imageVector = if (isNote) Icons.Filled.Description else Icons.Filled.Person,
-                        contentDescription =
-                            stringResource(if (isNote) R.string.item_type_note else R.string.item_type_login),
-                        tint = MaterialTheme.colorScheme.secondary,
-                        modifier = Modifier.padding(9.dp).size(18.dp),
-                    )
+                    item.tags.forEach { tag -> TagColorDot(tagId = tag.id) }
                 }
-                Column(modifier = Modifier.weight(1f).padding(start = 12.dp)) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+            }
+            Column(modifier = Modifier.padding(14.dp)) {
+                Row(verticalAlignment = Alignment.Top) {
+                    val isNote = item.type == VaultItemType.NOTE
+                    Surface(
+                        shape = CircleShape,
+                        color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.14f),
+                    ) {
+                        Icon(
+                            imageVector = if (isNote) Icons.Filled.Description else Icons.Filled.Person,
+                            contentDescription =
+                                stringResource(if (isNote) R.string.item_type_note else R.string.item_type_login),
+                            tint = MaterialTheme.colorScheme.secondary,
+                            modifier = Modifier.padding(9.dp).size(18.dp),
+                        )
+                    }
+                    Column(
+                        modifier =
+                            Modifier
+                                .weight(1f)
+                                .padding(
+                                    start = 12.dp,
+                                    end = if (item.tags.isNotEmpty()) CARD_TAG_DOT_NAME_RESERVE else 0.dp,
+                                ),
+                    ) {
                         Text(
                             text = item.name,
                             style = MaterialTheme.typography.bodyLarge,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier.weight(1f, fill = false),
+                            modifier = Modifier.fillMaxWidth(),
                         )
-                        item.tag?.let { tag ->
-                            TagChip(tag = tag, modifier = Modifier.padding(start = 8.dp))
+                        if (item.username.isNotEmpty()) {
+                            Text(
+                                text = item.username,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
+                            )
                         }
                     }
-                    if (item.username.isNotEmpty()) {
+                }
+                if (item.type == VaultItemType.LOGIN) {
+                    var passwordVisible by remember { mutableStateOf(false) }
+                    Row(
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .padding(top = 10.dp)
+                                .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(10.dp))
+                                .padding(horizontal = 10.dp, vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
                         Text(
-                            text = item.username,
+                            text = if (passwordVisible) item.password else "•".repeat(item.password.length),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
+                            modifier = Modifier.weight(1f),
                         )
+                        IconButton(onClick = { passwordVisible = !passwordVisible }, modifier = Modifier.size(20.dp)) {
+                            Icon(
+                                imageVector =
+                                    if (passwordVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
+                                contentDescription =
+                                    stringResource(
+                                        if (passwordVisible) R.string.password_hide_cd else R.string.password_show_cd,
+                                    ),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.size(16.dp),
+                            )
+                        }
                     }
                 }
+                val updatedText = listUpdatedFormat.format(Date(item.updatedAt))
+                Text(
+                    text = stringResource(R.string.vault_last_updated_label, updatedText),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 8.dp),
+                )
             }
-            if (item.type == VaultItemType.LOGIN) {
-                var passwordVisible by remember { mutableStateOf(false) }
-                Row(
-                    modifier =
-                        Modifier
-                            .fillMaxWidth()
-                            .padding(top = 10.dp)
-                            .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(10.dp))
-                            .padding(horizontal = 10.dp, vertical = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(
-                        text = if (passwordVisible) item.password else "•".repeat(item.password.length),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.weight(1f),
-                    )
-                    IconButton(onClick = { passwordVisible = !passwordVisible }, modifier = Modifier.size(20.dp)) {
-                        Icon(
-                            imageVector = if (passwordVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
-                            contentDescription =
-                                stringResource(
-                                    if (passwordVisible) R.string.password_hide_cd else R.string.password_show_cd,
-                                ),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.size(16.dp),
-                        )
-                    }
-                }
-            }
-            val updatedText = listUpdatedFormat.format(Date(item.updatedAt))
-            Text(
-                text = stringResource(R.string.vault_last_updated_label, updatedText),
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(top = 8.dp),
-            )
         }
     }
 }

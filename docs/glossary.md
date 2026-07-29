@@ -27,8 +27,8 @@
 
 ### Tag
 
-- Nhãn dùng để phân loại/sắp xếp Vault Item; một Vault Item có thể gắn nhiều Tag.
-- App có sẵn tag gợi ý (Personal, Bank, Social Media...); người dùng toàn quyền thêm/sửa/xóa tag riêng — danh sách tag là danh sách mở, không giới hạn số lượng trên 1 Vault Item.
+- Nhãn dùng để phân loại/sắp xếp Vault Item; một Vault Item có thể gắn tối đa 3 Tag.
+- App có sẵn tag gợi ý (Personal, Bank, Social Media...); người dùng toàn quyền thêm/sửa/xóa tag riêng — danh sách tag (số lượng tag tạo được) là danh sách mở, không giới hạn; giới hạn 3 chỉ áp dụng cho số Tag gắn trên 1 Vault Item.
 
 ### Custom Field
 

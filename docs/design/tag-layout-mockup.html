@@ -184,12 +184,17 @@
   .layout-C .meta-row .username { flex: 1 1 auto; min-width: 0; }
   .layout-C .sep { color: var(--app-text-dim); font-size: 10px; flex: none; }
 
-  /* D — corner dot: no pill at all, tiny dot on the card corner */
+  /* D — corner dot: no pill at all, up to 3 tiny dots stacked on the card corner (1 per tag, max 3) */
+  /* Reserve room for the widest case (3 dots) so name/username always ellipsize before the dot
+     cluster, regardless of how many tags this particular item has — no per-item layout shift. */
+  .layout-D .body { padding-right: 44px; }
   .layout-D .corner-dot {
     position: absolute; top: 10px; right: 11px;
     width: 8px; height: 8px; border-radius: 999px;
     box-shadow: 0 0 0 2px var(--app-card);
   }
+  .layout-D .corner-dot:nth-of-type(2) { right: 23px; }
+  .layout-D .corner-dot:nth-of-type(3) { right: 35px; }
   .layout-D .corner-dot.bank { background: var(--tag-bank); }
   .layout-D .corner-dot.personal { background: var(--tag-personal); }
   .layout-D .corner-dot.social { background: var(--tag-social); }
@@ -207,19 +212,20 @@
     <p class="brief">
       Cùng 3 account thật, 4 cách bố trí. <b>Netflix</b> không có tag — không được chừa khoảng trống.
       <b>Tên dài</b> là case gây lỗi ban đầu — tên và tag không được đè/cắt lẫn nhau.
+      <b>1 account tối đa 3 tag</b> — layout phải chịu được cả case 3 tag cùng lúc.
     </p>
-    <div class="decision">✓ Đã chốt: Option A — đang release ở v0.4.1 (<code>VaultScreen.kt</code>, commit 2ba14b2)</div>
+    <div class="decision">✓ Đã chốt lại: Option D — 1 account tối đa 3 tag, hiển thị bằng chấm màu góc card (thay Option A)</div>
   </header>
 
   <div class="gallery">
 
     <!-- OPTION A -->
-    <section class="option layout-A chosen">
+    <section class="option layout-A">
       <div class="option-head">
         <span class="option-letter"><span class="badge">A</span>Same row</span>
-        <span class="status chosen">Đã chọn · release v0.4.1</span>
+        <span class="status rejected">Đã release v0.4.1 · nay bị thay</span>
       </div>
-      <p class="rationale">Tag nằm cạnh tên, cùng 1 hàng. <b>Tên nhường trước</b> — tự cắt bớt (…) để tag luôn hiện đủ, ghim bên phải.</p>
+      <p class="rationale">Tag nằm cạnh tên, cùng 1 hàng. Ổn với <b>1 tag</b>, nhưng lên tới <b>3 tag/account</b> thì 3 pill chữ cùng hàng với tên sẽ chật, phải cuộn ngang liên tục — không còn phù hợp.</p>
 
       <div class="phone"><div class="phone-screen">
         <div class="status-bar"><span>9:41</span><span class="icons">●●●</span></div>
@@ -357,18 +363,18 @@
     </section>
 
     <!-- OPTION D -->
-    <section class="option layout-D">
+    <section class="option layout-D chosen">
       <div class="option-head">
         <span class="option-letter"><span class="badge">D</span>Corner dot</span>
-        <span class="status new">Không chọn</span>
+        <span class="status chosen">Đã chốt lại · v0.4.2</span>
       </div>
-      <p class="rationale">Không có pill chữ — chỉ 1 chấm màu góc card. Tên/username <b>không bao giờ bị ảnh hưởng</b>. Đánh đổi: không đọc được tên tag trực tiếp trên list.</p>
+      <p class="rationale">Không có pill chữ — mỗi tag là 1 chấm màu góc card, tối đa <b>3 chấm</b>. Tên/username <b>không bao giờ bị ảnh hưởng</b> dù account gắn đủ 3 tag. Đánh đổi: không đọc được tên tag trực tiếp trên list (đổi lại xem trong chi tiết account hoặc bộ lọc tag).</p>
 
       <div class="phone"><div class="phone-screen">
         <div class="status-bar"><span>9:41</span><span class="icons">●●●</span></div>
         <div class="app-header">PWVault <span class="gear">⚙</span></div>
         <div class="screen-body">
-          <div class="state-label">Bình thường</div>
+          <div class="state-label">1 tag</div>
           <div class="card">
             <span class="corner-dot social"></span>
             <div class="avatar">👤</div>
@@ -378,9 +384,11 @@
             </div>
           </div>
 
-          <div class="state-label">Tên dài</div>
+          <div class="state-label">Tối đa 3 tag + tên dài</div>
           <div class="card">
             <span class="corner-dot bank"></span>
+            <span class="corner-dot personal"></span>
+            <span class="corner-dot social"></span>
             <div class="avatar">👤</div>
             <div class="body">
               <span class="name">This is a very long service name for testing</span>
@@ -404,7 +412,7 @@
 
   <footer class="note">
     Màu lấy đúng từ ảnh app v0.4.1 đã release (card #E6E0E9, accent #C6903E, tag Bank/Personal/Social Media) —
-    không phải màu tự bịa. Quyết định cuối: Option A, giữ nguyên như code hiện tại.
+    không phải màu tự bịa. Quyết định cuối (v0.4.2): Option D, mỗi account tối đa 3 tag — thay cho Option A / giới hạn 1 tag trước đó.
   </footer>
 </div>
 </body>

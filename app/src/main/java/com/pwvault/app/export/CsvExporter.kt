@@ -16,7 +16,7 @@ class CsvExporter {
                     item.password,
                     item.url,
                     item.note,
-                    item.tag?.name.orEmpty(),
+                    item.tags.joinToString(";") { it.name },
                     item.customFields.joinToString(";") { "${it.label}:${it.value}" },
                 )
             }

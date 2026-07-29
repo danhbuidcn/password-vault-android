@@ -1,6 +1,7 @@
 package com.pwvault.app.data
 
 import com.pwvault.app.domain.CustomField
+import com.pwvault.app.domain.MAX_TAGS_PER_VAULT_ITEM
 import com.pwvault.app.domain.VaultItem
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -26,6 +27,11 @@ class VaultItemRepository(
         dao.delete(item.toEntity())
         autoBackupWriter.scheduleBackup()
     }
+
+    suspend fun setItemTags(
+        itemId: Long,
+        tagIds: Set<Long>,
+    ) = dao.setTagsForItem(itemId, tagIds.take(MAX_TAGS_PER_VAULT_ITEM))
 
     suspend fun setCustomFields(
         itemId: Long,

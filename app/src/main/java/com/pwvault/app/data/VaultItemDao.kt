@@ -31,6 +31,21 @@ interface VaultItemDao {
     @Delete
     suspend fun delete(item: VaultItemEntity)
 
+    @Query("DELETE FROM vault_item_tag_cross_ref WHERE vaultItemId = :itemId")
+    suspend fun clearTags(itemId: Long)
+
+    @Insert
+    suspend fun insertTagCrossRefs(refs: List<VaultItemTagCrossRef>)
+
+    @Transaction
+    suspend fun setTagsForItem(
+        itemId: Long,
+        tagIds: List<Long>,
+    ) {
+        clearTags(itemId)
+        insertTagCrossRefs(tagIds.map { VaultItemTagCrossRef(vaultItemId = itemId, tagId = it) })
+    }
+
     @Query("DELETE FROM custom_fields WHERE vaultItemId = :itemId")
     suspend fun clearCustomFields(itemId: Long)
 

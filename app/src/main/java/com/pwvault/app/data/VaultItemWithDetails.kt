@@ -1,6 +1,7 @@
 package com.pwvault.app.data
 
 import androidx.room.Embedded
+import androidx.room.Junction
 import androidx.room.Relation
 import com.pwvault.app.domain.VaultItem
 
@@ -8,10 +9,11 @@ data class VaultItemWithDetails(
     @Embedded
     val item: VaultItemEntity,
     @Relation(
-        parentColumn = "tagId",
+        parentColumn = "id",
         entityColumn = "id",
+        associateBy = Junction(VaultItemTagCrossRef::class, parentColumn = "vaultItemId", entityColumn = "tagId"),
     )
-    val tag: TagEntity?,
+    val tags: List<TagEntity>,
     @Relation(
         parentColumn = "id",
         entityColumn = "vaultItemId",
@@ -21,6 +23,6 @@ data class VaultItemWithDetails(
 
 fun VaultItemWithDetails.toDomain(): VaultItem =
     item.toDomain().copy(
-        tag = tag?.toDomain(),
+        tags = tags.map { it.toDomain() },
         customFields = customFields.map { it.toDomain() },
     )

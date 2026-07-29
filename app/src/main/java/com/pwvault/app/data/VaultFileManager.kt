@@ -70,7 +70,7 @@ class VaultFileManager(
                     // wipe that vault the next time the schema version changes. Every version bump from 5
                     // onward must ship an explicit Room Migration that preserves existing rows — a missing
                     // Migration should surface as a loud crash (fixable), never a silent data loss.
-                    .addMigrations(MIGRATION_5_6, MIGRATION_6_7)
+                    .addMigrations(MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8)
                     .addCallback(
                         object : RoomDatabase.Callback() {
                             override fun onCreate(db: SupportSQLiteDatabase) {

@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.pwvault.app.data.TagRepository
 import com.pwvault.app.data.VaultItemRepository
 import com.pwvault.app.domain.CustomField
+import com.pwvault.app.domain.MAX_TAGS_PER_VAULT_ITEM
 import com.pwvault.app.domain.Tag
 import com.pwvault.app.domain.VaultItem
 import com.pwvault.app.domain.VaultItemType
@@ -54,7 +55,7 @@ sealed interface VaultUiState {
         val editingId: Long? = null,
         val initial: VaultItem? = null,
         val availableTags: List<Tag> = emptyList(),
-        val selectedTagId: Long? = null,
+        val selectedTagIds: Set<Long> = emptySet(),
         val error: VaultFormError? = null,
         val busy: Boolean = false,
     ) : VaultUiState
@@ -142,7 +143,7 @@ class VaultViewModel
                 if (tagFilterIds.isEmpty()) {
                     searchFiltered
                 } else {
-                    searchFiltered.filter { item -> item.tag?.id?.let { it in tagFilterIds } ?: false }
+                    searchFiltered.filter { item -> item.tags.any { it.id in tagFilterIds } }
                 }
             return VaultUiState.ItemList(
                 items = tagFiltered,
@@ -175,14 +176,20 @@ class VaultViewModel
                     editingId = item.id,
                     initial = item,
                     availableTags = availableTags,
-                    selectedTagId = item.tag?.id,
+                    selectedTagIds = item.tags.map { it.id }.toSet(),
                 )
         }
 
-        fun selectTag(tagId: Long) {
+        /** No-op once [MAX_TAGS_PER_VAULT_ITEM] tags are already selected — deselecting is always allowed. */
+        fun toggleTagSelected(tagId: Long) {
             val form = _state.value as? VaultUiState.ItemForm ?: return
-            val selected = if (form.selectedTagId == tagId) null else tagId
-            _state.value = form.copy(selectedTagId = selected)
+            val selected =
+                when {
+                    tagId in form.selectedTagIds -> form.selectedTagIds - tagId
+                    form.selectedTagIds.size >= MAX_TAGS_PER_VAULT_ITEM -> return
+                    else -> form.selectedTagIds + tagId
+                }
+            _state.value = form.copy(selectedTagIds = selected)
         }
 
         fun openDetail(item: VaultItem) {
@@ -223,7 +230,7 @@ class VaultViewModel
             viewModelScope.launch {
                 val now = System.currentTimeMillis()
                 val existing = form.initial
-                val selectedTag = form.availableTags.find { it.id == form.selectedTagId }
+                val selectedTags = form.availableTags.filter { it.id in form.selectedTagIds }
                 val itemId =
                     if (existing != null) {
                         // Type is fixed once an item is created — always keep existing.type here,
@@ -235,7 +242,7 @@ class VaultViewModel
                                 password = input.password,
                                 url = input.url,
                                 note = input.note,
-                                tag = selectedTag,
+                                tags = selectedTags,
                                 updatedAt = now,
                             ),
                         )
@@ -253,12 +260,13 @@ class VaultViewModel
                                 password = if (isNote) "" else input.password,
                                 url = if (isNote) "" else input.url,
                                 note = input.note,
-                                tag = selectedTag,
+                                tags = selectedTags,
                                 createdAt = now,
                                 updatedAt = now,
                             ),
                         )
                     }
+                repository.setItemTags(itemId, form.selectedTagIds)
                 repository.setCustomFields(
                     itemId,
                     input.customFields

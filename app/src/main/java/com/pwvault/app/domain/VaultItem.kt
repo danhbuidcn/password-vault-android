@@ -12,6 +12,6 @@ data class VaultItem(
     val note: String,
     val createdAt: Long,
     val updatedAt: Long,
-    val tag: Tag? = null,
+    val tags: List<Tag> = emptyList(),
     val customFields: List<CustomField> = emptyList(),
 )

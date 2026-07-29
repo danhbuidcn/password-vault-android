@@ -34,6 +34,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.pwvault.app.R
+import com.pwvault.app.domain.MAX_TAGS_PER_VAULT_ITEM
 import com.pwvault.app.domain.VaultItemType
 import com.pwvault.app.security.PasswordStrength
 import com.pwvault.app.ui.unlock.PasswordField
@@ -51,7 +52,7 @@ fun VaultItemFormScreen(
     state: VaultUiState.ItemForm,
     onSave: (VaultItemFormInput) -> Unit,
     onCancel: () -> Unit,
-    onSelectTag: (Long) -> Unit,
+    onToggleTag: (Long) -> Unit,
 ) {
     // No type picker in this form any more — every new item is Login. An existing Note item being
     // edited keeps its own type (read from state.initial), so it still renders its Note-only fields
@@ -168,10 +169,13 @@ fun VaultItemFormScreen(
                     modifier = Modifier.padding(top = 16.dp),
                 )
                 Row(modifier = Modifier.horizontalScroll(rememberScrollState()).padding(top = 8.dp)) {
+                    val maxSelected = state.selectedTagIds.size >= MAX_TAGS_PER_VAULT_ITEM
                     state.availableTags.forEach { tag ->
+                        val selected = tag.id in state.selectedTagIds
                         FilterChip(
-                            selected = tag.id == state.selectedTagId,
-                            onClick = { onSelectTag(tag.id) },
+                            selected = selected,
+                            onClick = { onToggleTag(tag.id) },
+                            enabled = selected || !maxSelected,
                             label = { Text(tag.name) },
                             leadingIcon = { TagColorDot(tag.id) },
                             modifier = Modifier.padding(end = 8.dp),
