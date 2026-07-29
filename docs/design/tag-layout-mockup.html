@@ -199,6 +199,40 @@
   .layout-D .corner-dot.personal { background: var(--tag-personal); }
   .layout-D .corner-dot.social { background: var(--tag-social); }
 
+  /* ---------- corner-marker variants (round 2 — plain dot was reported hard to notice/tell apart) ---------- */
+  h2.round2 { font-size: 18px; font-weight: 700; margin: 48px 0 6px; }
+  .brief2 { max-width: 70ch; color: var(--ink-dim); font-size: 14.5px; line-height: 1.6; margin: 0 0 22px; }
+
+  .m1 .dots, .m2 .dots, .m3 .dots {
+    position: absolute; display: flex;
+  }
+  .m1 .dots { top: 10px; right: 11px; gap: 6px; }
+  .m1 .m-dot {
+    width: 12px; height: 12px; border-radius: 999px;
+    box-shadow: 0 0 0 2px var(--app-card);
+  }
+  .m1 .body { padding-right: 48px; }
+
+  .m2 .dots { top: 8px; right: 9px; gap: 5px; }
+  .m2 .m-dot {
+    width: 18px; height: 18px; border-radius: 999px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9.5px; font-weight: 800; color: #fff;
+    box-shadow: 0 0 0 2px var(--app-card);
+  }
+  .m2 .body { padding-right: 62px; }
+
+  .m3 .dots { top: 7px; right: 8px; flex-direction: column; align-items: flex-end; gap: 3px; }
+  .m3 .m-badge {
+    font-size: 8px; font-weight: 800; letter-spacing: .02em; color: #fff;
+    line-height: 1.5; padding: 0.5px 5px; border-radius: 5px; white-space: nowrap;
+  }
+  .m3 .body { padding-right: 38px; }
+
+  .m1 .bank, .m2 .bank, .m3 .bank { background: var(--tag-bank); }
+  .m1 .personal, .m2 .personal, .m3 .personal { background: var(--tag-personal); }
+  .m1 .social, .m2 .social, .m3 .social { background: var(--tag-social); }
+
   footer.note {
     margin-top: 40px; font-size: 12.5px; color: var(--ink-dim); max-width: 70ch; line-height: 1.6;
   }
@@ -410,9 +444,138 @@
 
   </div>
 
+  <h2 class="round2">Round 2 — chấm đơn sắc bị chê khó nhận dạng, thử vài ký hiệu góc rõ hơn</h2>
+  <p class="brief2">
+    Vẫn giữ vị trí góc card (không đụng lại tên/username) từ Option D, chỉ đổi <b>bản thân ký hiệu</b>.
+    So sánh ở case nặng nhất: <b>3 tag + tên dài</b>.
+  </p>
+  <div class="decision">✓ Đã chốt (v0.4.4): M1 — chấm to hơn (14px, gồm viền) + viền tương phản màu nền card</div>
+
+  <div class="gallery">
+
+    <!-- M1 -->
+    <section class="option m1 chosen">
+      <div class="option-head">
+        <span class="option-letter"><span class="badge">M1</span>Chấm to + viền tương phản</span>
+        <span class="status chosen">Đã chốt · v0.4.4</span>
+      </div>
+      <p class="rationale">To chấm lên (8px→14px, đã gồm viền) và thêm viền màu nền card để tách khỏi nền — dễ <b>nhận ra là có tag</b> hơn nhiều so với chấm đơn sắc ban đầu. Vẫn không đọc được tên tag, nhưng sửa đúng vấn đề chính: chấm cũ quá nhỏ/mờ, dễ bị bỏ sót.</p>
+
+      <div class="phone"><div class="phone-screen">
+        <div class="status-bar"><span>9:41</span><span class="icons">●●●</span></div>
+        <div class="app-header">PWVault <span class="gear">⚙</span></div>
+        <div class="screen-body">
+          <div class="state-label">1 tag</div>
+          <div class="card">
+            <div class="dots"><span class="m-dot social"></span></div>
+            <div class="avatar">👤</div>
+            <div class="body">
+              <span class="name">GitHub</span>
+              <span class="username">octocat</span>
+            </div>
+          </div>
+
+          <div class="state-label">Tối đa 3 tag + tên dài</div>
+          <div class="card">
+            <div class="dots">
+              <span class="m-dot bank"></span>
+              <span class="m-dot personal"></span>
+              <span class="m-dot social"></span>
+            </div>
+            <div class="avatar">👤</div>
+            <div class="body">
+              <span class="name">This is a very long service name for testing</span>
+              <span class="username">very.long.username.for.overflow.test@example.com</span>
+            </div>
+          </div>
+        </div>
+      </div></div>
+    </section>
+
+    <!-- M2 -->
+    <section class="option m2">
+      <div class="option-head">
+        <span class="option-letter"><span class="badge">M2</span>Chấm + chữ cái đầu</span>
+        <span class="status rejected">Không chọn</span>
+      </div>
+      <p class="rationale">Mỗi chấm mang <b>1 chữ cái đầu tên tag</b> (B/P/S), màu vẫn giữ. Nhận diện được ngay cả khi 2 tag trùng tông màu gần nhau — vẫn đủ nhỏ để không đụng tên/username.</p>
+
+      <div class="phone"><div class="phone-screen">
+        <div class="status-bar"><span>9:41</span><span class="icons">●●●</span></div>
+        <div class="app-header">PWVault <span class="gear">⚙</span></div>
+        <div class="screen-body">
+          <div class="state-label">1 tag</div>
+          <div class="card">
+            <div class="dots"><span class="m-dot social">S</span></div>
+            <div class="avatar">👤</div>
+            <div class="body">
+              <span class="name">GitHub</span>
+              <span class="username">octocat</span>
+            </div>
+          </div>
+
+          <div class="state-label">Tối đa 3 tag + tên dài</div>
+          <div class="card">
+            <div class="dots">
+              <span class="m-dot bank">B</span>
+              <span class="m-dot personal">P</span>
+              <span class="m-dot social">S</span>
+            </div>
+            <div class="avatar">👤</div>
+            <div class="body">
+              <span class="name">This is a very long service name for testing</span>
+              <span class="username">very.long.username.for.overflow.test@example.com</span>
+            </div>
+          </div>
+        </div>
+      </div></div>
+    </section>
+
+    <!-- M3 -->
+    <section class="option m3">
+      <div class="option-head">
+        <span class="option-letter"><span class="badge">M3</span>Nhãn rút gọn 3 ký tự</span>
+        <span class="status new">Nhiều thông tin nhất</span>
+      </div>
+      <p class="rationale">Mỗi tag là 1 nhãn nhỏ ghi 3 ký tự đầu tên tag (BAN/PER/SOC), xếp dọc ở góc. Đọc được gần hết tên tag, nhưng 3 nhãn xếp chồng chiếm nhiều chỗ theo chiều dọc hơn 2 phương án kia.</p>
+
+      <div class="phone"><div class="phone-screen">
+        <div class="status-bar"><span>9:41</span><span class="icons">●●●</span></div>
+        <div class="app-header">PWVault <span class="gear">⚙</span></div>
+        <div class="screen-body">
+          <div class="state-label">1 tag</div>
+          <div class="card">
+            <div class="dots"><span class="m-badge social">SOC</span></div>
+            <div class="avatar">👤</div>
+            <div class="body">
+              <span class="name">GitHub</span>
+              <span class="username">octocat</span>
+            </div>
+          </div>
+
+          <div class="state-label">Tối đa 3 tag + tên dài</div>
+          <div class="card">
+            <div class="dots">
+              <span class="m-badge bank">BAN</span>
+              <span class="m-badge personal">PER</span>
+              <span class="m-badge social">SOC</span>
+            </div>
+            <div class="avatar">👤</div>
+            <div class="body">
+              <span class="name">This is a very long service name for testing</span>
+              <span class="username">very.long.username.for.overflow.test@example.com</span>
+            </div>
+          </div>
+        </div>
+      </div></div>
+    </section>
+
+  </div>
+
   <footer class="note">
     Màu lấy đúng từ ảnh app v0.4.1 đã release (card #E6E0E9, accent #C6903E, tag Bank/Personal/Social Media) —
     không phải màu tự bịa. Quyết định cuối (v0.4.2): Option D, mỗi account tối đa 3 tag — thay cho Option A / giới hạn 1 tag trước đó.
+    <br />Round 2 (v0.4.4): giữ vị trí góc của Option D, đổi ký hiệu từ chấm đơn sắc sang M1 — chấm to hơn + viền tương phản.
   </footer>
 </div>
 </body>

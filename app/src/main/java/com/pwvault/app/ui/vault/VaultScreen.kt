@@ -50,6 +50,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -64,6 +65,7 @@ import com.pwvault.app.ui.export.ExportViewModel
 import com.pwvault.app.ui.settings.SettingsScreen
 import com.pwvault.app.ui.settings.SettingsViewModel
 import com.pwvault.app.ui.theme.PwVaultChrome
+import com.pwvault.app.ui.theme.tagColor
 import com.pwvault.app.ui.unlock.PinSetupDialog
 import com.pwvault.app.ui.unlock.UnlockUiState
 import java.text.SimpleDateFormat
@@ -353,9 +355,27 @@ private fun VaultItemListScreen(
 
 // Reserves room for the widest case (3 corner dots) so name/username always ellipsize before the
 // dot cluster, regardless of how many tags this particular item has — no per-item layout shift.
-private val CARD_TAG_DOT_NAME_RESERVE = 44.dp
+private val CARD_TAG_DOT_NAME_RESERVE = 58.dp
 private val CARD_TAG_DOT_INSET = 12.dp
-private val CARD_TAG_DOT_GAP = 4.dp
+private val CARD_TAG_DOT_GAP = 6.dp
+private val CARD_TAG_DOT_SIZE = 14.dp
+private val CARD_TAG_DOT_RING = 2.dp
+
+/** Corner tag marker for the list card — a bigger dot than [TagColorDot] with a card-color ring so
+ * it reads clearly against the card background instead of blending into it. */
+@Composable
+private fun CardTagDot(tagId: Long) {
+    Box(
+        modifier =
+            Modifier
+                .size(CARD_TAG_DOT_SIZE)
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.surface)
+                .padding(CARD_TAG_DOT_RING)
+                .clip(CircleShape)
+                .background(tagColor(tagId)),
+    )
+}
 
 @Composable
 private fun VaultItemCard(
@@ -373,7 +393,7 @@ private fun VaultItemCard(
                             .align(Alignment.TopEnd)
                             .padding(top = CARD_TAG_DOT_INSET, end = CARD_TAG_DOT_INSET),
                 ) {
-                    item.tags.forEach { tag -> TagColorDot(tagId = tag.id) }
+                    item.tags.forEach { tag -> CardTagDot(tagId = tag.id) }
                 }
             }
             Column(modifier = Modifier.padding(14.dp)) {
