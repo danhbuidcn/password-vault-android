@@ -51,7 +51,7 @@ fun VaultItemFormScreen(
     state: VaultUiState.ItemForm,
     onSave: (VaultItemFormInput) -> Unit,
     onCancel: () -> Unit,
-    onToggleTag: (Long) -> Unit,
+    onSelectTag: (Long) -> Unit,
 ) {
     // No type picker in this form any more — every new item is Login. An existing Note item being
     // edited keeps its own type (read from state.initial), so it still renders its Note-only fields
@@ -170,8 +170,8 @@ fun VaultItemFormScreen(
                 Row(modifier = Modifier.horizontalScroll(rememberScrollState()).padding(top = 8.dp)) {
                     state.availableTags.forEach { tag ->
                         FilterChip(
-                            selected = tag.id in state.selectedTagIds,
-                            onClick = { onToggleTag(tag.id) },
+                            selected = tag.id == state.selectedTagId,
+                            onClick = { onSelectTag(tag.id) },
                             label = { Text(tag.name) },
                             leadingIcon = { TagColorDot(tag.id) },
                             modifier = Modifier.padding(end = 8.dp),

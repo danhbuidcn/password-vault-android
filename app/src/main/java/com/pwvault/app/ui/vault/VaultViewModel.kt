@@ -54,7 +54,7 @@ sealed interface VaultUiState {
         val editingId: Long? = null,
         val initial: VaultItem? = null,
         val availableTags: List<Tag> = emptyList(),
-        val selectedTagIds: Set<Long> = emptySet(),
+        val selectedTagId: Long? = null,
         val error: VaultFormError? = null,
         val busy: Boolean = false,
     ) : VaultUiState
@@ -142,7 +142,7 @@ class VaultViewModel
                 if (tagFilterIds.isEmpty()) {
                     searchFiltered
                 } else {
-                    searchFiltered.filter { item -> item.tags.any { it.id in tagFilterIds } }
+                    searchFiltered.filter { item -> item.tag?.id?.let { it in tagFilterIds } ?: false }
                 }
             return VaultUiState.ItemList(
                 items = tagFiltered,
@@ -175,15 +175,14 @@ class VaultViewModel
                     editingId = item.id,
                     initial = item,
                     availableTags = availableTags,
-                    selectedTagIds = item.tags.map { it.id }.toSet(),
+                    selectedTagId = item.tag?.id,
                 )
         }
 
-        fun toggleTagSelected(tagId: Long) {
+        fun selectTag(tagId: Long) {
             val form = _state.value as? VaultUiState.ItemForm ?: return
-            val selected =
-                if (tagId in form.selectedTagIds) form.selectedTagIds - tagId else form.selectedTagIds + tagId
-            _state.value = form.copy(selectedTagIds = selected)
+            val selected = if (form.selectedTagId == tagId) null else tagId
+            _state.value = form.copy(selectedTagId = selected)
         }
 
         fun openDetail(item: VaultItem) {
@@ -224,6 +223,7 @@ class VaultViewModel
             viewModelScope.launch {
                 val now = System.currentTimeMillis()
                 val existing = form.initial
+                val selectedTag = form.availableTags.find { it.id == form.selectedTagId }
                 val itemId =
                     if (existing != null) {
                         // Type is fixed once an item is created — always keep existing.type here,
@@ -235,6 +235,7 @@ class VaultViewModel
                                 password = input.password,
                                 url = input.url,
                                 note = input.note,
+                                tag = selectedTag,
                                 updatedAt = now,
                             ),
                         )
@@ -252,12 +253,12 @@ class VaultViewModel
                                 password = if (isNote) "" else input.password,
                                 url = if (isNote) "" else input.url,
                                 note = input.note,
+                                tag = selectedTag,
                                 createdAt = now,
                                 updatedAt = now,
                             ),
                         )
                     }
-                repository.setItemTags(itemId, form.selectedTagIds)
                 repository.setCustomFields(
                     itemId,
                     input.customFields

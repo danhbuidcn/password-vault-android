@@ -199,7 +199,7 @@ fun VaultScreen(
                         state = vaultState,
                         onSave = viewModel::save,
                         onCancel = viewModel::backToList,
-                        onToggleTag = viewModel::toggleTagSelected,
+                        onSelectTag = viewModel::selectTag,
                     )
                 is VaultUiState.DeleteConfirm ->
                     AlertDialog(
@@ -381,17 +381,8 @@ private fun VaultItemCard(
                             overflow = TextOverflow.Ellipsis,
                             modifier = Modifier.weight(1f, fill = false),
                         )
-                        if (item.tags.isNotEmpty()) {
-                            Row(
-                                modifier =
-                                    Modifier
-                                        .horizontalScroll(rememberScrollState())
-                                        .padding(start = 8.dp),
-                            ) {
-                                item.tags.forEach { tag ->
-                                    TagChip(tag = tag, modifier = Modifier.padding(start = 4.dp))
-                                }
-                            }
+                        item.tag?.let { tag ->
+                            TagChip(tag = tag, modifier = Modifier.padding(start = 8.dp))
                         }
                     }
                     if (item.username.isNotEmpty()) {
@@ -399,7 +390,9 @@ private fun VaultItemCard(
                             text = item.username,
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.fillMaxWidth(),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
                         )
                     }
                 }

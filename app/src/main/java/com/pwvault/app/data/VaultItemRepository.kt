@@ -27,11 +27,6 @@ class VaultItemRepository(
         autoBackupWriter.scheduleBackup()
     }
 
-    suspend fun setItemTags(
-        itemId: Long,
-        tagIds: Set<Long>,
-    ) = dao.setTagsForItem(itemId, tagIds.toList())
-
     suspend fun setCustomFields(
         itemId: Long,
         customFields: List<CustomField>,
