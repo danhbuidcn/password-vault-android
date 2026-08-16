@@ -27,4 +27,9 @@ class VaultMetadataStore(
         prefs.edit().putString(KEY_SALT, Base64.encodeToString(salt, Base64.NO_WRAP)).apply()
         return salt
     }
+
+    /** Overwrites the stored salt — used after restoring a `.pwvbackup` so later unlocks derive against it. */
+    fun setSalt(salt: ByteArray) {
+        prefs.edit().putString(KEY_SALT, Base64.encodeToString(salt, Base64.NO_WRAP)).apply()
+    }
 }

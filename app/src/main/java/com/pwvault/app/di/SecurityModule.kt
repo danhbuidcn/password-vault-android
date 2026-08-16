@@ -40,7 +40,8 @@ object SecurityModule {
     @Singleton
     fun provideVaultFileManager(
         @ApplicationContext context: Context,
-    ): VaultFileManager = VaultFileManager(context)
+        vaultMetadataStore: VaultMetadataStore,
+    ): VaultFileManager = VaultFileManager(context, vaultMetadataStore)
 
     @Provides
     @Singleton

@@ -1,5 +1,6 @@
 package com.pwvault.app.ui.unlock
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -28,21 +29,22 @@ import com.pwvault.app.R
 import com.pwvault.app.ui.theme.PwVaultTheme
 
 /**
- * Compose's TextField state is String-based (no CharArray input API) — the password briefly
- * exists as an immutable String here before being copied into CharArrays for [onCreateVault].
+ * Shown after the user picks a `.pwvbackup` file on [SetupScreen]'s "Restore from backup" — asks for
+ * the Master Password that was used on the device the backup came from. Compose's TextField state is
+ * String-based (no CharArray input API) — the password briefly exists as an immutable String here
+ * before being copied into a CharArray for [onRestore].
  */
 @Composable
-fun SetupScreen(
+fun RestorePasswordScreen(
     error: UnlockError?,
     busy: Boolean,
-    onCreateVault: (password: CharArray, confirm: CharArray) -> Unit,
-    onRestoreClick: () -> Unit,
+    onRestore: (password: CharArray) -> Unit,
+    onCancel: () -> Unit,
 ) {
+    // Disabled while busy — mirrors the on-screen Cancel button below: a restore in flight replaces
+    // the real vault file, so it must not be interruptible mid-operation.
+    BackHandler(enabled = !busy, onBack = onCancel)
     var password by remember { mutableStateOf("") }
-    var confirm by remember { mutableStateOf("") }
-    // Driven by user actions (submit shows, edit hides) rather than keyed on `error`'s value — two
-    // consecutive failures can carry the exact same UnlockError (e.g. PASSWORD_MISMATCH twice), which
-    // would be indistinguishable to a value-equality key and fail to re-show the second time.
     var showError by remember { mutableStateOf(error != null) }
 
     val passwordFocusRequester = remember { FocusRequester() }
@@ -59,12 +61,12 @@ fun SetupScreen(
                 contentDescription = null,
             )
             Text(
-                text = stringResource(R.string.setup_title),
+                text = stringResource(R.string.restore_title),
                 style = MaterialTheme.typography.headlineSmall,
                 modifier = Modifier.padding(top = 16.dp),
             )
             Text(
-                text = stringResource(R.string.setup_subtitle),
+                text = stringResource(R.string.restore_subtitle),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(top = 4.dp, bottom = 24.dp),
@@ -78,15 +80,6 @@ fun SetupScreen(
                 label = stringResource(R.string.password_label),
                 modifier = Modifier.focusRequester(passwordFocusRequester),
             )
-            PasswordField(
-                value = confirm,
-                onValueChange = {
-                    confirm = it
-                    showError = false
-                },
-                label = stringResource(R.string.confirm_password_label),
-                modifier = Modifier.padding(top = 8.dp),
-            )
             if (showError && error != null) {
                 Text(
                     text = error.message(),
@@ -97,15 +90,15 @@ fun SetupScreen(
             Button(
                 onClick = {
                     showError = true
-                    onCreateVault(password.toCharArray(), confirm.toCharArray())
+                    onRestore(password.toCharArray())
                 },
                 enabled = !busy,
                 modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
             ) {
-                Text(stringResource(if (busy) R.string.setup_button_busy else R.string.setup_button))
+                Text(stringResource(if (busy) R.string.restore_button_busy else R.string.restore_button))
             }
-            TextButton(onClick = onRestoreClick, enabled = !busy) {
-                Text(stringResource(R.string.setup_restore_button))
+            TextButton(onClick = onCancel, enabled = !busy) {
+                Text(stringResource(R.string.restore_cancel))
             }
         }
     }
@@ -113,8 +106,8 @@ fun SetupScreen(
 
 @Preview(showBackground = true)
 @Composable
-private fun SetupScreenPreview() {
+private fun RestorePasswordScreenPreview() {
     PwVaultTheme {
-        SetupScreen(error = null, busy = false, onCreateVault = { _, _ -> }, onRestoreClick = {})
+        RestorePasswordScreen(error = null, busy = false, onRestore = {}, onCancel = {})
     }
 }

@@ -15,20 +15,22 @@ style:
 
 complexity:
   TooManyFunctions:
-    thresholdInClasses: 23 # UnlockViewModel owns one StateFlow across 3 unlock methods (password/PIN/biometric),
-    # plus verifyMasterPassword (re-auth for Feature 12 export) and disablePin/disableBiometric (turning a
-    # method off), all of which reuse the same private vaultKey/keyDerivation/metadataStore state —
-    # splitting it up would fragment that single source of truth for no real benefit
+    thresholdInClasses: 26 # UnlockViewModel owns one StateFlow across 3 unlock methods (password/PIN/biometric),
+    # plus verifyMasterPassword (re-auth for Feature 12 export), disablePin/disableBiometric (turning a
+    # method off), and onRestoreFilePicked/restoreVault/cancelRestore (restoring a `.pwvbackup` at the
+    # pre-unlock Setup screen) — all of which reuse the same private vaultKey/keyDerivation/metadataStore
+    # state — splitting it up would fragment that single source of truth for no real benefit
     thresholdInObjects: 16 # SecurityModule is 1 flat Hilt @Provides list; splitting it adds indirection, not clarity
     thresholdInInterfaces: 15 # VaultItemDao owns VaultItem CRUD plus per-item Tag and Custom Field cross-ref
     # queries (clear+insert+set atomically via @Transaction) — both only make sense from the owning
     # VaultItem's perspective, so splitting them into separate DAOs would fragment one atomic-transaction
     # interface for marginal benefit.
   LongParameterList:
-    constructorThreshold: 9 # UnlockViewModel's constructor is all Hilt-injected singletons, one per
-    # security concern (KDF, PIN, biometric, lockout, auto-lock, backup-reminder-seeding) — grouping
-    # them into a synthetic wrapper class would fight Hilt's per-dependency injection convention for
-    # no real benefit
+    constructorThreshold: 10 # UnlockViewModel's constructor is all Hilt-injected singletons, one per
+    # security concern (KDF, PIN, biometric, lockout, auto-lock, backup-reminder-seeding) plus the
+    # ApplicationContext needed to open the SAF `Uri` picked for `.pwvbackup` restore — grouping them
+    # into a synthetic wrapper class would fight Hilt's per-dependency injection convention for no real
+    # benefit
     ignoreAnnotated: ["Composable"] # Compose screens take one callback param per user action by convention;
     # bundling them into a synthetic actions object would add indirection, not clarity
   LongMethod:

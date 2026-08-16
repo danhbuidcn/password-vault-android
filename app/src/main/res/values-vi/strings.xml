@@ -8,6 +8,7 @@
     <string name="confirm_password_label">Xác nhận mật khẩu</string>
     <string name="setup_button">Tạo</string>
     <string name="setup_button_busy">Đang tạo…</string>
+    <string name="setup_restore_button">Khôi phục từ bản sao lưu</string>
     <string name="error_password_mismatch">Mật khẩu xác nhận không khớp</string>
     <string name="error_password_too_short">Mật khẩu cần tối thiểu %1$d ký tự</string>
     <string name="error_create_failed">Không tạo được Vault, thử lại</string>
@@ -17,6 +18,14 @@
     <string name="unlock_button">Mở khóa</string>
     <string name="unlock_button_busy">Đang mở…</string>
     <string name="error_wrong_password">Sai mật khẩu</string>
+
+    <string name="restore_title">Khôi phục từ bản sao lưu</string>
+    <string name="restore_subtitle">Nhập Mật khẩu chính của thiết bị đã tạo bản sao lưu này.</string>
+    <string name="restore_button">Khôi phục</string>
+    <string name="restore_button_busy">Đang khôi phục…</string>
+    <string name="restore_cancel">Hủy</string>
+    <string name="error_restore_invalid_file">Đây không phải file backup hợp lệ của PWVault</string>
+    <string name="error_restore_wrong_password">Sai mật khẩu cho bản sao lưu này</string>
 
     <string name="password_show_cd">Hiện mật khẩu</string>
     <string name="password_hide_cd">Ẩn mật khẩu</string>
@@ -50,7 +59,7 @@
 
     <string name="vault_empty_state">Chưa có mục nào — bấm + để thêm</string>
     <string name="vault_no_results_state">Không có mục nào khớp tìm kiếm</string>
-    <string name="search_placeholder">Tìm theo tên hoặc tên đăng nhập</string>
+    <string name="search_placeholder">Tìm theo tên đăng nhập</string>
     <string name="search_clear_cd">Xóa tìm kiếm</string>
     <string name="vault_filter_all_label">Tất cả</string>
     <string name="vault_last_updated_label">Cập nhật lần cuối %1$s</string>

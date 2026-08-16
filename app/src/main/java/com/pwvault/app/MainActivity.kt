@@ -29,6 +29,7 @@ import com.pwvault.app.ui.settings.SettingsViewModel
 import com.pwvault.app.ui.theme.PwVaultTheme
 import com.pwvault.app.ui.unlock.BiometricUnlockScreen
 import com.pwvault.app.ui.unlock.PinUnlockScreen
+import com.pwvault.app.ui.unlock.RestorePasswordScreen
 import com.pwvault.app.ui.unlock.SetupScreen
 import com.pwvault.app.ui.unlock.UnlockScreen
 import com.pwvault.app.ui.unlock.UnlockUiState
@@ -51,6 +52,11 @@ private val IMPORT_SOURCE_MIME_TYPES =
         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     )
 
+// `.pwvbackup` has no registered MIME type and different DocumentsProviders disagree on what to
+// report for it (some say application/octet-stream, some say the generic default) — matching loosely
+// here avoids the exact picker-hides-the-file bug that an exact-MIME allowlist caused for CSV/XLSX.
+private val RESTORE_SOURCE_MIME_TYPES = arrayOf("*/*")
+
 private enum class BiometricOperation { UNLOCK, SETUP }
 
 @AndroidEntryPoint
@@ -69,6 +75,7 @@ class MainActivity : FragmentActivity() {
     private lateinit var setupPromptInfo: BiometricPrompt.PromptInfo
     private lateinit var exportDestinationLauncher: ActivityResultLauncher<String>
     private lateinit var importSourceLauncher: ActivityResultLauncher<Array<String>>
+    private lateinit var restoreSourceLauncher: ActivityResultLauncher<Array<String>>
     private lateinit var autoBackupFolderLauncher: ActivityResultLauncher<Uri?>
     private lateinit var notificationPermissionLauncher: ActivityResultLauncher<String>
     private var pendingBiometricOperation = BiometricOperation.UNLOCK
@@ -91,19 +98,7 @@ class MainActivity : FragmentActivity() {
         unlockPromptInfo = createBiometricPromptInfo(getString(R.string.use_master_password_instead))
         setupPromptInfo = createBiometricPromptInfo(getString(R.string.pin_setup_cancel))
         biometricPrompt = BiometricPrompt(this, ContextCompat.getMainExecutor(this), biometricAuthenticationCallback())
-        exportDestinationLauncher =
-            registerForActivityResult(ActivityResultContracts.CreateDocument(EXPORT_DESTINATION_MIME_TYPE)) { uri ->
-                onExportDestinationPicked(uri)
-            }
-        importSourceLauncher =
-            registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
-                importViewModel.onFilePicked(uri)
-            }
-        autoBackupFolderLauncher =
-            registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
-                onAutoBackupFolderPicked(uri)
-            }
-        notificationPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) {}
+        registerActivityResultLaunchers()
         requestNotificationPermissionIfNeeded()
         hasAutoBackupFolder = backupPreferences.getAutoBackupFolderUri() != null
         val canSetupBiometric =
@@ -133,12 +128,33 @@ class MainActivity : FragmentActivity() {
                     onSetupBiometric = ::triggerBiometricSetup,
                     onPickExportDestination = ::triggerExportDestinationPicker,
                     onPickImportSource = { importSourceLauncher.launch(IMPORT_SOURCE_MIME_TYPES) },
+                    onPickRestoreSource = { restoreSourceLauncher.launch(RESTORE_SOURCE_MIME_TYPES) },
                     hasAutoBackupFolder = hasAutoBackupFolder,
                     onPickAutoBackupFolder = { autoBackupFolderLauncher.launch(null) },
                     onDisableAutoBackup = ::disableAutoBackup,
                 )
             }
         }
+    }
+
+    private fun registerActivityResultLaunchers() {
+        exportDestinationLauncher =
+            registerForActivityResult(ActivityResultContracts.CreateDocument(EXPORT_DESTINATION_MIME_TYPE)) { uri ->
+                onExportDestinationPicked(uri)
+            }
+        importSourceLauncher =
+            registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+                importViewModel.onFilePicked(uri)
+            }
+        restoreSourceLauncher =
+            registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+                unlockViewModel.onRestoreFilePicked(uri)
+            }
+        autoBackupFolderLauncher =
+            registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
+                onAutoBackupFolderPicked(uri)
+            }
+        notificationPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) {}
     }
 
     private fun triggerExportDestinationPicker(
@@ -275,6 +291,7 @@ private fun PwVaultApp(
     onSetupBiometric: () -> Unit,
     onPickExportDestination: (ExportTarget, String) -> Unit,
     onPickImportSource: () -> Unit,
+    onPickRestoreSource: () -> Unit,
     hasAutoBackupFolder: Boolean,
     onPickAutoBackupFolder: () -> Unit,
     onDisableAutoBackup: () -> Unit,
@@ -286,6 +303,14 @@ private fun PwVaultApp(
                 error = state.error,
                 busy = state.busy,
                 onCreateVault = unlockViewModel::createVault,
+                onRestoreClick = onPickRestoreSource,
+            )
+        is UnlockUiState.RestorePassword ->
+            RestorePasswordScreen(
+                error = state.error,
+                busy = state.busy,
+                onRestore = unlockViewModel::restoreVault,
+                onCancel = unlockViewModel::cancelRestore,
             )
         is UnlockUiState.Locked ->
             UnlockScreen(

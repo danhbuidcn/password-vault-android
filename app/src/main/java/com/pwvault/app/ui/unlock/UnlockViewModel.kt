@@ -1,5 +1,7 @@
 package com.pwvault.app.ui.unlock
 
+import android.content.Context
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.pwvault.app.data.VaultFileManager
@@ -11,6 +13,7 @@ import com.pwvault.app.security.LockoutPolicy
 import com.pwvault.app.security.PinManager
 import com.pwvault.app.security.VaultMetadataStore
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -34,12 +37,19 @@ enum class UnlockError {
     WRONG_PIN,
     BIOMETRIC_FAILED,
     BIOMETRIC_SETUP_FAILED,
+    RESTORE_INVALID_FILE,
+    RESTORE_WRONG_PASSWORD,
 }
 
 sealed interface UnlockUiState {
     data object Loading : UnlockUiState
 
     data class Setup(
+        val error: UnlockError? = null,
+        val busy: Boolean = false,
+    ) : UnlockUiState
+
+    data class RestorePassword(
         val error: UnlockError? = null,
         val busy: Boolean = false,
     ) : UnlockUiState
@@ -77,6 +87,7 @@ sealed interface UnlockUiState {
 class UnlockViewModel
     @Inject
     constructor(
+        @ApplicationContext private val context: Context,
         private val keyDerivation: KeyDerivation,
         private val metadataStore: VaultMetadataStore,
         private val vaultFileManager: VaultFileManager,
@@ -94,6 +105,9 @@ class UnlockViewModel
          * Never persisted.
          */
         private var vaultKey: ByteArray? = null
+
+        /** Salt extracted from the `.pwvbackup` staged by [onRestoreFilePicked], consumed by [restoreVault]. */
+        private var pendingRestoreSalt: ByteArray? = null
 
         /** Set on [onAppBackgrounded], consumed on [onAppForegrounded]. Not persisted — see plan's Risks. */
         private var backgroundedAtMillis: Long? = null
@@ -144,6 +158,56 @@ class UnlockViewModel
                         UnlockUiState.Setup(error = UnlockError.CREATE_FAILED)
                     }
             }
+        }
+
+        /** Called with the SAF `Uri` the user picked via "Restore from backup" on [UnlockUiState.Setup]. */
+        fun onRestoreFilePicked(uri: Uri?) {
+            if (uri == null) return
+            _state.value = UnlockUiState.Setup(busy = true)
+            viewModelScope.launch {
+                val salt =
+                    context.contentResolver.openInputStream(uri)?.use { input ->
+                        vaultFileManager.stageRestoreCandidate(input)
+                    }
+                _state.value =
+                    if (salt == null) {
+                        UnlockUiState.Setup(error = UnlockError.RESTORE_INVALID_FILE)
+                    } else {
+                        pendingRestoreSalt = salt
+                        UnlockUiState.RestorePassword()
+                    }
+            }
+        }
+
+        fun restoreVault(password: CharArray) {
+            val salt = pendingRestoreSalt
+            if (salt == null) {
+                Arrays.fill(password, WIPE_CHAR)
+                _state.value = UnlockUiState.Setup()
+                return
+            }
+            _state.value = UnlockUiState.RestorePassword(busy = true)
+            viewModelScope.launch {
+                val key = keyDerivation.derive(password, salt)
+                val success = vaultFileManager.tryActivateRestoreCandidate(key)
+                _state.value =
+                    if (success) {
+                        pendingRestoreSalt = null
+                        metadataStore.setSalt(salt)
+                        vaultKey = key
+                        backupPreferences.seedReminderClockAtVaultCreation()
+                        UnlockUiState.Unlocked(hasPin = false, hasBiometric = false)
+                    } else {
+                        Arrays.fill(key, 0)
+                        UnlockUiState.RestorePassword(error = UnlockError.RESTORE_WRONG_PASSWORD)
+                    }
+            }
+        }
+
+        fun cancelRestore() {
+            pendingRestoreSalt = null
+            _state.value = UnlockUiState.Setup()
+            viewModelScope.launch { vaultFileManager.discardRestoreCandidate() }
         }
 
         fun unlock(password: CharArray) {

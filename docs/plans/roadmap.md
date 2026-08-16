@@ -24,6 +24,8 @@
 | 14 | Cảnh báo mật khẩu yếu/trùng lặp | ✅ Done | [feature-14-weak-duplicate-warning-plan.md](feature-14-weak-duplicate-warning-plan.md) |
 | 15 | Màn hình Settings (tham số bảo mật, theme, phương thức unlock) | ✅ Done | [feature-15-settings-plan.md](feature-15-settings-plan.md) |
 | 16 | UI/UX redesign Phase 1 (bảng màu ink/brass/verdigris, icon app mới, style List/Detail/Form/Settings, lọc theo Tag thật) | ✅ Done | [feature-16-ui-ux-redesign-plan.md](feature-16-ui-ux-redesign-plan.md) |
+| 17 | Khôi phục Vault từ `.pwvbackup` (màn Restore ở luồng Setup, header salt trong định dạng backup) | ✅ Done | [feature-17-restore-vault-plan.md](feature-17-restore-vault-plan.md) |
+| 18 | Hỗ trợ nút back hệ thống / vuốt cạnh trên các màn hình con (Settings, Export, Import, Restore...) | ✅ Done | [feature-18-back-gesture-plan.md](feature-18-back-gesture-plan.md) |
 
 ## Ghi chú phụ thuộc
 
@@ -35,7 +37,9 @@
 - Toàn bộ: 14 cần dữ liệu Vault Item thật (từ 5) để so sánh trùng lặp/độ yếu.
 - 5b không nằm trong chain phụ thuộc 6-15 — làm ngay sau khi Feature 5 xong (guard/review/verify/commit) là được, không cần chờ các mục sau. Vault Item form của Feature 5 (note dạng text area, nút gợi ý mật khẩu, auto-focus, tự ẩn lỗi tên) đã làm trực tiếp trong Feature 5, không tính vào 5b.
 - 16 không phải phụ thuộc kỹ thuật — là quyết định thứ tự làm việc của người dùng (2026-07-19): chỉ triển khai sau khi tất cả 1-15 đã xong, để tránh redesign UI rồi lại phải sửa lại khi các tính năng sau (Tag, Custom Field, Note, Settings...) thêm field/màn hình mới.
-- **Chưa có mục nào sở hữu rõ ràng (phát sinh khi làm Feature 12):** (a) Export ra Excel `.xlsx` — Feature 12 chỉ làm CSV, xlsx cần thư viện đọc+ghi dùng chung với Feature 11 (Import), nên đợi Feature 11 chọn thư viện trước; (b) Restore/khôi phục Vault từ file `.pwvbackup` đã export — cần màn hình mới ở luồng trước-khi-unlock (Setup/first-run), khác luồng CRUD của Feature 12. Cả 2 cần được gán vào 1 feature cụ thể (có thể Feature 15 - Settings, hoặc mục mới) trước khi coi roadmap là đầy đủ.
+- 12 → 17: Restore cần cơ chế export `.pwvbackup` đã có trước, và đổi định dạng backup (thêm header salt) nên mọi bản `.pwvbackup` export trước Feature 17 không khôi phục được nữa — cần export lại bản mới.
+- 17, 18 không nằm trong chain phụ thuộc 1-16 — 17 là khoảng trống phát sinh từ Feature 12 (nay đã gán), 18 là UX polish phát sinh từ phản hồi người dùng, cùng dạng với 5b.
+- **Chưa có mục nào sở hữu rõ ràng (phát sinh khi làm Feature 12):** Export ra Excel `.xlsx` — Feature 12 chỉ làm CSV, xlsx cần thư viện đọc+ghi dùng chung với Feature 11 (Import), nên đợi Feature 11 chọn thư viện trước. (Restore đã được gán vào Feature 17.)
 
 ## Quy ước triển khai từng mục
 

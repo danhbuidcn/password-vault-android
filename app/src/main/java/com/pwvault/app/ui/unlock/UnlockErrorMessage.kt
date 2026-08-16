@@ -17,4 +17,6 @@ fun UnlockError.message(): String =
         UnlockError.WRONG_PIN -> stringResource(R.string.error_wrong_pin)
         UnlockError.BIOMETRIC_FAILED -> stringResource(R.string.error_biometric_failed)
         UnlockError.BIOMETRIC_SETUP_FAILED -> stringResource(R.string.error_biometric_setup_failed)
+        UnlockError.RESTORE_INVALID_FILE -> stringResource(R.string.error_restore_invalid_file)
+        UnlockError.RESTORE_WRONG_PASSWORD -> stringResource(R.string.error_restore_wrong_password)
     }

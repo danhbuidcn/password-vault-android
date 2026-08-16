@@ -8,6 +8,7 @@
     <string name="confirm_password_label">Confirm password</string>
     <string name="setup_button">Create</string>
     <string name="setup_button_busy">Creating…</string>
+    <string name="setup_restore_button">Restore from backup</string>
     <string name="error_password_mismatch">Passwords don\'t match</string>
     <string name="error_password_too_short">Password must be at least %1$d characters</string>
     <string name="error_create_failed">Couldn\'t create the vault, please try again</string>
@@ -17,6 +18,14 @@
     <string name="unlock_button">Unlock</string>
     <string name="unlock_button_busy">Unlocking…</string>
     <string name="error_wrong_password">Wrong password</string>
+
+    <string name="restore_title">Restore from backup</string>
+    <string name="restore_subtitle">Enter the Master Password from the device that created this backup.</string>
+    <string name="restore_button">Restore</string>
+    <string name="restore_button_busy">Restoring…</string>
+    <string name="restore_cancel">Cancel</string>
+    <string name="error_restore_invalid_file">This doesn\'t look like a valid PWVault backup file</string>
+    <string name="error_restore_wrong_password">Wrong password for this backup</string>
 
     <string name="password_show_cd">Show password</string>
     <string name="password_hide_cd">Hide password</string>
