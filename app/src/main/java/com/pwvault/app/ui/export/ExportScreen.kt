@@ -1,5 +1,6 @@
 package com.pwvault.app.ui.export
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -39,6 +40,11 @@ fun ExportScreen(
     onPickDestination: (ExportTarget, suggestedFileName: String) -> Unit,
     onClose: () -> Unit,
 ) {
+    // Disabled during Writing — that state has no on-screen Cancel either, since `close()` doesn't
+    // cancel the in-flight write coroutine (it just sets state to Closed, which the write's own
+    // Done/Failed completion would silently overwrite, popping the screen back up after the user
+    // thought they'd backed out).
+    BackHandler(enabled = state !is ExportUiState.Writing, onBack = onClose)
     Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
         Column(
             verticalArrangement = Arrangement.Center,

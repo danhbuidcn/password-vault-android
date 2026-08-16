@@ -1,6 +1,7 @@
 package com.pwvault.app.ui.settings
 
 import android.app.Activity
+import androidx.activity.compose.BackHandler
 import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -78,6 +79,7 @@ fun SettingsScreen(
     viewModel: SettingsViewModel,
     onBack: () -> Unit,
 ) {
+    BackHandler(onBack = onBack)
     val state = viewModel.state.collectAsState().value
 
     Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {

@@ -1,5 +1,6 @@
 package com.pwvault.app.ui.vault
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -39,6 +40,7 @@ fun TagManagerScreen(
     viewModel: TagViewModel,
     onBack: () -> Unit,
 ) {
+    BackHandler(onBack = onBack)
     LaunchedEffect(Unit) { viewModel.startObservingTags() }
 
     val state by viewModel.state.collectAsState()

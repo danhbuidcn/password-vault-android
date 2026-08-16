@@ -1,5 +1,6 @@
 package com.pwvault.app.ui.vault
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Column
@@ -61,6 +62,7 @@ fun VaultItemDetailScreen(
     onTogglePasswordVisible: () -> Unit,
     onCopyPassword: () -> Unit,
 ) {
+    BackHandler(onBack = onBack)
     val snackbarHostState = remember { SnackbarHostState() }
     val copiedMessage = stringResource(R.string.vault_password_copied_message)
 

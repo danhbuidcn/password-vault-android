@@ -1,5 +1,6 @@
 package com.pwvault.app.ui.vault
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -54,6 +55,7 @@ fun VaultItemFormScreen(
     onCancel: () -> Unit,
     onToggleTag: (Long) -> Unit,
 ) {
+    BackHandler(onBack = onCancel)
     // No type picker in this form any more — every new item is Login. An existing Note item being
     // edited keeps its own type (read from state.initial), so it still renders its Note-only fields
     // below untouched.

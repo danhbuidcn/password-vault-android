@@ -1,5 +1,6 @@
 package com.pwvault.app.ui.vault
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -45,6 +46,11 @@ fun ImportScreen(
     onRetry: () -> Unit,
     onClose: () -> Unit,
 ) {
+    // Disabled during Reading — that state has no on-screen Close either, since `close()` doesn't
+    // cancel the in-flight read coroutine (it just sets state to Closed, which the read's own
+    // Mapping/Failed completion would silently overwrite, popping the screen back up after the user
+    // thought they'd backed out).
+    BackHandler(enabled = state !is ImportUiState.Reading, onBack = onClose)
     Column(modifier = Modifier.fillMaxSize().padding(24.dp)) {
         Text(text = stringResource(R.string.import_title), style = MaterialTheme.typography.headlineSmall)
 
