@@ -33,6 +33,9 @@
     <string name="pin_unlock_subtitle">Enter your PIN to unlock PWVault.</string>
     <string name="pin_unlock_button">Unlock</string>
     <string name="use_pin_instead">Use PIN instead</string>
+    <string name="forgot_pin_button">Forgot PIN?</string>
+    <string name="forgot_pin_prompt_title">Verify it\'s you</string>
+    <string name="forgot_pin_prompt_subtitle">Use your phone\'s screen lock to set a new PIN</string>
     <string name="error_wrong_pin">Wrong PIN</string>
 
     <string name="biometric_prompt_title">Unlock PWVault</string>

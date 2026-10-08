@@ -313,6 +313,32 @@ class UnlockViewModel
             _state.value = UnlockUiState.BiometricEntry()
         }
 
+        /**
+         * "Forgot PIN": called once the phone's own screen lock (PIN/pattern/password or biometric)
+         * verified the user via `BiometricPrompt` + `DEVICE_CREDENTIAL`. The Vault key is unwrapped
+         * without the old PIN; `hasPin = false` makes `VaultScreen` force setting a new PIN.
+         * Fully offline — replaces the "reset by email" idea (see docs/functional-spec.md §4).
+         */
+        fun completeForgotPin() {
+            val hasBiometric = biometricUnlockManager.hasBiometric()
+            _state.value = UnlockUiState.PinEntry(hasBiometric = hasBiometric, busy = true)
+            viewModelScope.launch {
+                val key = pinManager.unwrapVaultKey()
+                _state.value =
+                    if (key != null && vaultFileManager.openVault(key)) {
+                        lockoutPolicy.recordSuccess()
+                        vaultKey = key
+                        UnlockUiState.Unlocked(hasPin = false, hasBiometric = hasBiometric)
+                    } else {
+                        key?.let { Arrays.fill(it, 0) }
+                        UnlockUiState.PinEntry(
+                            hasBiometric = hasBiometric,
+                            lockedUntilMillis = lockoutPolicy.currentLockoutUntilMillis(),
+                        )
+                    }
+            }
+        }
+
         /** Called once `BiometricPrompt` succeeded for setup — proves the user can actually use it. */
         fun completeBiometricSetup() {
             val current = _state.value as? UnlockUiState.Unlocked ?: return

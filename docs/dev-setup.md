@@ -141,6 +141,16 @@ Cài lại bằng `./gradlew installDebug` (không có cờ) để bật lại c
 
 ## Publish GitHub Release
 
+**Cách nhanh (1 lệnh, chạy trên laptop giữ khoá ký):**
+
+```bash
+scripts/release.sh
+```
+
+Script tự: `git pull` → kiểm tra khoá ký `~/.android/debug.keystore` đúng khoá đã ký các bản trước (SHA-256 `facd3183…`, sai thì dừng — APK khác khoá không cài đè được lên điện thoại) → `assembleDebug` → copy ra `dist/` → tạo + push tag `v<versionName>` → tạo GitHub Release kèm APK (hoặc upload đè nếu release đã có). Yêu cầu: `gh` đã cài + `gh auth login`, đứng ở `main`, không có thay đổi chưa commit. Muốn ra bản mới: bump `versionCode`/`versionName` trong `app/build.gradle.kts`, commit, push, rồi chạy script.
+
+Các bước thủ công bên dưới giữ lại để tham khảo.
+
 Khi app đã hoàn thành (hết roadmap hoặc tới mốc muốn phát hành), đăng file APK lên GitHub Releases để người dùng tải về cài trực tiếp — không commit file `.apk` vào git (đã bị chặn qua `.gitignore`).
 
 1. **Cài & đăng nhập GitHub CLI (một lần duy nhất trên máy dev):**

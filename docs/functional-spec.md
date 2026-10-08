@@ -21,6 +21,7 @@ App Android quản lý mật khẩu offline, lưu file mã hóa cục bộ, khô
 - Thiết lập mã PIN số khi cài đặt lần đầu (bắt buộc, ≥4 số). PIN là mật khẩu **duy nhất** người dùng cần nhớ — không còn Master Password ([Feature 19](plans/feature-19-simplify-unlock-csv-plan.md)).
 - Mở khóa bằng PIN, hoặc vân tay/khuôn mặt nếu đã bật trong Settings (tùy chọn, `BIOMETRIC_WEAK` để khuôn mặt chạy được trên đa số máy).
 - PIN luôn bật, chỉ đổi được, không tắt được.
+- **Quên PIN**: nút "Quên mã PIN?" ở màn nhập PIN (chỉ hiện khi điện thoại có khoá màn hình) → xác thực bằng khoá màn hình của điện thoại (mã/hình vẽ/vân tay) → bắt buộc đặt PIN mới. Offline hoàn toàn — không dùng email (app không có quyền Internet).
 - Vault cũ (tạo bằng Master Password, chưa có PIN): mở bằng Master Password lần cuối, sau đó bắt buộc đặt PIN.
 - Tự động khóa sau 1 phút không thao tác (mặc định) ✅, cho phép cấu hình 30 giây/1 phút/5 phút/15 phút/Không bao giờ.
 - Giới hạn 5 lần nhập sai ✅ (chống brute-force), sau đó khóa tạm thời tăng dần: 30 giây, nhân đôi mỗi lần sai tiếp theo, tối đa 30 phút ✅.
@@ -55,7 +56,7 @@ App Android quản lý mật khẩu offline, lưu file mã hóa cục bộ, khô
 
 ### 7.2 Export thủ công (theo yêu cầu người dùng)
 - Export ra file **CSV thường, không mã hóa** (cột: Name, Username, Password, URL, Note, Tags, CustomFields, Type) — dùng cho backup và chuyển máy.
-- Yêu cầu nhập lại PIN trước khi export; màn export có 1 dòng cảnh báo file không mã hóa.
+- Yêu cầu xác thực lại trước khi export: vân tay/khuôn mặt (nếu đã bật, tự hiện) hoặc nhập PIN; màn export có 1 dòng cảnh báo file không mã hóa.
 - App vẫn nhắc người dùng export nếu quá 30 ngày ✅ chưa export bản mới.
 - Chuyển máy: cài app → đặt PIN → Import file CSV. Header của app được tự map cột, khôi phục cả loại item, Tag, Custom Field.
 

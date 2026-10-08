@@ -84,6 +84,7 @@ fun VaultScreen(
     importViewModel: ImportViewModel,
     settingsViewModel: SettingsViewModel,
     onVerifyPin: suspend (CharArray) -> Boolean,
+    onAuthenticateBiometricExport: () -> Unit,
     onPickExportDestination: (String) -> Unit,
     onPickImportSource: () -> Unit,
 ) {
@@ -139,6 +140,8 @@ fun VaultScreen(
         exportState != ExportUiState.Closed ->
             ExportScreen(
                 state = exportState,
+                hasBiometric = state.hasBiometric,
+                onAuthenticateBiometric = onAuthenticateBiometricExport,
                 onSubmitPin = { pin -> exportViewModel.submitPin(pin, onVerifyPin) },
                 onPickDestination = onPickExportDestination,
                 onClose = exportViewModel::close,
@@ -218,7 +221,7 @@ fun VaultScreen(
     )
 }
 
-/** No PIN yet only happens right after a legacy master-password unlock — PIN setup is then forced. */
+/** No PIN yet = right after a legacy master-password unlock or "Forgot PIN" — PIN setup is then forced. */
 @Composable
 private fun PinSetupDialogHost(
     state: UnlockUiState.Unlocked,

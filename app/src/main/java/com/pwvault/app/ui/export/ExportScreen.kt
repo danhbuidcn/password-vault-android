@@ -31,6 +31,8 @@ import com.pwvault.app.R
 @Composable
 fun ExportScreen(
     state: ExportUiState,
+    hasBiometric: Boolean,
+    onAuthenticateBiometric: () -> Unit,
     onSubmitPin: (CharArray) -> Unit,
     onPickDestination: (suggestedFileName: String) -> Unit,
     onClose: () -> Unit,
@@ -49,7 +51,12 @@ fun ExportScreen(
             when (state) {
                 is ExportUiState.Closed -> Unit
                 is ExportUiState.Reauth ->
-                    ExportReauth(state = state, onSubmit = onSubmitPin, onCancel = onClose)
+                    ExportReauth(
+                        state = state,
+                        onAuthenticateBiometric = onAuthenticateBiometric.takeIf { hasBiometric },
+                        onSubmit = onSubmitPin,
+                        onCancel = onClose,
+                    )
                 is ExportUiState.PickDestination -> {
                     LaunchedEffect(state) { onPickDestination(state.suggestedFileName) }
                     Text(stringResource(R.string.export_preparing))
@@ -75,10 +82,13 @@ fun ExportScreen(
 @Composable
 private fun ExportReauth(
     state: ExportUiState.Reauth,
+    onAuthenticateBiometric: (() -> Unit)?,
     onSubmit: (CharArray) -> Unit,
     onCancel: () -> Unit,
 ) {
     var pin by remember { mutableStateOf("") }
+    // Biometric first when enabled; the PIN field below stays as the fallback.
+    LaunchedEffect(Unit) { onAuthenticateBiometric?.invoke() }
     Text(stringResource(R.string.export_title), style = MaterialTheme.typography.headlineSmall)
     Text(
         text = stringResource(R.string.export_csv_warning),
@@ -108,6 +118,11 @@ private fun ExportReauth(
         modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
     ) {
         Text(stringResource(R.string.export_confirm_button))
+    }
+    if (onAuthenticateBiometric != null) {
+        TextButton(onClick = onAuthenticateBiometric, modifier = Modifier.fillMaxWidth()) {
+            Text(stringResource(R.string.use_biometric_instead))
+        }
     }
     TextButton(onClick = onCancel, modifier = Modifier.fillMaxWidth()) {
         Text(stringResource(R.string.vault_cancel_button))

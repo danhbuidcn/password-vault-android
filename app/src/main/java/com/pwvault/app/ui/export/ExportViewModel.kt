@@ -48,7 +48,7 @@ sealed interface ExportUiState {
 }
 
 /**
- * Export = PIN re-auth → pick destination → write a plain (unencrypted) CSV that can be imported
+ * Export = PIN or biometric re-auth → pick destination → write a plain (unencrypted) CSV that can be imported
  * back on another device — see docs/plans/feature-19-simplify-unlock-csv-plan.md.
  */
 @HiltViewModel
@@ -85,6 +85,12 @@ class ExportViewModel
                         current.copy(busy = false, error = ExportError.WRONG_PIN)
                     }
             }
+        }
+
+        /** Called once `BiometricPrompt` succeeded on the export re-auth step — same effect as a correct PIN. */
+        fun onBiometricVerified() {
+            if (_state.value !is ExportUiState.Reauth) return
+            _state.value = ExportUiState.PickDestination(suggestedFileName())
         }
 
         fun onDestinationPicked(uri: Uri?) {

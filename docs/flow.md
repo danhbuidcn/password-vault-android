@@ -31,6 +31,7 @@ stateDiagram-v2
 
 - **Setup**: chỉ 1 lần (first-run). User đặt PIN số (≥4) — mật khẩu duy nhất cần nhớ.
 - **Lockout**: sau 5 lần sai liên tiếp, khóa tạm thời 30 giây, x2 mỗi lần sai tiếp, tối đa 30 phút — xem [functional-spec.md §4](functional-spec.md#4-đăng-nhập--mở-khóa-app).
+- **Quên PIN**: màn nhập PIN → "Quên mã PIN?" → khoá màn hình của điện thoại (`BIOMETRIC_WEAK | DEVICE_CREDENTIAL`) → giải bọc Vault key không cần PIN cũ → `Unlocked` + bắt buộc đặt PIN mới. Nút chỉ hiện khi điện thoại có khoá màn hình.
 - **Vault cũ chưa có PIN** (tạo trước Feature 19 bằng Master Password): `Locked` hiện màn Master Password 1 lần → `Unlocked` → bắt buộc đặt PIN.
 
 ---
@@ -77,8 +78,8 @@ sequenceDiagram
 
 ```mermaid
 stateDiagram-v2
-    Unlocked --> NhapPIN: user chọn Export
-    NhapPIN --> ChonNoiLuu: PIN đúng
+    Unlocked --> XacThuc: user chọn Export
+    XacThuc --> ChonNoiLuu: vân tay/khuôn mặt (nếu bật) hoặc PIN đúng
     ChonNoiLuu --> GhiCSV: chọn file qua SAF
     GhiCSV --> Unlocked: xong
 ```

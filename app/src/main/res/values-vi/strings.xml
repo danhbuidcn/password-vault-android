@@ -33,6 +33,9 @@
     <string name="pin_unlock_subtitle">Nhập mã PIN để mở khóa PWVault.</string>
     <string name="pin_unlock_button">Mở khóa</string>
     <string name="use_pin_instead">Dùng mã PIN thay thế</string>
+    <string name="forgot_pin_button">Quên mã PIN?</string>
+    <string name="forgot_pin_prompt_title">Xác minh chủ máy</string>
+    <string name="forgot_pin_prompt_subtitle">Dùng khóa màn hình của điện thoại để đặt mã PIN mới</string>
     <string name="error_wrong_pin">Sai mã PIN</string>
 
     <string name="biometric_prompt_title">Mở khóa PWVault</string>

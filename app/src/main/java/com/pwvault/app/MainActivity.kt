@@ -1,6 +1,7 @@
 package com.pwvault.app
 
 import android.Manifest
+import android.app.KeyguardManager
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -40,7 +41,7 @@ private val IMPORT_SOURCE_MIME_TYPES =
         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     )
 
-private enum class BiometricOperation { UNLOCK, SETUP }
+private enum class BiometricOperation { UNLOCK, SETUP, EXPORT, FORGOT_PIN }
 
 @AndroidEntryPoint
 class MainActivity : FragmentActivity() {
@@ -53,6 +54,7 @@ class MainActivity : FragmentActivity() {
     private lateinit var biometricPrompt: BiometricPrompt
     private lateinit var unlockPromptInfo: BiometricPrompt.PromptInfo
     private lateinit var setupPromptInfo: BiometricPrompt.PromptInfo
+    private lateinit var forgotPinPromptInfo: BiometricPrompt.PromptInfo
     private lateinit var exportDestinationLauncher: ActivityResultLauncher<String>
     private lateinit var importSourceLauncher: ActivityResultLauncher<Array<String>>
     private lateinit var notificationPermissionLauncher: ActivityResultLauncher<String>
@@ -65,12 +67,15 @@ class MainActivity : FragmentActivity() {
         }
         unlockPromptInfo = createBiometricPromptInfo(getString(R.string.use_pin_instead))
         setupPromptInfo = createBiometricPromptInfo(getString(R.string.pin_setup_cancel))
+        forgotPinPromptInfo = createForgotPinPromptInfo()
         biometricPrompt = BiometricPrompt(this, ContextCompat.getMainExecutor(this), biometricAuthenticationCallback())
         registerActivityResultLaunchers()
         requestNotificationPermissionIfNeeded()
         val canSetupBiometric =
             BiometricManager.from(this).canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_WEAK) ==
                 BiometricManager.BIOMETRIC_SUCCESS
+        // "Forgot PIN" verifies via the phone's own screen lock, so it only makes sense when one is set.
+        val canResetPinWithScreenLock = getSystemService(KeyguardManager::class.java).isDeviceSecure
 
         setContent {
             val themeMode =
@@ -93,6 +98,8 @@ class MainActivity : FragmentActivity() {
                     canSetupBiometric = canSetupBiometric,
                     onAuthenticateBiometricUnlock = ::triggerBiometricUnlock,
                     onSetupBiometric = ::triggerBiometricSetup,
+                    onAuthenticateBiometricExport = ::triggerBiometricExport,
+                    onForgotPin = if (canResetPinWithScreenLock) ::triggerForgotPin else null,
                     onPickExportDestination = { exportDestinationLauncher.launch(it) },
                     onPickImportSource = { importSourceLauncher.launch(IMPORT_SOURCE_MIME_TYPES) },
                 )
@@ -134,6 +141,19 @@ class MainActivity : FragmentActivity() {
             .setNegativeButtonText(negativeButtonText)
             .build()
 
+    /**
+     * "Forgot PIN": the phone's screen lock (PIN/pattern/password, or a biometric it accepts) proves
+     * the owner. `DEVICE_CREDENTIAL` prompts can't have a negative button — the system shows its own.
+     */
+    private fun createForgotPinPromptInfo(): BiometricPrompt.PromptInfo =
+        BiometricPrompt.PromptInfo
+            .Builder()
+            .setTitle(getString(R.string.forgot_pin_prompt_title))
+            .setSubtitle(getString(R.string.forgot_pin_prompt_subtitle))
+            .setAllowedAuthenticators(
+                BiometricManager.Authenticators.BIOMETRIC_WEAK or BiometricManager.Authenticators.DEVICE_CREDENTIAL,
+            ).build()
+
     private fun triggerBiometricUnlock() {
         pendingBiometricOperation = BiometricOperation.UNLOCK
         biometricPrompt.authenticate(unlockPromptInfo)
@@ -144,12 +164,24 @@ class MainActivity : FragmentActivity() {
         biometricPrompt.authenticate(setupPromptInfo)
     }
 
+    private fun triggerBiometricExport() {
+        pendingBiometricOperation = BiometricOperation.EXPORT
+        biometricPrompt.authenticate(unlockPromptInfo)
+    }
+
+    private fun triggerForgotPin() {
+        pendingBiometricOperation = BiometricOperation.FORGOT_PIN
+        biometricPrompt.authenticate(forgotPinPromptInfo)
+    }
+
     private fun biometricAuthenticationCallback() =
         object : BiometricPrompt.AuthenticationCallback() {
             override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
                 when (pendingBiometricOperation) {
                     BiometricOperation.UNLOCK -> unlockViewModel.completeBiometricUnlock()
                     BiometricOperation.SETUP -> unlockViewModel.completeBiometricSetup()
+                    BiometricOperation.EXPORT -> exportViewModel.onBiometricVerified()
+                    BiometricOperation.FORGOT_PIN -> unlockViewModel.completeForgotPin()
                 }
             }
 
@@ -169,6 +201,8 @@ class MainActivity : FragmentActivity() {
                         }
                     BiometricOperation.SETUP ->
                         if (!cancelled) unlockViewModel.onBiometricSetupError()
+                    // Export and Forgot PIN: the screen underneath stays usable (PIN field / retry).
+                    BiometricOperation.EXPORT, BiometricOperation.FORGOT_PIN -> Unit
                 }
             }
         }
@@ -195,6 +229,8 @@ private fun PwVaultApp(
     canSetupBiometric: Boolean,
     onAuthenticateBiometricUnlock: () -> Unit,
     onSetupBiometric: () -> Unit,
+    onAuthenticateBiometricExport: () -> Unit,
+    onForgotPin: (() -> Unit)?,
     onPickExportDestination: (String) -> Unit,
     onPickImportSource: () -> Unit,
 ) {
@@ -218,6 +254,7 @@ private fun PwVaultApp(
                 state = state,
                 onUnlock = unlockViewModel::unlockWithPin,
                 onUseBiometric = if (state.hasBiometric) unlockViewModel::switchToBiometric else null,
+                onForgotPin = onForgotPin,
             )
         is UnlockUiState.BiometricEntry ->
             BiometricUnlockScreen(
@@ -239,6 +276,7 @@ private fun PwVaultApp(
                 importViewModel = importViewModel,
                 settingsViewModel = settingsViewModel,
                 onVerifyPin = unlockViewModel::verifyPin,
+                onAuthenticateBiometricExport = onAuthenticateBiometricExport,
                 onPickExportDestination = onPickExportDestination,
                 onPickImportSource = onPickImportSource,
             )

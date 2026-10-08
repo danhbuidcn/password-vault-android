@@ -34,6 +34,7 @@ fun PinUnlockScreen(
     state: UnlockUiState.PinEntry,
     onUnlock: (pin: CharArray) -> Unit,
     onUseBiometric: (() -> Unit)? = null,
+    onForgotPin: (() -> Unit)? = null,
 ) {
     var pin by remember { mutableStateOf("") }
     // Driven by user actions (submit shows, edit hides) rather than keyed on `error`'s value — two
@@ -95,6 +96,11 @@ fun PinUnlockScreen(
             if (onUseBiometric != null) {
                 TextButton(onClick = onUseBiometric, modifier = Modifier.padding(top = 8.dp)) {
                     Text(stringResource(R.string.use_biometric_instead))
+                }
+            }
+            if (onForgotPin != null) {
+                TextButton(onClick = onForgotPin, enabled = !state.busy) {
+                    Text(stringResource(R.string.forgot_pin_button))
                 }
             }
         }

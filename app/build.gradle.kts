@@ -23,8 +23,8 @@ android {
         applicationId = "com.pwvault.app"
         minSdk = 26
         targetSdk = 37
-        versionCode = 10
-        versionName = "0.6.0"
+        versionCode = 11
+        versionName = "0.6.1"
         buildConfigField("boolean", "ENABLE_SCREENSHOT_BLOCK", "$enableScreenshotBlock")
     }
 
