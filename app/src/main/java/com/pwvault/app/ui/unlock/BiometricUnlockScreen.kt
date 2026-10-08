@@ -26,8 +26,7 @@ fun BiometricUnlockScreen(
     error: UnlockError?,
     busy: Boolean,
     onAuthenticate: () -> Unit,
-    onUseMasterPassword: () -> Unit,
-    onUsePin: (() -> Unit)? = null,
+    onUsePin: () -> Unit,
 ) {
     LaunchedEffect(Unit) {
         onAuthenticate()
@@ -68,13 +67,8 @@ fun BiometricUnlockScreen(
             ) {
                 Text(stringResource(R.string.biometric_unlock_retry_button))
             }
-            if (onUsePin != null) {
-                TextButton(onClick = onUsePin, modifier = Modifier.padding(top = 8.dp)) {
-                    Text(stringResource(R.string.use_pin_instead))
-                }
-            }
-            TextButton(onClick = onUseMasterPassword) {
-                Text(stringResource(R.string.use_master_password_instead))
+            TextButton(onClick = onUsePin, modifier = Modifier.padding(top = 8.dp)) {
+                Text(stringResource(R.string.use_pin_instead))
             }
         }
     }

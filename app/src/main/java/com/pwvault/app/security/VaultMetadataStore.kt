@@ -9,8 +9,9 @@ private const val KEY_SALT = "salt"
 private const val SALT_LENGTH_BYTES = 16
 
 /**
- * Persists the (non-secret) KDF salt for the Vault. The salt alone cannot derive the Vault key
- * without the Master Password, so plain SharedPreferences is an acceptable store for it.
+ * Persists the (non-secret) KDF salt of a legacy (pre-Feature-19) Master-Password vault — only read
+ * by the one-time legacy unlock. The salt alone cannot derive the Vault key without the Master
+ * Password, so plain SharedPreferences is an acceptable store for it.
  */
 class VaultMetadataStore(
     context: Context,
@@ -26,10 +27,5 @@ class VaultMetadataStore(
         SecureRandom().nextBytes(salt)
         prefs.edit().putString(KEY_SALT, Base64.encodeToString(salt, Base64.NO_WRAP)).apply()
         return salt
-    }
-
-    /** Overwrites the stored salt — used after restoring a `.pwvbackup` so later unlocks derive against it. */
-    fun setSalt(salt: ByteArray) {
-        prefs.edit().putString(KEY_SALT, Base64.encodeToString(salt, Base64.NO_WRAP)).apply()
     }
 }

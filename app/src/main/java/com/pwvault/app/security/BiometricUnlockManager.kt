@@ -1,81 +1,35 @@
 package com.pwvault.app.security
 
-import android.security.keystore.KeyPermanentlyInvalidatedException
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import javax.crypto.Cipher
-import javax.crypto.spec.GCMParameterSpec
+import android.content.Context
 
-private const val GCM_TAG_LENGTH_BITS = 128
-private const val AES_GCM_TRANSFORMATION = "AES/GCM/NoPadding"
+private const val PREFS_NAME = "biometric_unlock"
+private const val KEY_ENABLED = "enabled"
+
+/** Pre-Feature-19 store of a biometric-bound wrapped Vault key — no longer used, wiped on first run. */
+private const val LEGACY_PREFS_NAME = "biometric_credentials"
 
 /**
- * Orchestrates biometric setup/unlock. The crypto operation is split in two: a [Cipher] is
- * prepared here, then authorized by [androidx.biometric.BiometricPrompt] in the UI layer (which
- * needs the hosting Activity), then handed back here to finish the encrypt/decrypt — see
- * docs/plans/feature-03-biometric-unlock-plan.md.
+ * Biometric unlock is a gate only (`BIOMETRIC_WEAK`, so face unlock works on most devices): after
+ * `BiometricPrompt` succeeds, the Vault key is unwrapped from the PIN's Keystore-wrapped copy via
+ * [PinManager.unwrapVaultKey]. This only stores whether the user turned it on — see
+ * docs/plans/feature-19-simplify-unlock-csv-plan.md.
  */
 class BiometricUnlockManager(
-    private val keystoreKeyProvider: BiometricKeystoreKeyProvider,
-    private val credentialStore: BiometricCredentialStore,
+    context: Context,
 ) {
-    fun hasBiometric(): Boolean = credentialStore.hasBiometric()
+    private val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
-    /** Turns biometric unlock off. The Vault key stays reachable via master password / PIN. */
+    init {
+        context.deleteSharedPreferences(LEGACY_PREFS_NAME)
+    }
+
+    fun hasBiometric(): Boolean = prefs.getBoolean(KEY_ENABLED, false)
+
+    fun enable() {
+        prefs.edit().putBoolean(KEY_ENABLED, true).apply()
+    }
+
     fun disable() {
-        keystoreKeyProvider.deleteKey()
-        credentialStore.clear()
+        prefs.edit().putBoolean(KEY_ENABLED, false).apply()
     }
-
-    /** Returns `null` if the Keystore key was invalidated (e.g. a new fingerprint was enrolled). */
-    suspend fun prepareSetupCipher(): Cipher? =
-        withContext(Dispatchers.Default) {
-            runOrInvalidate {
-                Cipher.getInstance(AES_GCM_TRANSFORMATION).apply {
-                    init(Cipher.ENCRYPT_MODE, keystoreKeyProvider.getOrCreateKey())
-                }
-            }
-        }
-
-    suspend fun completeSetup(
-        cipher: Cipher,
-        vaultKey: ByteArray,
-    ) {
-        withContext(Dispatchers.Default) {
-            val encryptedVaultKey = cipher.doFinal(vaultKey)
-            credentialStore.save(encryptedVaultKey, cipher.iv)
-        }
-    }
-
-    /** Returns `null` if biometric unlock isn't set up, or if the Keystore key was invalidated. */
-    suspend fun prepareUnlockCipher(): Cipher? =
-        withContext(Dispatchers.Default) {
-            val credentials = credentialStore.load() ?: return@withContext null
-            runOrInvalidate {
-                Cipher.getInstance(AES_GCM_TRANSFORMATION).apply {
-                    val spec = GCMParameterSpec(GCM_TAG_LENGTH_BITS, credentials.iv)
-                    init(Cipher.DECRYPT_MODE, keystoreKeyProvider.getOrCreateKey(), spec)
-                }
-            }
-        }
-
-    suspend fun completeUnlock(cipher: Cipher): ByteArray? =
-        withContext(Dispatchers.Default) {
-            val credentials = credentialStore.load() ?: return@withContext null
-            runCatching { cipher.doFinal(credentials.encryptedVaultKey) }.getOrNull()
-        }
-
-    /**
-     * Re-enrolling a fingerprint/face permanently invalidates the Keystore key (by design). When
-     * that happens the wrapped Vault key is unrecoverable — delete both so `hasBiometric()` goes
-     * back to `false` and the user can set biometric unlock up again from scratch.
-     */
-    private inline fun runOrInvalidate(block: () -> Cipher): Cipher? =
-        try {
-            block()
-        } catch (expected: KeyPermanentlyInvalidatedException) {
-            keystoreKeyProvider.deleteKey()
-            credentialStore.clear()
-            null
-        }
 }

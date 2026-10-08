@@ -24,12 +24,13 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import com.pwvault.app.R
 
+/** [onDismiss] `null` = PIN is mandatory right now (no PIN yet), so the dialog can't be closed. */
 @Composable
 fun PinSetupDialog(
     error: UnlockError?,
     busy: Boolean,
     onConfirm: (pin: CharArray, confirm: CharArray) -> Unit,
-    onDismiss: () -> Unit,
+    onDismiss: (() -> Unit)?,
 ) {
     var pin by remember { mutableStateOf("") }
     var confirm by remember { mutableStateOf("") }
@@ -43,7 +44,7 @@ fun PinSetupDialog(
     LaunchedEffect(Unit) { pinFocusRequester.requestFocus() }
 
     AlertDialog(
-        onDismissRequest = onDismiss,
+        onDismissRequest = { onDismiss?.invoke() },
         title = { Text(stringResource(R.string.pin_setup_title)) },
         text = {
             Column {
@@ -96,8 +97,10 @@ fun PinSetupDialog(
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text(stringResource(R.string.pin_setup_cancel))
+            if (onDismiss != null) {
+                TextButton(onClick = onDismiss) {
+                    Text(stringResource(R.string.pin_setup_cancel))
+                }
             }
         },
     )

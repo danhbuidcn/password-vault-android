@@ -2,7 +2,7 @@
 
 ## Summary
 
-- Tài liệu mô tả **cơ chế hoạt động tổng thể** của pwvault-android: vòng đời app (state), luồng mở khóa/khóa, và luồng dữ liệu chính (CRUD, backup/restore, import).
+- Tài liệu mô tả **cơ chế hoạt động tổng thể** của pwvault-android: vòng đời app (state), luồng mở khóa/khóa, và luồng dữ liệu chính (CRUD, export/import CSV).
 - Bổ sung cho [overview.md](overview.md#main-workflow) (tóm tắt ngắn) và [architecture.md](architecture.md#authentication) (chi tiết bảo mật) — xem 2 file đó để biết business rule/tech stack đầy đủ.
 
 ---
@@ -16,129 +16,87 @@ stateDiagram-v2
     CheckVault --> Setup: chưa có file Vault (first-run)
     CheckVault --> Locked: đã có file Vault
 
-    Setup --> Unlocked: tạo Master Password thành công
+    Setup --> Unlocked: đặt PIN thành công
 
-    Locked --> Unlocked: Master Password đúng
-    Locked --> Unlocked: PIN/Biometric đúng [chưa code]
-    Locked --> Lockout: nhập sai quá 5 lần [chưa code]
-    Lockout --> Locked: hết thời gian chờ [chưa code]
+    Locked --> Unlocked: PIN đúng
+    Locked --> Unlocked: vân tay/khuôn mặt đúng (nếu đã bật)
+    Locked --> Lockout: nhập sai PIN quá 5 lần
+    Lockout --> Locked: hết thời gian chờ
 
-    Unlocked --> Locked: auto-lock timeout / thoát app [chưa code]
-    Unlocked --> Unlocked: xem/thêm/sửa/xóa Vault Item, backup, import/export
+    Unlocked --> Locked: auto-lock timeout
+    Unlocked --> Unlocked: xem/thêm/sửa/xóa Vault Item, import/export CSV
 
     Unlocked --> [*]: kill app
 ```
 
-- **Setup**: chỉ xảy ra đúng 1 lần (first-run). Sau khi tạo Vault, các lần mở app sau luôn bắt đầu từ `Locked`.
-- **Lockout**: sau 5 lần ✅ nhập sai liên tiếp, khóa tạm thời tăng dần theo cấp số nhân: 30 giây, x2 mỗi lần sai tiếp theo, tối đa 30 phút ✅ — xem chi tiết ở [functional-spec.md §4](functional-spec.md#4-đăng-nhập--mở-khóa-app).
-- **auto-lock timeout**: mặc định 1 phút không thao tác ✅, cho phép cấu hình — xem [functional-spec.md §4](functional-spec.md#4-đăng-nhập--mở-khóa-app).
-- **Locked → Unlocked qua PIN/Biometric**, **Lockout**, **auto-lock**: mô tả theo plan, **chưa có code** — xem `docs/plans/roadmap.md` cho thứ tự implement.
-- **Locked → Unlocked qua Master Password**: đã code, xem [feature-01-master-password-unlock-plan.md](plans/feature-01-master-password-unlock-plan.md).
+- **Setup**: chỉ 1 lần (first-run). User đặt PIN số (≥4) — mật khẩu duy nhất cần nhớ.
+- **Lockout**: sau 5 lần sai liên tiếp, khóa tạm thời 30 giây, x2 mỗi lần sai tiếp, tối đa 30 phút — xem [functional-spec.md §4](functional-spec.md#4-đăng-nhập--mở-khóa-app).
+- **Vault cũ chưa có PIN** (tạo trước Feature 19 bằng Master Password): `Locked` hiện màn Master Password 1 lần → `Unlocked` → bắt buộc đặt PIN.
 
 ---
 
-## Luồng bảo mật khi Unlock (đã code — Feature 1)
+## Luồng bảo mật khi Unlock (Feature 19)
 
 ```mermaid
 sequenceDiagram
     participant U as User
     participant VM as UnlockViewModel
-    participant KD as KeyDerivation (Argon2id)
+    participant PM as PinManager
+    participant KS as Android Keystore
     participant VF as VaultFileManager (SQLCipher)
 
-    U->>VM: nhập Master Password
-    VM->>KD: derive(password, salt đã lưu)
-    KD-->>VM: Vault Key (bytes)
-    VM->>VF: openVault(Vault Key)
-    alt Key đúng
-        VF-->>VM: mở file vault.db thành công
-        VM-->>U: state = Unlocked → vào VaultScreen
-    else Key sai
-        VF-->>VM: false / exception (bắt được, không crash)
-        VM-->>U: báo lỗi "Sai Master Password"
+    alt PIN
+        U->>VM: nhập PIN
+        VM->>PM: verifyPin(pin) — so Argon2id hash
+    else Vân tay / khuôn mặt
+        U->>VM: BiometricPrompt (BIOMETRIC_WEAK) thành công
+        VM->>PM: unwrapVaultKey()
     end
-    Note over VM: Master Password (CharArray) bị wipe ngay sau khi derive xong
+    PM->>KS: giải bọc Vault key (AES-GCM)
+    KS-->>VM: Vault key
+    VM->>VF: openVault(Vault key)
+    VF-->>VM: mở được → Unlocked
 ```
 
-Chi tiết tham số Argon2id (`m=64MB, t=3, p=1`), vị trí lưu salt/file Vault: xem [feature-01-master-password-unlock-plan.md](plans/feature-01-master-password-unlock-plan.md).
+- Vault key: 32 byte ngẫu nhiên, sinh lúc setup, không dẫn xuất từ mật khẩu nào.
+- Sinh trắc học chỉ là cổng xác nhận (không `CryptoObject`), để khuôn mặt loại "yếu" cũng dùng được.
+- Chi tiết: [feature-19-simplify-unlock-csv-plan.md](plans/feature-19-simplify-unlock-csv-plan.md).
 
 ---
 
 ## Luồng dữ liệu chính (Vault Item CRUD)
 
-> Trạng thái: **chưa code** (Feature 5 theo `docs/plans/roadmap.md`) — mô tả theo thiết kế đã chốt trong [overview.md](overview.md#main-workflow).
-
 1. Sau khi `Unlocked`, `VaultScreen` load danh sách Vault Item qua Room (`Flow`, cập nhật realtime).
-2. Thêm/sửa Vault Item (Login hoặc Note) → ghi qua Repository → Room DAO → SQLCipher DB.
-3. Xóa Vault Item → tương tự, xóa thẳng trong DB mã hóa (không có thùng rác/soft-delete theo spec hiện tại).
-4. Tìm kiếm/lọc theo tên, username, hoặc Tag — thực hiện trên dữ liệu đã giải mã trong bộ nhớ (Room trả về plaintext sau khi DB đã mở bằng đúng key).
+2. Thêm/sửa Vault Item (Login hoặc Note) → Repository → Room DAO → SQLCipher DB.
+3. Xóa Vault Item → xóa thẳng trong DB mã hóa (không có thùng rác).
+4. Tìm kiếm/lọc theo tên, username, Tag — trên dữ liệu đã giải mã trong bộ nhớ.
 
 ---
 
-## Luồng Auto-backup (tự động, chạy nền)
-
-> Trạng thái: **chưa code** (gộp vào Feature 13 theo [roadmap.md](plans/roadmap.md)) — mô tả theo [functional-spec.md §7.1](functional-spec.md).
+## Luồng Export / chuyển máy (CSV)
 
 ```mermaid
 stateDiagram-v2
-    Unlocked --> GhiFileTam: thêm/sửa/xóa Vault Item thành công
-    GhiFileTam --> RenameDeBanCu: ghi xong file tạm (atomic)
-    RenameDeBanCu --> RotateBackup: rename đè, xoay vòng giữ tối đa 5 bản
-    RotateBackup --> Unlocked: xong, không cần thao tác gì thêm
+    Unlocked --> NhapPIN: user chọn Export
+    NhapPIN --> ChonNoiLuu: PIN đúng
+    ChonNoiLuu --> GhiCSV: chọn file qua SAF
+    GhiCSV --> Unlocked: xong
 ```
 
-- Không yêu cầu xác thực lại Master Password — dùng Vault Key đã có sẵn trong session `Unlocked`.
-- Thư mục lưu do người dùng chọn 1 lần qua SAF, thường trỏ tới thư mục được Google Drive/FolderSync tự đồng bộ.
-- Khác với Export thủ công bên dưới: đây là cơ chế nền, không cần user bấm nút mỗi lần.
-
----
-
-## Luồng Backup / Restore (thủ công)
-
-> Trạng thái: **chưa code** — mô tả theo [functional-spec.md §7.2](functional-spec.md).
-
-```mermaid
-stateDiagram-v2
-    Unlocked --> XacThucLai: user chọn Backup/Export
-    XacThucLai --> XuatFile: nhập lại Master Password đúng
-    XuatFile --> ChonEncrypted: mặc định → `.pwvbackup` (AES-256, khóa từ Master Password)
-    XuatFile --> ChonPlaintext: tùy chọn phụ → CSV/Excel (cảnh báo 2 bước + nén zip có mật khẩu)
-    ChonEncrypted --> Unlocked: lưu qua SAF (SD card/USB OTG)
-    ChonPlaintext --> Unlocked: lưu qua SAF, file tạm tự xóa sau 5 phút
-```
-
-**Restore** (đổi máy/khôi phục): cài app mới → `CheckVault` không thấy Vault → nhưng thay vì `Setup` tạo mới, user chọn **Import `.pwvbackup`** (từ bản Auto-backup hoặc Export thủ công) → nhập Master Password → derive lại Vault Key từ salt trong file backup → mở được → vào `Unlocked` với dữ liệu cũ.
+- File CSV **không mã hóa**: cột Name, Username, Password, URL, Note, Tags, CustomFields, Type.
+- Không còn auto-backup và `.pwvbackup` (Feature 19).
+- **Chuyển máy**: cài app mới → đặt PIN → Import file CSV.
 
 ---
 
 ## Luồng Import (CSV/Excel)
 
-> Trạng thái: **chưa code** — mô tả theo [functional-spec.md §6](functional-spec.md).
-
 1. User chọn file CSV/Excel qua SAF.
-2. App đọc file, hiển thị màn map cột (tên ↔ username ↔ password ↔ URL...).
-3. Phát hiện trùng lặp (so khớp username/tên có sẵn trong Vault) → cảnh báo, để user chọn bỏ qua/ghi đè/thêm mới.
-4. Sau khi import xong, nhắc user xóa file nguồn nếu là plaintext.
+2. App đọc file, tự map cột theo header (header của app, hoặc tên phổ biến như `title`, `login`, `uri`, `notes`); user vẫn sửa được.
+3. File export của app: khôi phục thêm loại item (Type), Tag (tạo mới nếu chưa có), Custom Field.
+4. Phát hiện trùng lặp (so tên + username có sẵn) → cảnh báo trước khi import.
 
----
-
-## Trạng thái implement hiện tại (cập nhật khi có feature mới)
-
-| Phần | Trạng thái |
-|---|---|
-| Setup (tạo Master Password + Vault) | ✅ Đã code (Feature 1, xem trạng thái chính thức ở roadmap) |
-| Unlock bằng Master Password | ✅ Đã code (Feature 1, xem trạng thái chính thức ở roadmap) |
-| VaultScreen | 🟡 Placeholder tĩnh, chưa có CRUD thật |
-| Unlock bằng PIN | ⬜ Chưa code |
-| Unlock bằng sinh trắc học | ⬜ Chưa code |
-| Auto-lock timer | ⬜ Chưa code |
-| Lockout khi nhập sai nhiều lần | ⬜ Chưa code |
-| Vault Item CRUD (Room thật) | ⬜ Chưa code (Feature 5) |
-| Auto-backup nền (rotate 5 bản) | ⬜ Chưa code (Feature 13) |
-| Export thủ công (`.pwvbackup`, CSV/Excel) | ⬜ Chưa code |
-| Import (CSV/Excel) | ⬜ Chưa code |
-
-Xem thứ tự implement đầy đủ ở [docs/plans/roadmap.md](plans/roadmap.md).
+Xem thứ tự/trạng thái implement ở [docs/plans/roadmap.md](plans/roadmap.md).
 
 ---
 

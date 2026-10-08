@@ -24,7 +24,7 @@
 
 ## Main Features
 
-- Mở khóa app bằng Master Password, PIN số, hoặc sinh trắc học (vân tay/khuôn mặt).
+- Mở khóa app bằng PIN số (mật khẩu duy nhất), hoặc sinh trắc học (vân tay/khuôn mặt) — Feature 19 bỏ Master Password.
 - Thêm/sửa/xóa/tìm kiếm/phân loại (tag) Vault Item.
 - Hiển thị thời gian cập nhật gần nhất (last update) trên mỗi Vault Item.
 - Một ứng dụng/dịch vụ có thể có nhiều Vault Item (nhiều tài khoản), không giới hạn số lượng.
@@ -35,8 +35,7 @@
 - Tùy chỉnh bảo mật & mở khóa: thời gian tự khóa, bật/tắt từng phương thức mở khóa, độ mạnh tham số mã hóa — trong giới hạn an toàn tối thiểu do app quy định.
 - Tùy chỉnh giao diện & tổ chức dữ liệu: theme, tag/nhóm/icon tự đặt, cách sắp xếp/hiển thị danh sách.
 - Import mật khẩu từ file CSV/Excel.
-- Export: mỗi lần xuất, người dùng chọn 1 trong 2 hình thức — mã hóa (`.pwvbackup`, chỉ app đọc được, dùng cho backup/chuyển máy) hoặc không mã hóa (CSV/Excel, mở/xem bình thường bằng ứng dụng khác).
-- Auto-backup tự động chạy nền mỗi khi thêm/sửa/xóa Vault Item (ghi `.pwvbackup` vào thư mục người dùng chọn qua SAF, không cần thao tác thủ công), giữ tối đa 5 bản gần nhất (rotate); ngoài ra vẫn nhắc export thủ công định kỳ.
+- Export: file CSV thường (không mã hóa), import lại được vào app trên máy khác; nhắc export định kỳ 30 ngày. Không còn auto-backup và `.pwvbackup` (Feature 19).
 - Cảnh báo mật khẩu yếu/trùng lặp, chặn chụp màn hình.
 
 ---
@@ -50,13 +49,10 @@
 
 ## Core Business Rules
 
-- Master Password không bao giờ được lưu dưới bất kỳ hình thức nào; khóa mã hóa sinh từ Master Password qua KDF.
-- Mất Master Password = mất toàn bộ dữ liệu, không có cơ chế khôi phục (zero-knowledge, không có backdoor).
-- PIN/sinh trắc học chỉ mở khóa giao diện, không thay thế khóa mã hóa thực sự (vẫn dựa trên Master Password, lưu qua Android Keystore).
-- Người dùng tự chọn kiểu export mỗi lần: mã hóa (`.pwvbackup`, chỉ app đọc được) hoặc không mã hóa (CSV/Excel, mở xem bình thường).
-- Export không mã hóa hiển thị cảnh báo trước khi xuất (dữ liệu ở dạng đọc được).
-- Mọi thao tác export **thủ công** đều yêu cầu xác thực lại bằng Master Password; Auto-backup chạy nền là ngoại lệ — dùng Vault Key đã có sẵn trong session, không hỏi lại.
-- Giới hạn số lần nhập sai Master Password/PIN, tăng dần thời gian khóa khi nhập sai.
+- PIN là mật khẩu duy nhất; Vault key ngẫu nhiên, bọc bằng Android Keystore, mở bằng PIN hoặc sinh trắc học (Feature 19).
+- Mất máy / reset máy / xóa app = mất dữ liệu, chỉ còn bản CSV đã export.
+- Export là CSV không mã hóa, có cảnh báo; yêu cầu nhập lại PIN trước khi export.
+- Giới hạn số lần nhập sai PIN, tăng dần thời gian khóa khi nhập sai.
 - Mọi tùy chỉnh bảo mật (thời gian tự khóa, tham số mã hóa...) đều có giá trị mặc định an toàn; không cho đặt dưới ngưỡng tối thiểu app quy định.
 - Trường tùy biến do người dùng tự thêm không có kiểu cố định (free-form), nhưng được mã hóa cùng cấp với các trường mặc định.
 - Vault Item loại Note không có username/password, chỉ có tiêu đề + nội dung + tag/custom field như các loại khác.
@@ -71,7 +67,7 @@
 - Lưu trữ, quản lý mật khẩu offline trên thiết bị Android.
 - Import/export CSV, Excel.
 - Backup/khôi phục qua file mã hóa riêng của app.
-- Mở khóa bằng Master Password, PIN số, sinh trắc học.
+- Mở khóa bằng PIN số, sinh trắc học (Feature 19 bỏ Master Password).
 
 ### Out of Scope
 
@@ -83,10 +79,10 @@
 
 ## Main Workflow
 
-- Cài đặt lần đầu → thiết lập Master Password → (tùy chọn) bật PIN/sinh trắc học.
-- Mở app → mở khóa (Master Password / PIN / sinh trắc học) → xem/thêm/sửa/xóa Vault Item (Login hoặc Note).
-- Auto-backup tự động ghi `.pwvbackup` vào thư mục đã chọn mỗi khi có thay đổi Vault Item (không cần thao tác); ngoài ra có thể backup định kỳ/theo nhắc nhở → xuất file `.pwvbackup` ra bộ nhớ ngoài (SD/USB).
-- Đổi máy → cài app trên máy mới → import file `.pwvbackup` bằng Master Password để khôi phục.
+- Cài đặt lần đầu → đặt PIN → (tùy chọn) bật sinh trắc học trong Settings.
+- Mở app → mở khóa (PIN / sinh trắc học) → xem/thêm/sửa/xóa Vault Item (Login hoặc Note).
+- Backup định kỳ/theo nhắc nhở → export CSV ra bộ nhớ ngoài.
+- Đổi máy → cài app trên máy mới → đặt PIN → import file CSV.
 - Cần chuyển/xem dữ liệu dạng bảng → import/export CSV/Excel (export loại này luôn ở dạng đọc được, có cảnh báo).
 
 ---
@@ -97,8 +93,8 @@
 - Tag: nhãn phân loại Vault Item, có tag gợi ý sẵn (Personal, Bank, Social Media...) và tag tự tạo.
 - Custom Field: trường tùy biến gắn với 1 Vault Item (key, value, loại hiển thị).
 - Vault: file dữ liệu mã hóa chính (AES-256).
-- Backup file (`.pwvbackup`): file mã hóa dùng cho backup và chuyển máy.
-- Master Password.
+- ~~Backup file (`.pwvbackup`)~~: đã bỏ ở Feature 19, thay bằng export CSV.
+- ~~Master Password~~: đã bỏ ở Feature 19, PIN là mật khẩu duy nhất.
 
 ---
 

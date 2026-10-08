@@ -14,9 +14,10 @@
 - File dữ liệu mã hóa chính (AES-256) chứa toàn bộ Vault Item của người dùng.
 - Chỉ app pwvault-android đọc được; không có server hay bản sao ở đâu khác trừ khi người dùng tự export.
 
-### Master Password
+### Master Password (đã bỏ — Feature 19)
 
-- Mật khẩu gốc do người dùng thiết lập khi cài app lần đầu; là phương án mở khóa gốc, luôn tồn tại kể cả khi đã bật PIN/sinh trắc học.
+- Từ Feature 19, PIN là mật khẩu duy nhất; Master Password chỉ còn dùng 1 lần để mở Vault cũ chưa có PIN.
+- (Lịch sử) Mật khẩu gốc do người dùng thiết lập khi cài app lần đầu; là phương án mở khóa gốc, luôn tồn tại kể cả khi đã bật PIN/sinh trắc học.
 - Không bao giờ được lưu dưới bất kỳ hình thức nào (kể cả mã hóa); khóa mã hóa Vault được sinh từ Master Password qua KDF (PBKDF2/Argon2).
 - Mất Master Password = mất toàn bộ dữ liệu, không có cơ chế khôi phục (mô hình zero-knowledge, không có backdoor).
 
@@ -39,9 +40,10 @@
 
 - Bộ quy tắc sinh mật khẩu ngẫu nhiên (độ dài, bộ ký tự, loại trừ ký tự dễ nhầm) mà người dùng lưu lại để tái dùng nhiều lần.
 
-### Backup file (`.pwvbackup`)
+### Backup file (`.pwvbackup`) (đã bỏ — Feature 19)
 
-- File mã hóa (AES-256, khóa từ Master Password) dùng để backup hoặc chuyển máy; chỉ app pwvault-android đọc được.
+- Thay bằng export CSV thường.
+- (Lịch sử) File mã hóa (AES-256, khóa từ Master Password) dùng để backup hoặc chuyển máy; chỉ app pwvault-android đọc được.
 - Khôi phục từ file này chỉ cần Master Password, không cần map cột như import CSV/Excel.
 
 ---

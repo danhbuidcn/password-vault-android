@@ -8,7 +8,6 @@ import kotlinx.coroutines.flow.map
 
 class VaultItemRepository(
     private val vaultFileManager: VaultFileManager,
-    private val autoBackupWriter: AutoBackupWriter,
 ) {
     private val dao get() = vaultFileManager.database().vaultItemDao()
 
@@ -16,17 +15,11 @@ class VaultItemRepository(
 
     suspend fun getItem(id: Long): VaultItem? = dao.getByIdWithDetails(id)?.toDomain()
 
-    suspend fun addItem(item: VaultItem): Long = dao.insert(item.toEntity()).also { autoBackupWriter.scheduleBackup() }
+    suspend fun addItem(item: VaultItem): Long = dao.insert(item.toEntity())
 
-    suspend fun updateItem(item: VaultItem) {
-        dao.update(item.toEntity())
-        autoBackupWriter.scheduleBackup()
-    }
+    suspend fun updateItem(item: VaultItem) = dao.update(item.toEntity())
 
-    suspend fun deleteItem(item: VaultItem) {
-        dao.delete(item.toEntity())
-        autoBackupWriter.scheduleBackup()
-    }
+    suspend fun deleteItem(item: VaultItem) = dao.delete(item.toEntity())
 
     suspend fun setItemTags(
         itemId: Long,

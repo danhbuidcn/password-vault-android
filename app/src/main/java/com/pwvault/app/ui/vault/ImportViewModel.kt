@@ -5,8 +5,23 @@ import android.net.Uri
 import android.provider.OpenableColumns
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.pwvault.app.data.TagRepository
 import com.pwvault.app.data.VaultItemRepository
+import com.pwvault.app.domain.CustomField
+import com.pwvault.app.domain.MAX_TAGS_PER_VAULT_ITEM
 import com.pwvault.app.domain.VaultItem
+import com.pwvault.app.domain.VaultItemType
+import com.pwvault.app.export.CSV_COLUMN_CUSTOM_FIELDS
+import com.pwvault.app.export.CSV_COLUMN_NAME
+import com.pwvault.app.export.CSV_COLUMN_NOTE
+import com.pwvault.app.export.CSV_COLUMN_PASSWORD
+import com.pwvault.app.export.CSV_COLUMN_TAGS
+import com.pwvault.app.export.CSV_COLUMN_TYPE
+import com.pwvault.app.export.CSV_COLUMN_URL
+import com.pwvault.app.export.CSV_COLUMN_USERNAME
+import com.pwvault.app.export.CSV_CUSTOM_FIELD_LABEL_SEPARATOR
+import com.pwvault.app.export.CSV_CUSTOM_FIELD_SEPARATOR
+import com.pwvault.app.export.CSV_TAG_SEPARATOR
 import com.pwvault.app.importer.CsvImportParser
 import com.pwvault.app.importer.ImportDuplicateDetector
 import com.pwvault.app.importer.ImportedRow
@@ -39,6 +54,10 @@ sealed interface ImportUiState {
         val passwordColumn: Int? = null,
         val urlColumn: Int? = null,
         val noteColumn: Int? = null,
+        // Only auto-detected from the header (no picker) — present when re-importing the app's own export.
+        val typeColumn: Int? = null,
+        val tagsColumn: Int? = null,
+        val customFieldsColumn: Int? = null,
         val error: ImportFormError? = null,
     ) : ImportUiState {
         val columnCount: Int get() = rows.maxOfOrNull { it.size } ?: 0
@@ -76,6 +95,7 @@ class ImportViewModel
         private val xlsxImportParser: XlsxImportParser,
         private val duplicateDetector: ImportDuplicateDetector,
         private val vaultItemRepository: VaultItemRepository,
+        private val tagRepository: TagRepository,
     ) : ViewModel() {
         private val _state = MutableStateFlow<ImportUiState>(ImportUiState.Closed)
         val state: StateFlow<ImportUiState> = _state.asStateFlow()
@@ -93,7 +113,7 @@ class ImportViewModel
                     if (rows.isNullOrEmpty()) {
                         ImportUiState.Failed(ImportError.READ_FAILED)
                     } else {
-                        ImportUiState.Mapping(rows = rows)
+                        autoMapped(rows)
                     }
             }
         }
@@ -133,19 +153,35 @@ class ImportViewModel
             _state.value = preview.copy(busy = true)
             viewModelScope.launch {
                 val now = System.currentTimeMillis()
+                val tagIdsByName =
+                    tagRepository
+                        .observeTags()
+                        .first()
+                        .associate { it.name.lowercase() to it.id }
+                        .toMutableMap()
                 preview.importedRows.forEach { row ->
-                    vaultItemRepository.addItem(
-                        VaultItem(
-                            id = 0,
-                            name = row.name,
-                            username = row.username,
-                            password = row.password,
-                            url = row.url,
-                            note = row.note,
-                            createdAt = now,
-                            updatedAt = now,
-                        ),
-                    )
+                    val itemId =
+                        vaultItemRepository.addItem(
+                            VaultItem(
+                                id = 0,
+                                type = row.type,
+                                name = row.name,
+                                username = row.username,
+                                password = row.password,
+                                url = row.url,
+                                note = row.note,
+                                createdAt = now,
+                                updatedAt = now,
+                            ),
+                        )
+                    if (row.tagNames.isNotEmpty()) {
+                        val tagIds =
+                            row.tagNames.map { name ->
+                                tagIdsByName.getOrPut(name.lowercase()) { tagRepository.addTag(name) }
+                            }
+                        vaultItemRepository.setItemTags(itemId, tagIds.toSet())
+                    }
+                    if (row.customFields.isNotEmpty()) vaultItemRepository.setCustomFields(itemId, row.customFields)
                 }
                 _state.value =
                     ImportUiState.Done(
@@ -154,6 +190,24 @@ class ImportViewModel
                         skippedCount = preview.skippedCount,
                     )
             }
+        }
+
+        /** Pre-selects columns whose header matches a known name (the app's own export, or common aliases). */
+        private fun autoMapped(rows: List<List<String>>): ImportUiState.Mapping {
+            val header = rows.first().map { it.trim().lowercase() }
+
+            fun find(vararg names: String): Int? = header.indexOfFirst { it in names }.takeIf { it >= 0 }
+            return ImportUiState.Mapping(
+                rows = rows,
+                nameColumn = find(CSV_COLUMN_NAME.lowercase(), "title"),
+                usernameColumn = find(CSV_COLUMN_USERNAME.lowercase(), "login", "user", "email"),
+                passwordColumn = find(CSV_COLUMN_PASSWORD.lowercase()),
+                urlColumn = find(CSV_COLUMN_URL.lowercase(), "uri", "website"),
+                noteColumn = find(CSV_COLUMN_NOTE.lowercase(), "notes"),
+                typeColumn = find(CSV_COLUMN_TYPE.lowercase()),
+                tagsColumn = find(CSV_COLUMN_TAGS.lowercase()),
+                customFieldsColumn = find(CSV_COLUMN_CUSTOM_FIELDS.lowercase()),
+            )
         }
 
         private fun updateMapping(transform: (ImportUiState.Mapping) -> ImportUiState.Mapping) {
@@ -168,6 +222,33 @@ class ImportViewModel
                 password = mapping.passwordColumn?.let { getOrNull(it) }.orEmpty(),
                 url = mapping.urlColumn?.let { getOrNull(it) }.orEmpty(),
                 note = mapping.noteColumn?.let { getOrNull(it) }.orEmpty(),
+                type =
+                    mapping.typeColumn
+                        ?.let { getOrNull(it) }
+                        ?.let { cell ->
+                            VaultItemType.entries.firstOrNull { it.name.equals(cell.trim(), ignoreCase = true) }
+                        }
+                        ?: VaultItemType.LOGIN,
+                tagNames =
+                    mapping.tagsColumn
+                        ?.let { getOrNull(it) }
+                        ?.split(CSV_TAG_SEPARATOR)
+                        ?.map { it.trim() }
+                        ?.filter { it.isNotEmpty() }
+                        ?.distinctBy { it.lowercase() }
+                        ?.take(MAX_TAGS_PER_VAULT_ITEM)
+                        .orEmpty(),
+                customFields =
+                    mapping.customFieldsColumn
+                        ?.let { getOrNull(it) }
+                        ?.split(CSV_CUSTOM_FIELD_SEPARATOR)
+                        ?.filter { it.isNotBlank() }
+                        ?.map { line ->
+                            CustomField(
+                                label = line.substringBefore(CSV_CUSTOM_FIELD_LABEL_SEPARATOR).trim(),
+                                value = line.substringAfter(CSV_CUSTOM_FIELD_LABEL_SEPARATOR, "").trim(),
+                            )
+                        }.orEmpty(),
             )
 
         private suspend fun readRows(uri: Uri): List<List<String>> =

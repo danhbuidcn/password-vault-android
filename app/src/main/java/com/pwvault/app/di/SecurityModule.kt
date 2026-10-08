@@ -3,8 +3,6 @@ package com.pwvault.app.di
 import android.content.Context
 import com.pwvault.app.data.VaultFileManager
 import com.pwvault.app.security.AutoLockPreferences
-import com.pwvault.app.security.BiometricCredentialStore
-import com.pwvault.app.security.BiometricKeystoreKeyProvider
 import com.pwvault.app.security.BiometricUnlockManager
 import com.pwvault.app.security.ClipboardClearer
 import com.pwvault.app.security.KeyDerivation
@@ -40,8 +38,7 @@ object SecurityModule {
     @Singleton
     fun provideVaultFileManager(
         @ApplicationContext context: Context,
-        vaultMetadataStore: VaultMetadataStore,
-    ): VaultFileManager = VaultFileManager(context, vaultMetadataStore)
+    ): VaultFileManager = VaultFileManager(context)
 
     @Provides
     @Singleton
@@ -63,20 +60,9 @@ object SecurityModule {
 
     @Provides
     @Singleton
-    fun provideBiometricKeystoreKeyProvider(): BiometricKeystoreKeyProvider = BiometricKeystoreKeyProvider()
-
-    @Provides
-    @Singleton
-    fun provideBiometricCredentialStore(
-        @ApplicationContext context: Context,
-    ): BiometricCredentialStore = BiometricCredentialStore(context)
-
-    @Provides
-    @Singleton
     fun provideBiometricUnlockManager(
-        keystoreKeyProvider: BiometricKeystoreKeyProvider,
-        credentialStore: BiometricCredentialStore,
-    ): BiometricUnlockManager = BiometricUnlockManager(keystoreKeyProvider, credentialStore)
+        @ApplicationContext context: Context,
+    ): BiometricUnlockManager = BiometricUnlockManager(context)
 
     @Provides
     @Singleton

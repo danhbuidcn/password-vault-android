@@ -8,7 +8,7 @@
 
 - App Android single-module, kiến trúc MVVM + Repository, UI bằng Jetpack Compose.
 - Toàn bộ dữ liệu Vault lưu trong 1 database SQLite mã hóa (SQLCipher) truy cập qua Room; không có backend, không gọi mạng.
-- Khóa mã hóa DB dẫn xuất từ Master Password (KDF), khóa thật lưu qua Android Keystore — không lưu Master Password dưới mọi hình thức.
+- Khóa mã hóa DB ngẫu nhiên, bọc bằng Android Keystore, mở bằng PIN/sinh trắc học (Feature 19).
 
 ---
 
@@ -22,7 +22,7 @@
 
 - **Ngôn ngữ:** Kotlin.
 - **UI:** Jetpack Compose (Material 3).
-- **Local database:** SQLCipher for Android + Room (`SupportFactory` mở DB bằng khóa dẫn xuất từ Master Password).
+- **Local database:** SQLCipher for Android + Room (`SupportFactory` mở DB bằng Vault key ngẫu nhiên).
 - **Bảo mật khóa:** Android Keystore (AndroidKeyStore provider), `BiometricPrompt` cho vân tay/khuôn mặt.
 - **minSdk:** 26 (Android 8.0). `targetSdk`/`compileSdk`: bản mới nhất tại thời điểm implement (⚠️ chưa chốt số cụ thể).
 - **Async:** Kotlin Coroutines + Flow (Room hỗ trợ Flow native, phù hợp danh sách Vault Item cập nhật realtime).
@@ -37,7 +37,7 @@
 
 > Đề xuất cấu trúc theo package-by-layer, chuẩn MVVM cho app Compose 1 module. Điều chỉnh khi implement nếu cần package-by-feature.
 
-- `data/` — Room entities/DAO, SQLCipher setup, repository implementation, import/export (CSV/Excel/`.pwvbackup`).
+- `data/` — Room entities/DAO, SQLCipher setup, repository implementation, import/export (CSV/Excel).
 - `domain/` — model nghiệp vụ (Vault Item, Tag, Custom Field), use case nếu cần tách khỏi ViewModel.
 - `ui/` — màn hình Compose theo feature (unlock, vault list, item detail, generator, settings/backup), theo Material 3 theming.
 - `security/` — KDF, Keystore wrapper, Biometric, lockout/rate-limit logic, FLAG_SECURE setup.
@@ -50,8 +50,8 @@
 - **UI (Compose)** — hiển thị, nhận input, gọi ViewModel; không chứa logic mã hóa/business rule.
 - **ViewModel** — state cho từng màn hình, gọi Repository, không biết chi tiết Room/SQLCipher.
 - **Repository** — điểm truy cập dữ liệu duy nhất cho ViewModel; ẩn chi tiết Room DAO + import/export + backup.
-- **Data (Room/SQLCipher)** — DAO, entity, mở/đóng DB bằng khóa dẫn xuất từ Master Password.
-- **Security** — KDF (Master Password → khóa DB), Android Keystore, BiometricPrompt, lockout đếm số lần sai.
+- **Data (Room/SQLCipher)** — DAO, entity, mở/đóng DB bằng Vault key.
+- **Security** — KDF (hash PIN), Android Keystore, BiometricPrompt, lockout đếm số lần sai.
 
 ---
 
@@ -60,9 +60,9 @@
 | Storage | Purpose |
 |---|---|
 | SQLCipher DB (qua Room) | Vault Item (Login/Note), Tag, Custom Field — dữ liệu chính. |
-| Android Keystore | Khóa mã hóa thật (dẫn xuất từ Master Password), không lưu plaintext. |
+| Android Keystore | Khóa bọc Vault key, không lưu plaintext. |
 | App private storage | File DB, file backup tạm trước khi ghi ra ngoài qua SAF. |
-| External storage (qua SAF) | File `.pwvbackup` và export CSV/Excel do người dùng chọn nơi lưu (SD card, USB OTG...). |
+| External storage (qua SAF) | File export CSV do người dùng chọn nơi lưu (SD card, USB OTG...). |
 
 - Không dùng Google Auto Backup (`android:allowBackup=false`) — xem [overview.md](overview.md#project-constraints).
 
@@ -70,10 +70,11 @@
 
 ## Authentication
 
-- Master Password: bắt buộc, thiết lập lần đầu, luôn là phương án mở khóa gốc.
-- PIN số: fallback bắt buộc có trên mọi thiết bị.
-- Sinh trắc học (vân tay/khuôn mặt): tùy chọn, qua `BiometricPrompt`.
-- PIN/sinh trắc học chỉ mở khóa UI; khóa mã hóa DB thật luôn dẫn xuất từ Master Password, lưu qua Android Keystore.
+- Từ [Feature 19](plans/feature-19-simplify-unlock-csv-plan.md): không còn Master Password.
+- Vault key: 32 byte ngẫu nhiên, sinh lúc setup, bọc AES-GCM bằng khóa Android Keystore (`PinKeystoreKeyProvider`).
+- PIN số: bắt buộc, là mật khẩu duy nhất người dùng nhớ. PIN đúng (so Argon2id hash) → giải bọc Vault key.
+- Sinh trắc học (vân tay/khuôn mặt): tùy chọn, `BiometricPrompt` với `BIOMETRIC_WEAK`, không `CryptoObject` — chỉ là cổng xác nhận, thành công thì giải bọc cùng Vault key như PIN.
+- Vault cũ chưa có PIN: mở bằng Master Password (Argon2id + salt cũ) một lần, rồi bắt buộc đặt PIN.
 - Giới hạn số lần nhập sai, tăng dần thời gian khóa khi sai liên tục (chống brute-force).
 - Tự động khóa sau X phút không thao tác (X tùy chỉnh, có giá trị mặc định an toàn, có ngưỡng tối thiểu app quy định).
 

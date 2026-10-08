@@ -15,7 +15,8 @@ private const val WIPE_CHAR = ' '
 
 /**
  * Orchestrates PIN setup/verification. The PIN never derives the Vault key directly — it only
- * gates a Keystore-wrapped copy of it (see docs/plans/feature-02-pin-unlock-plan.md).
+ * gates a Keystore-wrapped copy of it (see docs/plans/feature-02-pin-unlock-plan.md). Since
+ * Feature 19 the PIN is the only secret the user remembers; the Vault key itself is random.
  */
 class PinManager(
     private val keyDerivation: KeyDerivation,
@@ -24,7 +25,7 @@ class PinManager(
 ) {
     fun hasPin(): Boolean = credentialStore.hasPin()
 
-    /** Turns PIN unlock off. The Vault key stays reachable via master password / biometric. */
+    /** Removes the PIN — only used to roll back a half-finished vault creation. */
     fun clearPin() = credentialStore.clear()
 
     suspend fun setupPin(
@@ -57,7 +58,15 @@ class PinManager(
         if (!MessageDigest.isEqual(candidateHash, credentials.pinHash)) {
             return null
         }
+        return unwrapVaultKey()
+    }
 
+    /**
+     * Unwraps the Vault key without checking the PIN. Only call after another factor has already
+     * authenticated the user (biometric unlock — see docs/plans/feature-19-simplify-unlock-csv-plan.md).
+     */
+    suspend fun unwrapVaultKey(): ByteArray? {
+        val credentials = credentialStore.load() ?: return null
         return withContext(Dispatchers.Default) {
             runCatching {
                 val cipher = Cipher.getInstance(AES_GCM_TRANSFORMATION)

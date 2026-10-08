@@ -59,7 +59,6 @@ import com.pwvault.app.domain.Tag
 import com.pwvault.app.domain.VaultItem
 import com.pwvault.app.domain.VaultItemType
 import com.pwvault.app.ui.export.ExportScreen
-import com.pwvault.app.ui.export.ExportTarget
 import com.pwvault.app.ui.export.ExportUiState
 import com.pwvault.app.ui.export.ExportViewModel
 import com.pwvault.app.ui.settings.SettingsScreen
@@ -78,28 +77,27 @@ fun VaultScreen(
     canSetupBiometric: Boolean,
     onSetupPin: (pin: CharArray, confirm: CharArray) -> Unit,
     onSetupBiometric: () -> Unit,
-    onDisablePin: () -> Unit,
     onDisableBiometric: () -> Unit,
     viewModel: VaultViewModel,
     tagViewModel: TagViewModel,
     exportViewModel: ExportViewModel,
     importViewModel: ImportViewModel,
     settingsViewModel: SettingsViewModel,
-    onVerifyMasterPassword: suspend (CharArray) -> Boolean,
-    onPickExportDestination: (ExportTarget, String) -> Unit,
+    onVerifyPin: suspend (CharArray) -> Boolean,
+    onPickExportDestination: (String) -> Unit,
     onPickImportSource: () -> Unit,
-    hasAutoBackupFolder: Boolean,
-    onPickAutoBackupFolder: () -> Unit,
-    onDisableAutoBackup: () -> Unit,
 ) {
     var showPinDialog by remember { mutableStateOf(false) }
     var showTagManager by remember { mutableStateOf(false) }
     var showSettings by remember { mutableStateOf(false) }
 
     // Close the dialog only once setup actually succeeds, so validation errors stay visible
-    // instead of the dialog closing itself away on every confirm tap.
-    LaunchedEffect(state.hasPin) {
-        if (state.hasPin) showPinDialog = false
+    // instead of the dialog closing itself away on every confirm tap. Busy is only ever set on the
+    // valid path, so busy going true → false means the PIN was saved (set or changed).
+    var wasPinSetupBusy by remember { mutableStateOf(false) }
+    LaunchedEffect(state.pinSetupBusy) {
+        if (wasPinSetupBusy && !state.pinSetupBusy) showPinDialog = false
+        wasPinSetupBusy = state.pinSetupBusy
     }
 
     // Runs once per unlock session — VaultScreen only enters composition while Unlocked, and the
@@ -121,7 +119,6 @@ fun VaultScreen(
                 canSetupBiometric = canSetupBiometric,
                 onSetupPin = { showPinDialog = true },
                 onSetupBiometric = onSetupBiometric,
-                onDisablePin = onDisablePin,
                 onDisableBiometric = onDisableBiometric,
                 onManageTags = {
                     showSettings = false
@@ -135,9 +132,6 @@ fun VaultScreen(
                     showSettings = false
                     onPickImportSource()
                 },
-                hasAutoBackupFolder = hasAutoBackupFolder,
-                onPickAutoBackupFolder = onPickAutoBackupFolder,
-                onDisableAutoBackup = onDisableAutoBackup,
                 viewModel = settingsViewModel,
                 onBack = { showSettings = false },
             )
@@ -145,14 +139,7 @@ fun VaultScreen(
         exportState != ExportUiState.Closed ->
             ExportScreen(
                 state = exportState,
-                onChooseTarget = exportViewModel::chooseTarget,
-                onSubmitMasterPassword = { password ->
-                    exportViewModel.submitMasterPassword(password, onVerifyMasterPassword)
-                },
-                onToggleAck1 = exportViewModel::toggleAck1,
-                onToggleAck2 = exportViewModel::toggleAck2,
-                onContinueFromWarning = exportViewModel::continueFromWarning,
-                onSubmitZipPassword = exportViewModel::submitZipPassword,
+                onSubmitPin = { pin -> exportViewModel.submitPin(pin, onVerifyPin) },
                 onPickDestination = onPickExportDestination,
                 onClose = exportViewModel::close,
             )
@@ -223,14 +210,29 @@ fun VaultScreen(
             }
     }
 
-    if (showPinDialog) {
-        PinSetupDialog(
-            error = state.pinSetupError,
-            busy = state.pinSetupBusy,
-            onConfirm = { pin, confirm -> onSetupPin(pin, confirm) },
-            onDismiss = { showPinDialog = false },
-        )
-    }
+    PinSetupDialogHost(
+        state = state,
+        requested = showPinDialog,
+        onSetupPin = onSetupPin,
+        onDismiss = { showPinDialog = false },
+    )
+}
+
+/** No PIN yet only happens right after a legacy master-password unlock — PIN setup is then forced. */
+@Composable
+private fun PinSetupDialogHost(
+    state: UnlockUiState.Unlocked,
+    requested: Boolean,
+    onSetupPin: (pin: CharArray, confirm: CharArray) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    if (!requested && state.hasPin) return
+    PinSetupDialog(
+        error = state.pinSetupError,
+        busy = state.pinSetupBusy,
+        onConfirm = onSetupPin,
+        onDismiss = onDismiss.takeIf { state.hasPin },
+    )
 }
 
 private val listUpdatedFormat = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())

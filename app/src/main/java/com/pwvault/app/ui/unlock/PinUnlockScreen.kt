@@ -33,7 +33,6 @@ import com.pwvault.app.R
 fun PinUnlockScreen(
     state: UnlockUiState.PinEntry,
     onUnlock: (pin: CharArray) -> Unit,
-    onUseMasterPassword: () -> Unit,
     onUseBiometric: (() -> Unit)? = null,
 ) {
     var pin by remember { mutableStateOf("") }
@@ -93,11 +92,8 @@ fun PinUnlockScreen(
             ) {
                 Text(stringResource(R.string.pin_unlock_button))
             }
-            TextButton(onClick = onUseMasterPassword, modifier = Modifier.padding(top = 8.dp)) {
-                Text(stringResource(R.string.use_master_password_instead))
-            }
             if (onUseBiometric != null) {
-                TextButton(onClick = onUseBiometric) {
+                TextButton(onClick = onUseBiometric, modifier = Modifier.padding(top = 8.dp)) {
                     Text(stringResource(R.string.use_biometric_instead))
                 }
             }

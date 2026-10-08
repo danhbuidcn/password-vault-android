@@ -1,9 +1,7 @@
 package com.pwvault.app
 
 import android.Manifest
-import android.content.Intent
 import android.content.pm.PackageManager
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.view.WindowManager
@@ -15,21 +13,14 @@ import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
-import androidx.lifecycle.lifecycleScope
-import com.pwvault.app.security.BackupPreferences
 import com.pwvault.app.security.ThemeMode
-import com.pwvault.app.ui.export.ExportTarget
 import com.pwvault.app.ui.export.ExportViewModel
 import com.pwvault.app.ui.settings.SettingsViewModel
 import com.pwvault.app.ui.theme.PwVaultTheme
 import com.pwvault.app.ui.unlock.BiometricUnlockScreen
 import com.pwvault.app.ui.unlock.PinUnlockScreen
-import com.pwvault.app.ui.unlock.RestorePasswordScreen
 import com.pwvault.app.ui.unlock.SetupScreen
 import com.pwvault.app.ui.unlock.UnlockScreen
 import com.pwvault.app.ui.unlock.UnlockUiState
@@ -39,11 +30,8 @@ import com.pwvault.app.ui.vault.TagViewModel
 import com.pwvault.app.ui.vault.VaultScreen
 import com.pwvault.app.ui.vault.VaultViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
-import javax.inject.Inject
 
-private const val EXPORT_DESTINATION_MIME_TYPE = "application/octet-stream"
-private const val STATE_PENDING_EXPORT_TARGET = "pendingExportTarget"
+private const val EXPORT_DESTINATION_MIME_TYPE = "text/csv"
 private val IMPORT_SOURCE_MIME_TYPES =
     arrayOf(
         "text/csv",
@@ -52,18 +40,10 @@ private val IMPORT_SOURCE_MIME_TYPES =
         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     )
 
-// `.pwvbackup` has no registered MIME type and different DocumentsProviders disagree on what to
-// report for it (some say application/octet-stream, some say the generic default) — matching loosely
-// here avoids the exact picker-hides-the-file bug that an exact-MIME allowlist caused for CSV/XLSX.
-private val RESTORE_SOURCE_MIME_TYPES = arrayOf("*/*")
-
 private enum class BiometricOperation { UNLOCK, SETUP }
 
 @AndroidEntryPoint
 class MainActivity : FragmentActivity() {
-    @Inject
-    lateinit var backupPreferences: BackupPreferences
-
     private val unlockViewModel: UnlockViewModel by viewModels()
     private val vaultViewModel: VaultViewModel by viewModels()
     private val tagViewModel: TagViewModel by viewModels()
@@ -75,34 +55,21 @@ class MainActivity : FragmentActivity() {
     private lateinit var setupPromptInfo: BiometricPrompt.PromptInfo
     private lateinit var exportDestinationLauncher: ActivityResultLauncher<String>
     private lateinit var importSourceLauncher: ActivityResultLauncher<Array<String>>
-    private lateinit var restoreSourceLauncher: ActivityResultLauncher<Array<String>>
-    private lateinit var autoBackupFolderLauncher: ActivityResultLauncher<Uri?>
     private lateinit var notificationPermissionLauncher: ActivityResultLauncher<String>
     private var pendingBiometricOperation = BiometricOperation.UNLOCK
-    private var pendingExportTarget: ExportTarget? = null
-    private var hasAutoBackupFolder by mutableStateOf(false)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         if (BuildConfig.ENABLE_SCREENSHOT_BLOCK) {
             window.setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE)
         }
-        // A screen rotation while the system "save as" picker is open recreates this Activity —
-        // without restoring this, the picker's result would come back to a fresh instance with
-        // pendingExportTarget == null and onExportDestinationPicked would silently no-op, stranding
-        // the export flow (the ExportViewModel state survives via ViewModelStore, but nothing would
-        // ever call onDestinationPicked to move it out of PickDestination).
-        pendingExportTarget =
-            savedInstanceState?.getString(STATE_PENDING_EXPORT_TARGET)?.let { ExportTarget.valueOf(it) }
-
-        unlockPromptInfo = createBiometricPromptInfo(getString(R.string.use_master_password_instead))
+        unlockPromptInfo = createBiometricPromptInfo(getString(R.string.use_pin_instead))
         setupPromptInfo = createBiometricPromptInfo(getString(R.string.pin_setup_cancel))
         biometricPrompt = BiometricPrompt(this, ContextCompat.getMainExecutor(this), biometricAuthenticationCallback())
         registerActivityResultLaunchers()
         requestNotificationPermissionIfNeeded()
-        hasAutoBackupFolder = backupPreferences.getAutoBackupFolderUri() != null
         val canSetupBiometric =
-            BiometricManager.from(this).canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_STRONG) ==
+            BiometricManager.from(this).canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_WEAK) ==
                 BiometricManager.BIOMETRIC_SUCCESS
 
         setContent {
@@ -126,12 +93,8 @@ class MainActivity : FragmentActivity() {
                     canSetupBiometric = canSetupBiometric,
                     onAuthenticateBiometricUnlock = ::triggerBiometricUnlock,
                     onSetupBiometric = ::triggerBiometricSetup,
-                    onPickExportDestination = ::triggerExportDestinationPicker,
+                    onPickExportDestination = { exportDestinationLauncher.launch(it) },
                     onPickImportSource = { importSourceLauncher.launch(IMPORT_SOURCE_MIME_TYPES) },
-                    onPickRestoreSource = { restoreSourceLauncher.launch(RESTORE_SOURCE_MIME_TYPES) },
-                    hasAutoBackupFolder = hasAutoBackupFolder,
-                    onPickAutoBackupFolder = { autoBackupFolderLauncher.launch(null) },
-                    onDisableAutoBackup = ::disableAutoBackup,
                 )
             }
         }
@@ -140,50 +103,13 @@ class MainActivity : FragmentActivity() {
     private fun registerActivityResultLaunchers() {
         exportDestinationLauncher =
             registerForActivityResult(ActivityResultContracts.CreateDocument(EXPORT_DESTINATION_MIME_TYPE)) { uri ->
-                onExportDestinationPicked(uri)
+                exportViewModel.onDestinationPicked(uri)
             }
         importSourceLauncher =
             registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
                 importViewModel.onFilePicked(uri)
             }
-        restoreSourceLauncher =
-            registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
-                unlockViewModel.onRestoreFilePicked(uri)
-            }
-        autoBackupFolderLauncher =
-            registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
-                onAutoBackupFolderPicked(uri)
-            }
         notificationPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) {}
-    }
-
-    private fun triggerExportDestinationPicker(
-        target: ExportTarget,
-        suggestedFileName: String,
-    ) {
-        pendingExportTarget = target
-        exportDestinationLauncher.launch(suggestedFileName)
-    }
-
-    private fun onExportDestinationPicked(uri: Uri?) {
-        val target = pendingExportTarget ?: return
-        pendingExportTarget = null
-        exportViewModel.onDestinationPicked(target, uri)
-    }
-
-    private fun onAutoBackupFolderPicked(uri: Uri?) {
-        if (uri == null) return
-        contentResolver.takePersistableUriPermission(
-            uri,
-            Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION,
-        )
-        backupPreferences.setAutoBackupFolderUri(uri)
-        hasAutoBackupFolder = true
-    }
-
-    private fun disableAutoBackup() {
-        backupPreferences.clearAutoBackupFolderUri()
-        hasAutoBackupFolder = false
     }
 
     private fun requestNotificationPermissionIfNeeded() {
@@ -196,45 +122,34 @@ class MainActivity : FragmentActivity() {
         notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
     }
 
+    /**
+     * `BIOMETRIC_WEAK` so face unlock works on most devices — biometric is a gate only, no
+     * `CryptoObject` (see docs/plans/feature-19-simplify-unlock-csv-plan.md).
+     */
     private fun createBiometricPromptInfo(negativeButtonText: String): BiometricPrompt.PromptInfo =
         BiometricPrompt.PromptInfo
             .Builder()
             .setTitle(getString(R.string.biometric_prompt_title))
-            .setAllowedAuthenticators(BiometricManager.Authenticators.BIOMETRIC_STRONG)
+            .setAllowedAuthenticators(BiometricManager.Authenticators.BIOMETRIC_WEAK)
             .setNegativeButtonText(negativeButtonText)
             .build()
 
     private fun triggerBiometricUnlock() {
         pendingBiometricOperation = BiometricOperation.UNLOCK
-        lifecycleScope.launch {
-            val cipher = unlockViewModel.prepareBiometricUnlockCipher()
-            if (cipher != null) {
-                biometricPrompt.authenticate(unlockPromptInfo, BiometricPrompt.CryptoObject(cipher))
-            } else {
-                unlockViewModel.onBiometricUnlockError()
-            }
-        }
+        biometricPrompt.authenticate(unlockPromptInfo)
     }
 
     private fun triggerBiometricSetup() {
         pendingBiometricOperation = BiometricOperation.SETUP
-        lifecycleScope.launch {
-            val cipher = unlockViewModel.prepareBiometricSetupCipher()
-            if (cipher != null) {
-                biometricPrompt.authenticate(setupPromptInfo, BiometricPrompt.CryptoObject(cipher))
-            } else {
-                unlockViewModel.onBiometricSetupError()
-            }
-        }
+        biometricPrompt.authenticate(setupPromptInfo)
     }
 
     private fun biometricAuthenticationCallback() =
         object : BiometricPrompt.AuthenticationCallback() {
             override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
-                val cipher = result.cryptoObject?.cipher ?: return
                 when (pendingBiometricOperation) {
-                    BiometricOperation.UNLOCK -> unlockViewModel.completeBiometricUnlock(cipher)
-                    BiometricOperation.SETUP -> unlockViewModel.completeBiometricSetup(cipher)
+                    BiometricOperation.UNLOCK -> unlockViewModel.completeBiometricUnlock()
+                    BiometricOperation.SETUP -> unlockViewModel.completeBiometricSetup()
                 }
             }
 
@@ -253,11 +168,7 @@ class MainActivity : FragmentActivity() {
                             unlockViewModel.onBiometricUnlockError()
                         }
                     BiometricOperation.SETUP ->
-                        if (cancelled) {
-                            unlockViewModel.onBiometricSetupCancelled()
-                        } else {
-                            unlockViewModel.onBiometricSetupError()
-                        }
+                        if (!cancelled) unlockViewModel.onBiometricSetupError()
                 }
             }
         }
@@ -270,11 +181,6 @@ class MainActivity : FragmentActivity() {
     override fun onResume() {
         super.onResume()
         unlockViewModel.onAppForegrounded()
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        pendingExportTarget?.let { outState.putString(STATE_PENDING_EXPORT_TARGET, it.name) }
     }
 }
 
@@ -289,12 +195,8 @@ private fun PwVaultApp(
     canSetupBiometric: Boolean,
     onAuthenticateBiometricUnlock: () -> Unit,
     onSetupBiometric: () -> Unit,
-    onPickExportDestination: (ExportTarget, String) -> Unit,
+    onPickExportDestination: (String) -> Unit,
     onPickImportSource: () -> Unit,
-    onPickRestoreSource: () -> Unit,
-    hasAutoBackupFolder: Boolean,
-    onPickAutoBackupFolder: () -> Unit,
-    onDisableAutoBackup: () -> Unit,
 ) {
     when (val state = unlockViewModel.state.collectAsState().value) {
         is UnlockUiState.Loading -> Unit
@@ -303,14 +205,6 @@ private fun PwVaultApp(
                 error = state.error,
                 busy = state.busy,
                 onCreateVault = unlockViewModel::createVault,
-                onRestoreClick = onPickRestoreSource,
-            )
-        is UnlockUiState.RestorePassword ->
-            RestorePasswordScreen(
-                error = state.error,
-                busy = state.busy,
-                onRestore = unlockViewModel::restoreVault,
-                onCancel = unlockViewModel::cancelRestore,
             )
         is UnlockUiState.Locked ->
             UnlockScreen(
@@ -323,7 +217,6 @@ private fun PwVaultApp(
             PinUnlockScreen(
                 state = state,
                 onUnlock = unlockViewModel::unlockWithPin,
-                onUseMasterPassword = unlockViewModel::switchToMasterPassword,
                 onUseBiometric = if (state.hasBiometric) unlockViewModel::switchToBiometric else null,
             )
         is UnlockUiState.BiometricEntry ->
@@ -331,8 +224,7 @@ private fun PwVaultApp(
                 error = state.error,
                 busy = state.busy,
                 onAuthenticate = onAuthenticateBiometricUnlock,
-                onUseMasterPassword = unlockViewModel::switchToMasterPassword,
-                onUsePin = if (state.hasPin) unlockViewModel::switchToPin else null,
+                onUsePin = unlockViewModel::switchToPin,
             )
         is UnlockUiState.Unlocked ->
             VaultScreen(
@@ -340,19 +232,15 @@ private fun PwVaultApp(
                 canSetupBiometric = canSetupBiometric,
                 onSetupPin = unlockViewModel::setupPin,
                 onSetupBiometric = onSetupBiometric,
-                onDisablePin = unlockViewModel::disablePin,
                 onDisableBiometric = unlockViewModel::disableBiometric,
                 viewModel = vaultViewModel,
                 tagViewModel = tagViewModel,
                 exportViewModel = exportViewModel,
                 importViewModel = importViewModel,
                 settingsViewModel = settingsViewModel,
-                onVerifyMasterPassword = unlockViewModel::verifyMasterPassword,
+                onVerifyPin = unlockViewModel::verifyPin,
                 onPickExportDestination = onPickExportDestination,
                 onPickImportSource = onPickImportSource,
-                hasAutoBackupFolder = hasAutoBackupFolder,
-                onPickAutoBackupFolder = onPickAutoBackupFolder,
-                onDisableAutoBackup = onDisableAutoBackup,
             )
     }
 }

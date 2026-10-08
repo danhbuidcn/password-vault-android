@@ -58,7 +58,6 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.androidx.biometric)
-    implementation(libs.androidx.documentfile)
     implementation(libs.androidx.appcompat)
 
     implementation(platform(libs.compose.bom))
@@ -74,7 +73,6 @@ dependencies {
     ksp(libs.room.compiler)
     implementation(libs.sqlcipher.android)
     implementation(libs.argon2kt)
-    implementation(libs.zip4j)
     implementation(libs.fastexcel.reader)
 
     implementation(libs.hilt.android)

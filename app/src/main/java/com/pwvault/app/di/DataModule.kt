@@ -1,7 +1,6 @@
 package com.pwvault.app.di
 
 import android.content.Context
-import com.pwvault.app.data.AutoBackupWriter
 import com.pwvault.app.data.TagRepository
 import com.pwvault.app.data.VaultFileManager
 import com.pwvault.app.data.VaultItemRepository
@@ -24,18 +23,8 @@ object DataModule {
 
     @Provides
     @Singleton
-    fun provideAutoBackupWriter(
-        @ApplicationContext context: Context,
-        vaultFileManager: VaultFileManager,
-        backupPreferences: BackupPreferences,
-    ): AutoBackupWriter = AutoBackupWriter(context, vaultFileManager, backupPreferences)
-
-    @Provides
-    @Singleton
-    fun provideVaultItemRepository(
-        vaultFileManager: VaultFileManager,
-        autoBackupWriter: AutoBackupWriter,
-    ): VaultItemRepository = VaultItemRepository(vaultFileManager, autoBackupWriter)
+    fun provideVaultItemRepository(vaultFileManager: VaultFileManager): VaultItemRepository =
+        VaultItemRepository(vaultFileManager)
 
     @Provides
     @Singleton

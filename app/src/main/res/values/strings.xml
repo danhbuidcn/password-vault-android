@@ -2,36 +2,25 @@
 <resources>
     <string name="app_name">PWVault</string>
 
-    <string name="setup_title">Set an app password</string>
-    <string name="setup_subtitle">You\'ll use this password to unlock PWVault every time.</string>
+    <string name="setup_title">Set your PIN</string>
+    <string name="setup_subtitle">This PIN is the only password you need to remember to unlock PWVault.</string>
     <string name="password_label">Password</string>
-    <string name="confirm_password_label">Confirm password</string>
     <string name="setup_button">Create</string>
     <string name="setup_button_busy">Creating…</string>
-    <string name="setup_restore_button">Restore from backup</string>
-    <string name="error_password_mismatch">Passwords don\'t match</string>
-    <string name="error_password_too_short">Password must be at least %1$d characters</string>
     <string name="error_create_failed">Couldn\'t create the vault, please try again</string>
 
-    <string name="unlock_title">Enter your password</string>
-    <string name="unlock_subtitle">Unlock PWVault to see your saved passwords.</string>
+    <string name="unlock_title">Enter your old password</string>
+    <string name="unlock_subtitle">One last time — you\'ll set a PIN right after unlocking.</string>
     <string name="unlock_button">Unlock</string>
     <string name="unlock_button_busy">Unlocking…</string>
     <string name="error_wrong_password">Wrong password</string>
 
-    <string name="restore_title">Restore from backup</string>
-    <string name="restore_subtitle">Enter the Master Password from the device that created this backup.</string>
-    <string name="restore_button">Restore</string>
-    <string name="restore_button_busy">Restoring…</string>
-    <string name="restore_cancel">Cancel</string>
-    <string name="error_restore_invalid_file">This doesn\'t look like a valid PWVault backup file</string>
-    <string name="error_restore_wrong_password">Wrong password for this backup</string>
 
     <string name="password_show_cd">Show password</string>
     <string name="password_hide_cd">Hide password</string>
 
     <string name="pin_setup_title">Set a PIN</string>
-    <string name="pin_setup_subtitle">Use this PIN for quick unlock instead of typing your full password every time.</string>
+    <string name="pin_setup_subtitle">This PIN is the only password you need to unlock PWVault.</string>
     <string name="pin_label">PIN</string>
     <string name="confirm_pin_label">Confirm PIN</string>
     <string name="pin_setup_save">Save</string>
@@ -41,9 +30,8 @@
     <string name="error_pin_not_numeric">PIN can only contain digits</string>
 
     <string name="pin_unlock_title">Enter your PIN</string>
-    <string name="pin_unlock_subtitle">Enter your PIN for quick unlock.</string>
+    <string name="pin_unlock_subtitle">Enter your PIN to unlock PWVault.</string>
     <string name="pin_unlock_button">Unlock</string>
-    <string name="use_master_password_instead">Use password instead</string>
     <string name="use_pin_instead">Use PIN instead</string>
     <string name="error_wrong_pin">Wrong PIN</string>
 
@@ -114,17 +102,8 @@
 
     <string name="export_cd">Export</string>
     <string name="export_title">Export Vault</string>
-    <string name="export_backup_option">Encrypted backup (.pwvbackup)</string>
-    <string name="export_backup_option_hint">Recommended — for backup or moving to a new device.</string>
-    <string name="export_csv_option">Plaintext CSV</string>
-    <string name="export_csv_option_hint">Password-protected zip. Anyone with the zip password can read it.</string>
-    <string name="export_reauth_title">Re-enter your password to continue</string>
     <string name="export_confirm_button">Continue</string>
-    <string name="export_csv_warning_title">Before you export plaintext</string>
-    <string name="export_csv_warning_ack1">I understand this file is NOT encrypted by the app — only the zip password protects it.</string>
-    <string name="export_csv_warning_ack2">I will delete this file myself once I no longer need it.</string>
-    <string name="export_zip_password_title">Set a password for this export</string>
-    <string name="export_zip_password_label">Zip password</string>
+    <string name="export_csv_warning">Exports a plain CSV file (not encrypted). Anyone with the file can read all your passwords — keep it safe.</string>
     <string name="export_preparing">Preparing…</string>
     <string name="export_writing">Exporting…</string>
     <string name="export_done">Export complete.</string>
@@ -158,8 +137,6 @@
     <string name="import_done_delete_reminder">If the source file contains plaintext passwords, remember to delete it yourself.</string>
     <string name="import_close_button">Close</string>
 
-    <string name="auto_backup_off_cd">Auto-backup: not set up</string>
-    <string name="auto_backup_on_cd">Auto-backup: on</string>
     <string name="export_reminder_channel_name">Backup reminders</string>
     <string name="export_reminder_notification_title">Time to back up your Vault</string>
     <string name="export_reminder_notification_text">It\'s been a while since your last export — consider making a fresh one.</string>
@@ -171,11 +148,9 @@
     <string name="settings_security_section_description">Automatically lock the Vault after a period of inactivity, so it stays protected if you leave your device unattended.</string>
     <string name="settings_appearance_section">Appearance</string>
     <string name="settings_data_section">Data</string>
-    <string name="settings_app_password_label">App password</string>
-    <string name="settings_always_on">Always on</string>
     <string name="settings_pin_label">PIN unlock</string>
+    <string name="settings_change_pin">Change</string>
     <string name="settings_biometric_label">Fingerprint/face unlock</string>
-    <string name="settings_unlock_method_required_hint">At least one unlock method must stay on.</string>
     <string name="auto_lock_30s">30 seconds</string>
     <string name="auto_lock_1m">1 minute</string>
     <string name="auto_lock_5m">5 minutes</string>
