@@ -28,10 +28,27 @@ android {
         buildConfigField("boolean", "ENABLE_SCREENSHOT_BLOCK", "$enableScreenshotBlock")
     }
 
+    // Release keystore comes from keystore.properties (never committed) via scripts/release.sh,
+    // which decodes it to a temp file and exports these three env vars before invoking Gradle.
+    signingConfigs {
+        create("release") {
+            val keystoreFile = System.getenv("PWVAULT_KEYSTORE_FILE")
+            if (keystoreFile != null) {
+                storeFile = file(keystoreFile)
+                storePassword = System.getenv("PWVAULT_KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("PWVAULT_KEY_ALIAS")
+                keyPassword = System.getenv("PWVAULT_KEYSTORE_PASSWORD")
+            }
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            if (System.getenv("PWVAULT_KEYSTORE_FILE") != null) {
+                signingConfig = signingConfigs.getByName("release")
+            }
         }
     }
 

@@ -14,6 +14,7 @@ local.properties
 *.jks
 *.keystore
 !debug.keystore
+keystore.properties
 
 # Build output APKs (published separately, not committed)
 *.apk

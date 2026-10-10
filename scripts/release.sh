@@ -7,11 +7,13 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-# SHA-256 of the debug key every published APK (v0.4.x → v0.5.0) was signed with. Android refuses to
-# update an installed app from an APK signed with a different key, so building with any other key
-# would produce an APK the phone can't install over the existing app.
-EXPECTED_CERT_SHA256="facd31836b0986b0528bfcddd9281b552a0bb1dd24dca548c9190f1140678773"
-KEYSTORE="${HOME}/.android/debug.keystore"
+# SHA-256 of the dedicated release key (keystore.properties, not the debug key) every published
+# APK is signed with from here on. Android refuses to update an installed app from an APK signed
+# with a different key, so building with any other key would produce an APK the phone can't
+# install over the existing app. The first release built with this key is a one-time exception:
+# it replaces the earlier debug-signed releases, so it requires uninstall + reinstall on phones
+# that still have an old build (export vault data first).
+EXPECTED_CERT_SHA256="d30a8295557d838ca47d013b1d1ebf905d23638363a6a525aa63b5f374fd4aa1"
 
 fail() {
   echo "❌ $*" >&2
@@ -31,11 +33,23 @@ git fetch --tags origin
 
 # --- 2. Signing key check --------------------------------------------------------------------
 echo "▶ Kiểm tra khoá ký..."
+[ -f keystore.properties ] || fail "Không có keystore.properties (cp từ máy giữ khoá ký, không commit vào git)."
+set -a; . ./keystore.properties; set +a
+: "${KEYSTORE_BASE64:?Thiếu KEYSTORE_BASE64 trong keystore.properties}"
+: "${KEYSTORE_PASSWORD:?Thiếu KEYSTORE_PASSWORD trong keystore.properties}"
+: "${KEY_ALIAS:?Thiếu KEY_ALIAS trong keystore.properties}"
+
 KEYTOOL="$(command -v keytool || true)"
 [ -z "$KEYTOOL" ] && [ -n "${JAVA_HOME:-}" ] && KEYTOOL="${JAVA_HOME}/bin/keytool"
 [ -x "$KEYTOOL" ] || fail "Không tìm thấy keytool (cài JDK hoặc đặt JAVA_HOME)."
-[ -f "$KEYSTORE" ] || fail "Không có ${KEYSTORE} — máy này không có khoá ký cũ."
-ACTUAL_CERT_SHA256="$("$KEYTOOL" -list -v -keystore "$KEYSTORE" -storepass android -alias androiddebugkey \
+
+KEYSTORE_TMP=$(mktemp -d); trap 'rm -rf "$KEYSTORE_TMP"' EXIT
+export PWVAULT_KEYSTORE_FILE="$KEYSTORE_TMP/release.jks"
+echo "$KEYSTORE_BASE64" | base64 -d > "$PWVAULT_KEYSTORE_FILE"
+export PWVAULT_KEYSTORE_PASSWORD="$KEYSTORE_PASSWORD"
+export PWVAULT_KEY_ALIAS="$KEY_ALIAS"
+
+ACTUAL_CERT_SHA256="$("$KEYTOOL" -list -v -keystore "$PWVAULT_KEYSTORE_FILE" -storepass "$KEYSTORE_PASSWORD" -alias "$KEY_ALIAS" \
   | grep -m1 'SHA256:' | sed 's/.*SHA256: *//; s/://g' | tr 'A-F' 'a-f')"
 [ "$ACTUAL_CERT_SHA256" = "$EXPECTED_CERT_SHA256" ] \
   || fail "Khoá ký sai (${ACTUAL_CERT_SHA256:0:8}…, cần ${EXPECTED_CERT_SHA256:0:8}…) — APK sẽ không cài đè được lên điện thoại."
@@ -51,10 +65,10 @@ fi
 
 # --- 4. Build --------------------------------------------------------------------------------
 echo "▶ Build APK ${VERSION}..."
-./gradlew assembleDebug
+./gradlew assembleRelease
 mkdir -p dist
-APK="dist/pwvault-android-${VERSION}-$(date +%Y%m%d)-debug.apk"
-cp app/build/outputs/apk/debug/app-debug.apk "$APK"
+APK="dist/pwvault-android-${VERSION}-$(date +%Y%m%d).apk"
+cp app/build/outputs/apk/release/app-release.apk "$APK"
 
 # --- 5. Tag ----------------------------------------------------------------------------------
 if ! git rev-parse -q --verify "refs/tags/${TAG}" >/dev/null; then

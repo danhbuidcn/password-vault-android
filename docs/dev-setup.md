@@ -115,18 +115,18 @@ export PATH="$JAVA_HOME/bin:$ANDROID_HOME/platform-tools:$ANDROID_HOME/cmdline-t
 
 App này chỉ dùng cho 1 người (side-load, không đăng Play Store).
 
-⚠️ `assembleRelease` chưa có `signingConfig` (ngoài scope của plan scaffold ban đầu) — APK release hiện ra dạng unsigned, chưa cài trực tiếp được. Tạm dùng bản **debug-signed** làm file cài; khác biệt duy nhất còn lại so với bản release thật là **chữ ký** (ký release thật là việc của một plan sau). Chặn chụp màn hình (`FLAG_SECURE`) mặc định **bật** trên mọi build kể cả debug (`BuildConfig.ENABLE_SCREENSHOT_BLOCK`), không còn tắt riêng theo `BuildConfig.DEBUG` như trước.
+`assembleRelease` ký bằng khoá release riêng (`keystore.properties` ở gốc repo, không commit — xem `scripts/release.sh`). Máy không có `keystore.properties` thì `signingConfig` bị bỏ qua, ra APK unsigned, không cài được. Chặn chụp màn hình (`FLAG_SECURE`) mặc định **bật** trên mọi build kể cả debug (`BuildConfig.ENABLE_SCREENSHOT_BLOCK`), không còn tắt riêng theo `BuildConfig.DEBUG` như trước.
 
 ```bash
-./gradlew assembleDebug
+./gradlew assembleRelease
 mkdir -p dist
-cp app/build/outputs/apk/debug/app-debug.apk "dist/pwvault-android-$(grep -oP '(?<=versionName = ")[^\"]+' app/build.gradle.kts)-$(date +%Y%m%d)-debug.apk"
+cp app/build/outputs/apk/release/app-release.apk "dist/pwvault-android-$(grep -oP '(?<=versionName = ")[^\"]+' app/build.gradle.kts)-$(date +%Y%m%d).apk"
 ```
 
 Cài trực tiếp qua USB:
 
 ```bash
-adb install -r dist/pwvault-android-<version>-<yyyyMMdd>-debug.apk
+adb install -r dist/pwvault-android-<version>-<yyyyMMdd>.apk
 ```
 
 Hoặc copy file `.apk` vào điện thoại (qua cáp/`adb push`) rồi mở bằng File Manager để cài (cần bật "Cài ứng dụng từ nguồn không xác định" cho app quản lý file dùng để mở APK).
@@ -147,7 +147,7 @@ Cài lại bằng `./gradlew installDebug` (không có cờ) để bật lại c
 scripts/release.sh
 ```
 
-Script tự: `git pull` → kiểm tra khoá ký `~/.android/debug.keystore` đúng khoá đã ký các bản trước (SHA-256 `facd3183…`, sai thì dừng — APK khác khoá không cài đè được lên điện thoại) → `assembleDebug` → copy ra `dist/` → tạo + push tag `v<versionName>` → tạo GitHub Release kèm APK (hoặc upload đè nếu release đã có). Yêu cầu: `gh` đã cài + `gh auth login`, đứng ở `main`, không có thay đổi chưa commit. Muốn ra bản mới: bump `versionCode`/`versionName` trong `app/build.gradle.kts`, commit, push, rồi chạy script.
+Script tự: `git pull` → đọc khoá ký từ `keystore.properties` (gốc repo, không commit — máy mới thì chép file này từ máy giữ khoá ký) → kiểm tra đúng khoá release đã dùng trước đó (SHA-256 `d30a8295…`, sai thì dừng — APK khác khoá không cài đè được lên điện thoại) → `assembleRelease` → copy ra `dist/` → tạo + push tag `v<versionName>` → tạo GitHub Release kèm APK (hoặc upload đè nếu release đã có). Yêu cầu: `gh` đã cài + `gh auth login`, đứng ở `main`, không có thay đổi chưa commit. Muốn ra bản mới: bump `versionCode`/`versionName` trong `app/build.gradle.kts`, commit, push, rồi chạy script.
 
 Các bước thủ công bên dưới giữ lại để tham khảo.
 
@@ -160,7 +160,7 @@ Khi app đã hoàn thành (hết roadmap hoặc tới mốc muốn phát hành),
    gh auth login
    ```
 
-2. **Build APK cài đặt** theo hướng dẫn ở mục [Build file cài đặt (APK)](#build-file-cài-đặt-apk-cho-người-dùng-cuối) phía trên, ra file dạng `dist/pwvault-android-<version>-<yyyyMMdd>-debug.apk`.
+2. **Build APK cài đặt** theo hướng dẫn ở mục [Build file cài đặt (APK)](#build-file-cài-đặt-apk-cho-người-dùng-cuối) phía trên, ra file dạng `dist/pwvault-android-<version>-<yyyyMMdd>.apk`.
 
 3. **Đảm bảo mọi commit liên quan đã push lên `origin/main`** (`git push`) — tag release sẽ trỏ vào commit hiện tại.
 
@@ -169,7 +169,7 @@ Khi app đã hoàn thành (hết roadmap hoặc tới mốc muốn phát hành),
    ```bash
    VERSION=$(grep -oP '(?<=versionName = ")[^"]+' app/build.gradle.kts)
    DATE=$(date +%Y-%m-%d)
-   APK="dist/pwvault-android-${VERSION}-$(date +%Y%m%d)-debug.apk"
+   APK="dist/pwvault-android-${VERSION}-$(date +%Y%m%d).apk"
 
    gh release create "v${VERSION}" "$APK" \
      --title "pwvault-android v${VERSION}" \
